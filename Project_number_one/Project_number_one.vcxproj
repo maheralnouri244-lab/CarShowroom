@@ -141,6 +141,7 @@
   <ItemGroup>
     <ClCompile Include="GlassWindow.cpp" />
     <ClCompile Include="Hpillar.cpp" />
+    <ClCompile Include="Maherheader.cpp" />
     <ClCompile Include="Pillar.cpp" />
     <ClCompile Include="PlusRing3D.cpp" />
     <ClCompile Include="Project_number_one.cpp" />
@@ -150,6 +151,7 @@
   <ItemGroup>
     <ClInclude Include="GlassWindow.h" />
     <ClInclude Include="Hpillar.h" />
+    <ClInclude Include="Maherheader.h" />
     <ClInclude Include="Pillar.h" />
     <ClInclude Include="PlusRing3D.h" />
     <ClInclude Include="ShowroomGate.h" />
