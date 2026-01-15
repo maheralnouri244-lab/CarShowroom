@@ -8,6 +8,7 @@
 #include "GlassWindow.h"
 #include "PlusRing3D.h"
 #include "Maherheader.h"
+#define M_PI acos(-1)
 
 using namespace std;
 
@@ -15,8 +16,8 @@ float camX = 0.0f, camY = 5.0f, camZ = 20.0f;
 float lookX = 0.0f, lookY = 0.0f, lookZ = -1.0f;
 float yaw = -90.0f, pitch = 0.0f;
 int lastMouseX, lastMouseY;
-bool firstMouse = true;
-#define M_PI acos(-1)
+bool firstMouse = true,ignoreWarp;
+Maherheader maher;
 
 void updateLookVector() {
     if (pitch > 89.0f) pitch = 89.0f;
@@ -33,9 +34,31 @@ void updateLookVector() {
 
 void initRendering() {
     glEnable(GL_DEPTH_TEST);
+
     glEnable(GL_LIGHTING);
-    glEnable(GL_LIGHT0);
+    glEnable(GL_LIGHT0); 
+    glEnable(GL_LIGHT1);
+    glEnable(GL_LIGHT2);
+    glEnable(GL_LIGHT3);
+    glEnable(GL_LIGHT4);
+    glEnable(GL_LIGHT5);
+    glEnable(GL_LIGHT6);
+    glEnable(GL_LIGHT7);
+
     glEnable(GL_COLOR_MATERIAL);
+    glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
+
+    glEnable(GL_NORMALIZE);
+    glShadeModel(GL_SMOOTH);
+
+    GLfloat globalAmbient[] = { 0.15f, 0.15f, 0.15f, 1.0f };
+    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, globalAmbient);
+
+    GLfloat diffuse0[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+    GLfloat specular0[] = { 0.8f, 0.8f, 0.8f, 1.0f };
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse0);
+    glLightfv(GL_LIGHT0, GL_SPECULAR, specular0);
+
     glClearColor(0.1f, 0.1f, 0.15f, 1.0f);
 }
 
@@ -58,22 +81,29 @@ void handleKeypress(unsigned char key, int x, int y) {
 }
 
 void handlePassiveMouse(int x, int y) {
-    if (firstMouse) {
-        lastMouseX = x;
-        lastMouseY = y;
-        firstMouse = false;
+    if (ignoreWarp) {
+        ignoreWarp = false;
+        return;
     }
 
-    float xOffset = x - lastMouseX;
-    float yOffset = lastMouseY - y;
-    lastMouseX = x;
-    lastMouseY = y;
+    int centerX = glutGet(GLUT_WINDOW_WIDTH) / 2;
+    int centerY = glutGet(GLUT_WINDOW_HEIGHT) / 2;
+
+    float xOffset = x - centerX;
+    float yOffset = centerY - y;
 
     float sensitivity = 0.1f;
     yaw += xOffset * sensitivity;
     pitch += yOffset * sensitivity;
 
+    if (pitch > 89.0f) pitch = 89.0f;
+    if (pitch < -89.0f) pitch = -89.0f;
+
     updateLookVector();
+
+    ignoreWarp = true;
+    glutWarpPointer(centerX, centerY);
+
     glutPostRedisplay();
 }
 
@@ -85,9 +115,15 @@ void display() {
         camX + lookX, camY + lookY, camZ + lookZ,
         0.0f, 1.0f, 0.0f);
 
-    Maherheader maher;
     maher.draw();
-
+    glColor3f(1, 1, 1);
+    glBegin(GL_QUADS);
+    glNormal3f(0.0f, 1.0f, 0.0f);
+    glVertex3f(100.0f,0.0f, 100.0f);
+    glVertex3f(100.0f, 0.0f, -100.0f); 
+    glVertex3f(-100.0f, 0.0f, -100.0f); 
+    glVertex3f(-100.0f, 1.0f, 100.0f);
+    glEnd();
     glutSwapBuffers();
 }
 
@@ -115,7 +151,7 @@ int main(int argc, char** argv) {
     glutKeyboardFunc(handleKeypress);
     glutPassiveMotionFunc(handlePassiveMouse);
 
-    // glutSetCursor(GLUT_CURSOR_NONE); 
+    glutSetCursor(GLUT_CURSOR_NONE); 
 
     glutMainLoop();
     return 0;

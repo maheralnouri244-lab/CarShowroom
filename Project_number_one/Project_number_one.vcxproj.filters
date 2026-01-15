@@ -39,6 +39,9 @@
     <ClCompile Include="Maherheader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="StageLight.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Pillar.h">
@@ -60,6 +63,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Maherheader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StageLight.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -147,6 +147,7 @@
     <ClCompile Include="Project_number_one.cpp" />
     <ClCompile Include="ShowroomGate.cpp" />
     <ClCompile Include="Showroomside.cpp" />
+    <ClCompile Include="StageLight.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GlassWindow.h" />
@@ -156,6 +157,7 @@
     <ClInclude Include="PlusRing3D.h" />
     <ClInclude Include="ShowroomGate.h" />
     <ClInclude Include="Showroomside.h" />
+    <ClInclude Include="StageLight.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

@@ -9,6 +9,7 @@
 #include "PlusRing3D.h"
 #include "Maherheader.h"
 #include <utility>
+#include "StageLight.h"
 
 using namespace std;
 
@@ -21,6 +22,7 @@ void Maherheader::draw() const {
 	vector<Hpillar> hpillars;
 	vector<Showroomside> showroomsides;
 	vector<GlassWindow> glasswindows;
+    StageLight light;
 	int maxX = 40, maxz = 50, diff = 16;
 	int minX = -maxX, minz = -maxz;
 	pair<float, float> p[4] = { {maxX,maxz},{minX,maxz},{maxX,minz},{minX,minz} };
@@ -54,11 +56,22 @@ void Maherheader::draw() const {
     showroomsides.push_back(Showroomside(minX + (maxX - minX - diff) / 2, minX, maxz, maxz, h, 0.2, 0.2, 0.2, 5, 2));
     showroomsides.push_back(Showroomside(maxX, maxX - (maxX - minX - diff) / 2, maxz, maxz, h, 0.2, 0.2, 0.2, 5, 2));
 
+    //ground line
+    showroomsides.push_back(Showroomside(minX + (maxX - minX - diff) / 2, minX + (maxX - minX - diff) / 2, (maxz - minz - 2 * diff) / 2, -(maxz - minz - 2 * diff) / 2, h, 0.2, 0.2, 0.2, 12, 2));
+    showroomsides.push_back(Showroomside(maxX - (maxX - minX - diff) / 2, maxX - (maxX - minX - diff) / 2, (maxz - minz - 2 * diff) / 2, -(maxz - minz - 2 * diff) / 2, h, 0.2, 0.2, 0.2, 12, 2));
+
+
     glasswindows.push_back(GlassWindow(maxX, 0, minz, maxX, h, minz, minX, h, minz, minX, 0, minz));
     glasswindows.push_back(GlassWindow(maxX, 0, minz, maxX, h, minz, maxX, h, maxz, maxX, 0, maxz));
     glasswindows.push_back(GlassWindow(minX, 0, minz, minX, h, minz, minX, h, maxz, minX, 0, maxz));
     glasswindows.push_back(GlassWindow(minX, 0, maxz, minX, h, maxz, minX + (maxX - minX - diff) / 2 + 1, h, maxz, minX + (maxX - minX - diff) / 2 + 1, 0, maxz));
     glasswindows.push_back(GlassWindow(maxX, 0, maxz, maxX, h, maxz, maxX - (maxX - minX - diff) / 2 - 1, h, maxz, maxX - (maxX - minX - diff) / 2 - 1, 0, maxz));
+
+    //ground line
+    glasswindows.push_back(GlassWindow(minX + (maxX - minX - diff) / 2, 0, (maxz - minz - 2 * diff) / 2, minX + (maxX - minX - diff) / 2, h, (maxz - minz - 2 * diff) / 2, minX + (maxX - minX - diff) / 2, h, -(maxz - minz - 2 * diff) / 2, minX + (maxX - minX - diff) / 2, 0, -(maxz - minz - 2 * diff) / 2));
+    glasswindows.push_back(GlassWindow(maxX - (maxX - minX - diff) / 2, 0, (maxz - minz - 2 * diff) / 2, maxX - (maxX - minX - diff) / 2, h, (maxz - minz - 2 * diff) / 2, maxX - (maxX - minX - diff) / 2, h, -(maxz - minz - 2 * diff) / 2, maxX - (maxX - minX - diff) / 2, 0, -(maxz - minz - 2 * diff) / 2));
+
+
 
     for (const auto& p : pillars) {
         p.draw();
@@ -76,7 +89,7 @@ void Maherheader::draw() const {
         p.draw();
     }
 
-    float curz = (maxz - minz - 2 * diff) / 2, curx = maxX - (maxX - minX - diff) / 2, cury = 0, base;
+    /*float curz = (maxz - minz - 2 * diff) / 2, curx = maxX - (maxX - minX - diff) / 2, cury = 0, base;
 
     base = curz;
     while (cury < h)
@@ -90,10 +103,18 @@ void Maherheader::draw() const {
             glPopMatrix();
         }
         cury += 3;
-    }
+    }*/
 
     ShowroomGate showroomgate;
-    symbol.draw();
     showroomgate.draw();
+    
+    glPushMatrix();
+    glTranslatef(0, 0, (maxz - minz - 2 * diff) / 2);
+    showroomgate.drawGateArch();
+    glPopMatrix();
 
+    glPushMatrix();
+    glTranslatef(0, 0, -(maxz - minz - 2 * diff) / 2);
+    showroomgate.drawGateArch();
+    glPopMatrix();
 }
