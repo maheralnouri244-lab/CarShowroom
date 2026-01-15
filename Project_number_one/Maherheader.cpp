@@ -10,6 +10,7 @@
 #include "Maherheader.h"
 #include <utility>
 #include "StageLight.h"
+#include "NeonTube.h"
 
 using namespace std;
 
@@ -22,8 +23,9 @@ void Maherheader::draw() const {
 	vector<Hpillar> hpillars;
 	vector<Showroomside> showroomsides;
 	vector<GlassWindow> glasswindows;
+    vector< NeonTube> neonyubes;
     StageLight light;
-	int maxX = 40, maxz = 50, diff = 16;
+	int maxX = 60, maxz = 100, diff = 30;
 	int minX = -maxX, minz = -maxz;
 	pair<float, float> p[4] = { {maxX,maxz},{minX,maxz},{maxX,minz},{minX,minz} };
 	int h = 30;
@@ -72,7 +74,16 @@ void Maherheader::draw() const {
     glasswindows.push_back(GlassWindow(maxX - (maxX - minX - diff) / 2, 0, (maxz - minz - 2 * diff) / 2, maxX - (maxX - minX - diff) / 2, h, (maxz - minz - 2 * diff) / 2, maxX - (maxX - minX - diff) / 2, h, -(maxz - minz - 2 * diff) / 2, maxX - (maxX - minX - diff) / 2, 0, -(maxz - minz - 2 * diff) / 2));
 
 
+    neonyubes.push_back(NeonTube(minX + (maxX - minX - diff) / 2 + 4, 0, 0, maxz - minz - diff, 0.1, 'z'));
+    neonyubes.push_back(NeonTube(maxX - (maxX - minX - diff) / 2 - 4, 0, 0, maxz - minz - diff, 0.1, 'z'));
+    neonyubes.push_back(NeonTube(0, 0, (maxz - minz - diff) / 2, (maxX - minX - diff/2), 0.1, 'x'));
+    neonyubes.push_back(NeonTube(0, 0, -(maxz - minz - diff) / 2, (maxX - minX - diff/2), 0.1, 'x'));
+    neonyubes.push_back(NeonTube(minX + (maxX - minX - diff) / 4, 0, (maxz + minz) / 2 +  2*diff, (maxz - minz) / 2 - 2*diff, 0.1, 'z'));
+    neonyubes.push_back(NeonTube(minX + (maxX - minX - diff) / 4, 0, - (maxz + minz) / 2 - 2*diff, (maxz - minz) / 2 - 2*diff, 0.1, 'z'));
+    neonyubes.push_back(NeonTube(-minX - (maxX - minX - diff) / 4, 0, (maxz + minz) / 2 + 2 * diff, (maxz - minz) / 2 - 2 * diff, 0.1, 'z'));
+    neonyubes.push_back(NeonTube(-minX - (maxX - minX - diff) / 4, 0, -(maxz + minz) / 2 - 2 * diff, (maxz - minz) / 2 - 2 * diff, 0.1, 'z'));
 
+  
     for (const auto& p : pillars) {
         p.draw();
     }
@@ -89,21 +100,9 @@ void Maherheader::draw() const {
         p.draw();
     }
 
-    /*float curz = (maxz - minz - 2 * diff) / 2, curx = maxX - (maxX - minX - diff) / 2, cury = 0, base;
-
-    base = curz;
-    while (cury < h)
-    {
-        curz = base;
-        for (curz; curz > -(maxz - minz - 2 * diff) / 2; curz -= 3) {
-            glPushMatrix();
-            glTranslatef(curx, cury + 1.5, curz - 1.5);
-            glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
-            symbol.draw();
-            glPopMatrix();
-        }
-        cury += 3;
-    }*/
+    for (const auto& p : neonyubes) {
+        p.draw();
+    }
 
     ShowroomGate showroomgate;
     showroomgate.draw();
@@ -117,4 +116,19 @@ void Maherheader::draw() const {
     glTranslatef(0, 0, -(maxz - minz - 2 * diff) / 2);
     showroomgate.drawGateArch();
     glPopMatrix();
+
+    /*glColor3f(1, 1, 1);
+    glBegin(GL_QUADS);
+    glNormal3f(0.0f, 1.0f, 0.0f);
+    glVertex3f(maxX, h, maxz);
+    glVertex3f(maxX, h, minz);
+    glVertex3f(minX, h, minz);
+    glVertex3f(minX, h, maxz);
+    glEnd();*/
+
+    NeonTube C1 = NeonTube(-minX - (maxX - minX - diff) / 4, 0, -(maxz + minz) / 2 - 2 * diff, (maxz - minz) / 2 - 2 * diff, 0.1, 'z');
+    C1.drawC(0.2,40);
+
+    NeonTube C2 = NeonTube(minX + (maxX - minX - diff) / 4, 0, -(maxz + minz) / 2 - 2 * diff, (maxz - minz) / 2 - 2 * diff, 0.1, 'z');
+    C2.drawC(0.2, 40);
 }

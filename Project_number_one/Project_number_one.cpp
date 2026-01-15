@@ -12,7 +12,7 @@
 
 using namespace std;
 
-float camX = 0.0f, camY = 5.0f, camZ = 20.0f;
+float camX = 0.0f, camY = 32.0f, camZ = 20.0f;
 float lookX = 0.0f, lookY = 0.0f, lookZ = -1.0f;
 float yaw = -90.0f, pitch = 0.0f;
 int lastMouseX, lastMouseY;
@@ -67,7 +67,7 @@ void initEnvironment() {
 }
 
 void handleKeypress(unsigned char key, int x, int y) {
-    float speed = 0.6f;
+    float speed = 3.0f;
     switch (key) {
     case 'w': camX += lookX * speed; camZ += lookZ * speed; break;
     case 's': camX -= lookX * speed; camZ -= lookZ * speed; break;
@@ -119,10 +119,10 @@ void display() {
     glColor3f(1, 1, 1);
     glBegin(GL_QUADS);
     glNormal3f(0.0f, 1.0f, 0.0f);
-    glVertex3f(100.0f,0.0f, 100.0f);
-    glVertex3f(100.0f, 0.0f, -100.0f); 
-    glVertex3f(-100.0f, 0.0f, -100.0f); 
-    glVertex3f(-100.0f, 1.0f, 100.0f);
+    glVertex3f(1000.0f,-0.2f, 1000.0f);
+    glVertex3f(1000.0f, -0.2f, -1000.0f); 
+    glVertex3f(-1000.0f, -0.2f, -1000.0f); 
+    glVertex3f(-1000.0f, -0.2f, 1000.0f);
     glEnd();
     glutSwapBuffers();
 }

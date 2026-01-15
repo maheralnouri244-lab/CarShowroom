@@ -3,10 +3,10 @@
 
 void ShowroomGate::draw() const {
     float r = 0.05f, g = 0.05f, b = 0.1f;
-    float width = 16.0f;
+    float width = 30;
     float height = 30.0f;
     float depth = 1.0f;
-    float cx = 0.0f, cy = 15.0f, cz = 50.0f;
+    float cx = 0.0f, cy = 15.0f, cz = 100.0f;
     float entryHeight = 10.0f;
 
 
@@ -42,7 +42,7 @@ void ShowroomGate::drawGateArch(float cx, float cz) {
 
     StageLight light;
     float r = 0.05f, g = 0.05f, b = 0.1f;
-    float width = 16.0f;
+    float width = 30;
     float height = 30.0f;
     float depth = 1.0f;
 
