@@ -60,6 +60,12 @@
     <ClCompile Include="AbrarCode.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Showroomdoor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Lake.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Pillar.h">
@@ -102,6 +108,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="AbrarCode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Showroomdoor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lake.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

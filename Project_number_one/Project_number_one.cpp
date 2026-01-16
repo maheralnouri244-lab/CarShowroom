@@ -10,22 +10,30 @@
 #include "Maherheader.h"
 #include "AbrarCode.h"
 #include "JeepAsset.h"
+#include "lake.h"
 
 #define M_PI acos(-1)
 
 using namespace std;
 
+// Camera
 float camX = 500, camY = 300, camZ = 500.0f;
 float lookX = -1.0f, lookY = -1.0f, lookZ = -1.0f;
 float yaw = -90.0f, pitch = 0.0f;
 int lastMouseX, lastMouseY;
 bool firstMouse = true, ignoreWarp;
 
+float maxX = 150, maxz = 200, diff = 45;
+float minX = -maxX, minz = -maxz;
 Maherheader maher;
 AbrarCode abrarCode;
 Jeep_Builder_Final myJeep;
+GlassWindow lake = GlassWindow(minX - 170, -0.2, maxz + 100, minX - 170, -0.2, maxz + 600, minX + 140, -0.2, maxz + 600, minX + 170, -0.2, maxz + 100);
 
 void updateLookVector() {
+    // التعديل: السماح بتحديث النظر إلا أثناء أنيميشن الدخول فقط
+    if (abrarCode.getState() == STATE_ENTERING) return;
+
     if (pitch > 89.0f) pitch = 89.0f;
     if (pitch < -89.0f) pitch = -89.0f;
     float radYaw = yaw * M_PI / 180.0f;
@@ -46,7 +54,6 @@ void initRendering() {
     glEnable(GL_LIGHT5);
     glEnable(GL_LIGHT6);
     glEnable(GL_LIGHT7);
-
     glEnable(GL_COLOR_MATERIAL);
     glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
     glEnable(GL_NORMALIZE);
@@ -68,21 +75,30 @@ void initRendering() {
 void initEnvironment() {}
 
 void handleKeypress(unsigned char key, int x, int y) {
-    float speed = 3.0f;
-    switch (key) {
-    case 'w': camX += lookX * speed; camZ += lookZ * speed; break;
-    case 's': camX -= lookX * speed; camZ -= lookZ * speed; break;
-    case 'a': camX -= (lookZ * -1.0f) * speed; camZ -= lookX * speed; break;
-    case 'd': camX += (lookZ * -1.0f) * speed; camZ += lookX * speed; break;
-    case 'q': camY -= 1.0; break;
-    case 'e': camY += 1.0; break;
-    case 'f': abrarCode.interact(); break;
-    case 27: exit(0); break;
+    if (abrarCode.getState() == STATE_WALKING) {
+        float speed = 3.0f;
+        switch (key) {
+        case 'w': camX += lookX * speed; camZ += lookZ * speed; break;
+        case 's': camX -= lookX * speed; camZ -= lookZ * speed; break;
+        case 'a': camX -= (lookZ * -1.0f) * speed; camZ -= lookX * speed; break;
+        case 'd': camX += (lookZ * -1.0f) * speed; camZ += lookX * speed; break;
+        case 'q': camY -= 1.0; break;
+        case 'e': camY += 1.0; break;
+        case 'g': case 'f': abrarCode.handleInput(key, camX, camZ); break;
+        case 27: exit(0); break;
+        }
+    }
+    else {
+        abrarCode.handleInput(key, camX, camZ);
+        if (key == 27) exit(0);
     }
     glutPostRedisplay();
 }
 
 void handlePassiveMouse(int x, int y) {
+    // التعديل: السماح بالماوس أثناء القيادة
+    if (abrarCode.getState() == STATE_ENTERING) return;
+
     if (ignoreWarp) {
         ignoreWarp = false;
         return;
@@ -103,7 +119,13 @@ void handlePassiveMouse(int x, int y) {
 }
 
 void update(int value) {
-    abrarCode.update();
+    abrarCode.update(camX, camY, camZ, yaw, pitch);
+
+    // في وضع القيادة، الكاميرا تتحرك، لذا يجب تحديث متجه النظر
+    if (abrarCode.getState() != STATE_WALKING) {
+        updateLookVector();
+    }
+
     glutPostRedisplay();
     glutTimerFunc(16, update, 0);
 }
@@ -114,30 +136,35 @@ void display() {
     gluLookAt(camX, camY, camZ,
         camX + lookX, camY + lookY, camZ + lookZ,
         0.0f, 1.0f, 0.0f);
+    abrarCode.drawCars();
+    maher.draw(camX, camY, camZ);
+    glPushMatrix();
+    glTranslatef(0, -1, 0);
+    glScalef(1, -1, 1);
+    abrarCode.drawCars();
+    maher.draw(camX, camY, camZ);
+    glPopMatrix();
+    glEnd();
 
-    abrarCode.draw4Cars();
-    maher.draw();;
+    lake.setAlpha(0.3);
+    lake.draw();
 
     // =======================================================
-    // بروتوكول العزل الشامل (The Full Isolation Protocol)
+    // (The Full Isolation Protocol)
+    // do not change it
     // =======================================================
 
-    // 1. حفظ كل إعدادات المعرض (الإضاءة، التكستشر، الألوان)
-    // GL_TEXTURE_BIT: هو الإضافة الجديدة المهمة لحفظ حالة الصور
     glPushAttrib(GL_LIGHTING_BIT | GL_CURRENT_BIT | GL_ENABLE_BIT | GL_TRANSFORM_BIT | GL_TEXTURE_BIT);
 
-    // 2. الخطوة الحاسمة: إيقاف التكستشر!
-    // هذا سيمنع صور المعرض من تغطية لون السيارة
+
     glDisable(GL_TEXTURE_2D);
 
-    // 3. إيقاف تلوين المواد المباشر (للسماح للسيارة باستخدام خاماتها المعدنية)
     glDisable(GL_COLOR_MATERIAL);
 
-    // 4. إصلاح الإضاءة (إصلاح مشكلة الأبعاد المسطحة)
-    glEnable(GL_NORMALIZE);
-    glEnable(GL_LIGHTING);  // التأكد من أن الإضاءة تعمل
 
-    // 5. تقليل ضجيج الإضاءة (إبقاء ضوء واحد فقط للسيارة)
+    glEnable(GL_NORMALIZE);
+    glEnable(GL_LIGHTING); 
+
     glEnable(GL_LIGHT0);
     glDisable(GL_LIGHT1);
     glDisable(GL_LIGHT2);
@@ -147,8 +174,7 @@ void display() {
     glDisable(GL_LIGHT6);
     glDisable(GL_LIGHT7);
 
-    // 6. رسم السيارات في المواقع المطلوبة
-    // بما أننا أطفأنا التكستشر، ستظهر الألوان السوداء والمرايا الآن
+
     float x_jeep = 120.0f;
     float y_jeep = 0.0f;
     float z_jeep = 50.0f;
@@ -157,12 +183,7 @@ void display() {
         myJeep.drawJeep(x_jeep, y_jeep, z_jeep * i, size_jeep);
     }
 
-
-    // 7. استعادة حالة المعرض (يعيد تشغيل التكستشر والإضاءة لباقي المشهد)
     glPopAttrib();
-
-    // =======================================================
-
     glutSwapBuffers();
 }
 
@@ -171,7 +192,8 @@ void handleResize(int w, int h) {
     glViewport(0, 0, w, h);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(45.0, (float)w / (float)h, 0.1, 1000.0);
+    // zNear = 0.1 لمنع تشوه الأرضية
+    gluPerspective(45.0, (float)w / (float)h, 0.1, 2000.0);
     glMatrixMode(GL_MODELVIEW);
 }
 
@@ -179,7 +201,7 @@ int main(int argc, char** argv) {
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
     glutInitWindowSize(1200, 800);
-    glutCreateWindow("Architectural Walkthrough");
+    glutCreateWindow("Showroom Simulator");
 
     initRendering();
     initEnvironment();

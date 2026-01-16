@@ -8,8 +8,8 @@ PlusRing3D::PlusRing3D(float armLen, float armThick,
 void PlusRing3D::draw() const {
     glPushMatrix();
 
-    glColor3f(0.025f, 0.075f, 0.1125f);
-
+    //glColor3f(0.025f, 0.075f, 0.1125f);
+    glColor3f(0.3f, 0.3f, 0.3f);
     // «·–—«⁄ «·√›ﬁÌ
     glPushMatrix();
     glTranslatef(ringOuterRadius+ armLength/2, 0.0f, 0.0f);
@@ -30,14 +30,17 @@ void PlusRing3D::draw() const {
     glutSolidCube(1.0f);
     glPopMatrix();
 
+    /*
     //–—«⁄ ‘«ﬁÊ·Ì À«‰Ì
     glPushMatrix();
     glTranslatef(0.0f, -ringOuterRadius - armLength / 2, 0.0f);
     glScalef(armThickness, armLength, armThickness);
     glutSolidCube(1.0f);
     glPopMatrix();
+    */
 
-    glColor3f(0.05f, 0.05f, 0.1f);
+    //glColor3f(0.05f, 0.05f, 0.1f);
+    glColor3f(0.05f, 0.05f, 0.05f);
 
     // «·Õ·ﬁ…
     glPushMatrix();
@@ -45,13 +48,18 @@ void PlusRing3D::draw() const {
     glutSolidTorus(ringInnerRadius, ringOuterRadius, 32, 64);
     glPopMatrix();
 
-    glColor3f(0.025f, 0.075f, 0.1125f);
-
+    glColor3f(0.3f, 0.3f, 0.3f);
     // Õ·ﬁ… À«‰Ì…
     glPushMatrix();
     glTranslatef(0.0f, 0.0f, 0.0f);
     glutSolidTorus(ringInnerRadius/2, ringOuterRadius/2, 16, 32);
     glPopMatrix();
+
+
+    /*glPushMatrix();
+    glTranslatef(0.0f, 0.0f, 0.0f);
+    glutSolidTorus(ringInnerRadius / 2, ringOuterRadius / 2+5, 16, 32);
+    glPopMatrix();*/
 
 
     glPopMatrix();
