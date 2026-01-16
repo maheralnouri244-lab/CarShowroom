@@ -1,4 +1,4 @@
-#include <GL/glut.h>
+﻿#include <GL/glut.h>
 #include <vector>
 #include <cmath>
 #include "Pillar.h"
@@ -9,6 +9,7 @@
 #include "PlusRing3D.h"
 #include "Maherheader.h"
 #include "AbrarCode.h"
+#include "JeepAsset.h"
 
 #define M_PI acos(-1)
 
@@ -22,6 +23,7 @@ bool firstMouse = true, ignoreWarp;
 
 Maherheader maher;
 AbrarCode abrarCode;
+Jeep_Builder_Final myJeep;
 
 void updateLookVector() {
     if (pitch > 89.0f) pitch = 89.0f;
@@ -60,6 +62,7 @@ void initRendering() {
     glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse0);
     glLightfv(GL_LIGHT0, GL_SPECULAR, specular0);
     glClearColor(0.1f, 0.1f, 0.15f, 1.0f);
+    myJeep.init();
 }
 
 void initEnvironment() {}
@@ -111,12 +114,55 @@ void display() {
     gluLookAt(camX, camY, camZ,
         camX + lookX, camY + lookY, camZ + lookZ,
         0.0f, 1.0f, 0.0f);
-    
-    abrarCode.draw4Cars();
-    maher.draw();
-    
 
-    glEnd();
+    abrarCode.draw4Cars();
+    maher.draw();;
+
+    // =======================================================
+    // بروتوكول العزل الشامل (The Full Isolation Protocol)
+    // =======================================================
+
+    // 1. حفظ كل إعدادات المعرض (الإضاءة، التكستشر، الألوان)
+    // GL_TEXTURE_BIT: هو الإضافة الجديدة المهمة لحفظ حالة الصور
+    glPushAttrib(GL_LIGHTING_BIT | GL_CURRENT_BIT | GL_ENABLE_BIT | GL_TRANSFORM_BIT | GL_TEXTURE_BIT);
+
+    // 2. الخطوة الحاسمة: إيقاف التكستشر!
+    // هذا سيمنع صور المعرض من تغطية لون السيارة
+    glDisable(GL_TEXTURE_2D);
+
+    // 3. إيقاف تلوين المواد المباشر (للسماح للسيارة باستخدام خاماتها المعدنية)
+    glDisable(GL_COLOR_MATERIAL);
+
+    // 4. إصلاح الإضاءة (إصلاح مشكلة الأبعاد المسطحة)
+    glEnable(GL_NORMALIZE);
+    glEnable(GL_LIGHTING);  // التأكد من أن الإضاءة تعمل
+
+    // 5. تقليل ضجيج الإضاءة (إبقاء ضوء واحد فقط للسيارة)
+    glEnable(GL_LIGHT0);
+    glDisable(GL_LIGHT1);
+    glDisable(GL_LIGHT2);
+    glDisable(GL_LIGHT3);
+    glDisable(GL_LIGHT4);
+    glDisable(GL_LIGHT5);
+    glDisable(GL_LIGHT6);
+    glDisable(GL_LIGHT7);
+
+    // 6. رسم السيارات في المواقع المطلوبة
+    // بما أننا أطفأنا التكستشر، ستظهر الألوان السوداء والمرايا الآن
+    float x_jeep = 120.0f;
+    float y_jeep = 0.0f;
+    float z_jeep = 50.0f;
+    float size_jeep = 6.0f;
+    for (int i = 1; i <= 3; i++) {
+        myJeep.drawJeep(x_jeep, y_jeep, z_jeep * i, size_jeep);
+    }
+
+
+    // 7. استعادة حالة المعرض (يعيد تشغيل التكستشر والإضاءة لباقي المشهد)
+    glPopAttrib();
+
+    // =======================================================
+
     glutSwapBuffers();
 }
 
