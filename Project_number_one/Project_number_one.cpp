@@ -12,8 +12,8 @@
 
 using namespace std;
 
-float camX = 0.0f, camY = 80.0f, camZ = 20.0f;
-float lookX = 0.0f, lookY = 0.0f, lookZ = -1.0f;
+float camX = 500, camY = 300, camZ = 500.0f;
+float lookX = -1.0f, lookY = -1.0f, lookZ = -1.0f;
 float yaw = -90.0f, pitch = 0.0f;
 int lastMouseX, lastMouseY;
 bool firstMouse = true,ignoreWarp;

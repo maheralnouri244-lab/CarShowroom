@@ -12,6 +12,10 @@ GlassWindow::GlassWindow(float x1, float y1, float z1,
     alpha = a;
     texID = 0;
     useTexture = false;
+    color[0] = 0.9f;  color[1] = 0.8f;  color[2] = 0.5f;
+    color[0] = 0.8f;  color[1] = 0.6f;  color[2] = 0.2f;
+    color[0] = 1.0f;  color[1] = 0.9f;  color[2] = 0.6f;
+    color[0] = 0.95f; color[1] = 0.85f; color[2] = 0.45f;
     color[0] = 0.6f; color[1] = 0.8f; color[2] = 1.0f;
 }
 

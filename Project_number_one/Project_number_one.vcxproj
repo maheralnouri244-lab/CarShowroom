@@ -88,6 +88,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(ProjectDir)\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -102,6 +103,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(ProjectDir)\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -140,6 +142,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="GlassWindow.cpp" />
+    <ClCompile Include="House.cpp" />
     <ClCompile Include="Hpillar.cpp" />
     <ClCompile Include="Maherheader.cpp" />
     <ClCompile Include="NeonTube.cpp" />
@@ -150,9 +153,11 @@
     <ClCompile Include="Showroomside.cpp" />
     <ClCompile Include="StageLight.cpp" />
     <ClCompile Include="SteveModel.cpp" />
+    <ClCompile Include="Tree.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GlassWindow.h" />
+    <ClInclude Include="House.h" />
     <ClInclude Include="Hpillar.h" />
     <ClInclude Include="Maherheader.h" />
     <ClInclude Include="NeonTube.h" />
@@ -162,6 +167,7 @@
     <ClInclude Include="Showroomside.h" />
     <ClInclude Include="StageLight.h" />
     <ClInclude Include="SteveModel.h" />
+    <ClInclude Include="Tree.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

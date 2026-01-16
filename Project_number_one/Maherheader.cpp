@@ -13,12 +13,52 @@
 #include "NeonTube.h"
 #include "SteveModel.h"
 #include <iostream>
+#include "House.h"
+#include <string>
+#include "Tree.h"
+
+#define STB_IMAGE_IMPLEMENTATION
+#include "include\stb_image.h"
 
 using namespace std;
 
-Maherheader::Maherheader() {}
+Maherheader::Maherheader() {
+    houseTexID[5] = {};
+}
+
+unsigned int Maherheader::loadTextureFromFile(const char* path) {
+    int w, h, n;
+    stbi_set_flip_vertically_on_load(true);
+    unsigned char* data = stbi_load(path, &w, &h, &n, 4);
+
+    if (!data) return 0;
+
+    unsigned int newTexID;
+    glGenTextures(1, &newTexID);
+    glBindTexture(GL_TEXTURE_2D, newTexID);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    gluBuild2DMipmaps(GL_TEXTURE_2D, GL_RGBA, w, h, GL_RGBA, GL_UNSIGNED_BYTE, data);
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+    stbi_image_free(data);
+
+    return newTexID;
+}
 
 void Maherheader::draw() const {
+
+    for (int i = 1; i < 5; i++) {
+        string path = "images\\house" + to_string(i) + ".png";
+        if (const_cast<unsigned int&>(houseTexID[i]) == 0) {
+            const_cast<unsigned int&>(houseTexID[i]) = const_cast<Maherheader*>(this)->loadTextureFromFile(path.c_str());
+        }
+    }
+
 
 	PlusRing3D symbol;
 	vector<Pillar> pillars;
@@ -301,6 +341,104 @@ void Maherheader::draw() const {
     glVertex3f(-roadEdge, 0, swEnd);
 
     glEnd();
+
+
+
+    ProceduralHouse myHouse;
+
+    glPushMatrix();
+    glTranslatef(-400, 1, 400);
+    glRotatef(120, 0, 1, 0);
+    glScaled(10, 5, 10);
+    glEnable(GL_TEXTURE_2D); 
+    glBindTexture(GL_TEXTURE_2D, houseTexID[1]);
+    myHouse.draw(houseTexID[1]);
+    glPopMatrix();
+
+    glPushMatrix();
+    glTranslatef(-350, 1, 200);
+    glRotatef(70, 0, 1, 0);
+    glScaled(10, 5, 10);
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, houseTexID[2]);
+    myHouse.draw(houseTexID[2]);
+    glPopMatrix();
+
+    glPushMatrix();
+    glTranslatef(400, 1, 350);
+    glRotatef(300, 0, 1, 0);
+    glScaled(10, 5, 10);
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, houseTexID[3]);
+    myHouse.draw(houseTexID[3]);
+    glPopMatrix();
+
+    glPushMatrix();
+    glTranslatef(400, 1, -200);
+    glRotatef(330, 0, 1, 0);
+    glScaled(10, 5, 10);
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, houseTexID[4]);
+    myHouse.draw(houseTexID[4]);
+    glPopMatrix();
+
+
+    float offset = 30.0f;
+    float treesCoords[20][2];
+
+    for (int i = 0; i < 20; i++) {
+        if (i < 5) {
+            treesCoords[i][0] = maxX + offset + (i * 20);
+            treesCoords[i][1] = minz + (i * (maxz - minz) / 4.0f);
+        }
+        else if (i < 10) {
+            treesCoords[i][0] = minX - offset - ((i - 5) * 20);
+            treesCoords[i][1] = minz + ((i - 5) * (maxz - minz) / 4.0f);
+        }
+        else if (i < 15) {
+            treesCoords[i][0] = minX + ((i - 10) * (maxX - minX) / 4.0f);
+            treesCoords[i][1] = minz - offset - ((i - 10) * 20);
+        }
+        else {
+            treesCoords[i][0] = minX + ((i - 15) * (maxX - minX) / 4.0f);
+            treesCoords[i][1] = maxz + offset + ((i - 15) * 20);
+        }
+    }
+
+    for (int i = 0; i < 20; i++) {
+        if (i == 17)
+            continue;
+        glPushMatrix();
+        glTranslatef(treesCoords[i][0], 0.0f, treesCoords[i][1]);
+        glScalef(10.0f, 10.0f, 10.0f);
+        Tree forest;
+        forest.draw(0.0f, 0.0f, 0.0f);
+
+        glPopMatrix();
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
     for (const auto& p : glasswindows) {
