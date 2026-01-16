@@ -146,11 +146,13 @@
     <ClCompile Include="GlassWindow.cpp" />
     <ClCompile Include="House.cpp" />
     <ClCompile Include="Hpillar.cpp" />
+    <ClCompile Include="Lake.cpp" />
     <ClCompile Include="Maherheader.cpp" />
     <ClCompile Include="NeonTube.cpp" />
     <ClCompile Include="Pillar.cpp" />
     <ClCompile Include="PlusRing3D.cpp" />
     <ClCompile Include="Project_number_one.cpp" />
+    <ClCompile Include="Showroomdoor.cpp" />
     <ClCompile Include="ShowroomGate.cpp" />
     <ClCompile Include="Showroomside.cpp" />
     <ClCompile Include="StageLight.cpp" />
@@ -163,10 +165,12 @@
     <ClInclude Include="GlassWindow.h" />
     <ClInclude Include="House.h" />
     <ClInclude Include="Hpillar.h" />
+    <ClInclude Include="lake.h" />
     <ClInclude Include="Maherheader.h" />
     <ClInclude Include="NeonTube.h" />
     <ClInclude Include="Pillar.h" />
     <ClInclude Include="PlusRing3D.h" />
+    <ClInclude Include="Showroomdoor.h" />
     <ClInclude Include="ShowroomGate.h" />
     <ClInclude Include="Showroomside.h" />
     <ClInclude Include="StageLight.h" />

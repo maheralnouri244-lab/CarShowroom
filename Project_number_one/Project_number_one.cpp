@@ -9,6 +9,7 @@
 #include "PlusRing3D.h"
 #include "Maherheader.h"
 #include "AbrarCode.h"
+#include "lake.h"
 
 #define M_PI acos(-1)
 
@@ -20,8 +21,11 @@ float yaw = -90.0f, pitch = 0.0f;
 int lastMouseX, lastMouseY;
 bool firstMouse = true, ignoreWarp;
 
+float maxX = 150, maxz = 200, diff = 45;
+float minX = -maxX, minz = -maxz;
 Maherheader maher;
 AbrarCode abrarCode;
+GlassWindow lake = GlassWindow(minX-170, -0.2, maxz + 100, minX-170, -0.2, maxz + 600, minX + 140, -0.2, maxz + 600, minX + 170, -0.2, maxz + 100);
 
 void updateLookVector() {
     if (pitch > 89.0f) pitch = 89.0f;
@@ -113,10 +117,18 @@ void display() {
         0.0f, 1.0f, 0.0f);
     
     abrarCode.draw4Cars();
-    maher.draw();
-    
+    maher.draw(camX,camY,camZ);
 
+    glPushMatrix();
+    glTranslatef(0,-1,0);
+    glScalef(1, -1, 1);
+    abrarCode.draw4Cars();
+    maher.draw(camX, camY, camZ);
+    glPopMatrix();
     glEnd();
+
+    lake.setAlpha(0.3);
+    lake.draw();
     glutSwapBuffers();
 }
 
