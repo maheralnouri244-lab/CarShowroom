@@ -16,13 +16,14 @@
 #include "House.h"
 #include <string>
 #include "Tree.h"
+#include "Showroomdoor.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "include\stb_image.h"
 
 using namespace std;
 
-Maherheader::Maherheader() {
+Maherheader::Maherheader():showroomdoor(0, 15, 200) {
     houseTexID[5] = {};
 }
 
@@ -50,7 +51,7 @@ unsigned int Maherheader::loadTextureFromFile(const char* path) {
     return newTexID;
 }
 
-void Maherheader::draw() const {
+void Maherheader::draw(float camX,float camY,float camZ) {
 
     for (int i = 1; i < 5; i++) {
         string path = "images\\house" + to_string(i) + ".png";
@@ -73,14 +74,41 @@ void Maherheader::draw() const {
 	int h = 60;
 
 
+    float lakeMinX = minX - 170;
+    float lakeMaxX = minX + 170;
+    float lakeMinZ = maxz + 100;
+    float lakeMaxZ = maxz + 600;
+
     glColor3f(0.35f, 0.65f, 0.20f);
+
     glBegin(GL_QUADS);
-    glNormal3f(0.0f, 1.0f, 0.0f);
     glVertex3f(1000.0f, -0.2f, 1000.0f);
-    glVertex3f(1000.0f, -0.2f, -1000.0f);
-    glVertex3f(-1000.0f, -0.2f, -1000.0f);
     glVertex3f(-1000.0f, -0.2f, 1000.0f);
+    glVertex3f(-1000.0f, -0.2f, lakeMaxZ);
+    glVertex3f(1000.0f, -0.2f, lakeMaxZ);
     glEnd();
+
+    glBegin(GL_QUADS);
+    glVertex3f(1000.0f, -0.2f, lakeMinZ);
+    glVertex3f(-1000.0f, -0.2f, lakeMinZ);
+    glVertex3f(-1000.0f, -0.2f, -1000.0f);
+    glVertex3f(1000.0f, -0.2f, -1000.0f);
+    glEnd();
+
+    glBegin(GL_QUADS);
+    glVertex3f(-1000.0f, -0.2f, lakeMaxZ);
+    glVertex3f(lakeMinX, -0.2f, lakeMaxZ);
+    glVertex3f(lakeMinX, -0.2f, lakeMinZ);
+    glVertex3f(-1000.0f, -0.2f, lakeMinZ);
+    glEnd();
+
+    glBegin(GL_QUADS);
+    glVertex3f(lakeMaxX, -0.2f, lakeMaxZ);
+    glVertex3f(1000.0f, -0.2f, lakeMaxZ);
+    glVertex3f(1000.0f, -0.2f, lakeMinZ);
+    glVertex3f(lakeMaxX, -0.2f, lakeMinZ);
+    glEnd();
+
 
 
 
@@ -126,7 +154,6 @@ void Maherheader::draw() const {
     //ground line
     glasswindows.push_back(GlassWindow(minX + (maxX - minX - diff) / 2, 0, (maxz - minz - 2 * diff) / 2, minX + (maxX - minX - diff) / 2, h, (maxz - minz - 2 * diff) / 2, minX + (maxX - minX - diff) / 2, h, -(maxz - minz - 2 * diff) / 2, minX + (maxX - minX - diff) / 2, 0, -(maxz - minz - 2 * diff) / 2));
     glasswindows.push_back(GlassWindow(maxX - (maxX - minX - diff) / 2, 0, (maxz - minz - 2 * diff) / 2, maxX - (maxX - minX - diff) / 2, h, (maxz - minz - 2 * diff) / 2, maxX - (maxX - minX - diff) / 2, h, -(maxz - minz - 2 * diff) / 2, maxX - (maxX - minX - diff) / 2, 0, -(maxz - minz - 2 * diff) / 2));
-
 
     neonyubes.push_back(NeonTube(minX + (maxX - minX - diff) / 2 + 4, 0, 0, maxz - minz - diff, 0.1, 'z'));
     neonyubes.push_back(NeonTube(maxX - (maxX - minX - diff) / 2 - 4, 0, 0, maxz - minz - diff, 0.1, 'z'));
@@ -347,7 +374,7 @@ void Maherheader::draw() const {
     ProceduralHouse myHouse;
 
     glPushMatrix();
-    glTranslatef(-400, 1, 400);
+    glTranslatef(-400, 5, 400);
     glRotatef(120, 0, 1, 0);
     glScaled(10, 5, 10);
     glEnable(GL_TEXTURE_2D); 
@@ -356,7 +383,7 @@ void Maherheader::draw() const {
     glPopMatrix();
 
     glPushMatrix();
-    glTranslatef(-350, 1, 200);
+    glTranslatef(-350, 5, 200);
     glRotatef(70, 0, 1, 0);
     glScaled(10, 5, 10);
     glEnable(GL_TEXTURE_2D);
@@ -365,7 +392,7 @@ void Maherheader::draw() const {
     glPopMatrix();
 
     glPushMatrix();
-    glTranslatef(400, 1, 350);
+    glTranslatef(400, 5, 350);
     glRotatef(300, 0, 1, 0);
     glScaled(10, 5, 10);
     glEnable(GL_TEXTURE_2D);
@@ -374,7 +401,7 @@ void Maherheader::draw() const {
     glPopMatrix();
 
     glPushMatrix();
-    glTranslatef(400, 1, -200);
+    glTranslatef(400, 5, -200);
     glRotatef(330, 0, 1, 0);
     glScaled(10, 5, 10);
     glEnable(GL_TEXTURE_2D);
@@ -417,28 +444,27 @@ void Maherheader::draw() const {
         glPopMatrix();
     }
 
+    showroomdoor.draw();
+
+    if (sqrt((pow(camX - 0, 2) + pow(camY - 0, 2) + pow(camZ - maxz, 2))) <= 100.0)
+        showroomdoor.moveUp(1);
+    else
+        showroomdoor.moveDown(1);
 
 
+    glPushMatrix();
+    glColor3f(1, 1, 1);
+    glTranslatef(0, h+1, 0);
+    glScalef(2 * maxX,1, 2 * maxz);
+    glutSolidCube(1);
+    glPopMatrix();
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    PlusRing3D plusring;
+    glPushMatrix();
+    glTranslatef(0, h+3, maxz + 6);
+    glScalef(14, 14, 14);
+    plusring.draw();
+    glPopMatrix();
 
 
     for (const auto& p : glasswindows) {
