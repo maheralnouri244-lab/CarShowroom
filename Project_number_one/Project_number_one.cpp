@@ -139,7 +139,7 @@ void display() {
     glPushMatrix();
     glTranslatef(0,-1,0);
     glScalef(1, -1, 1);
-    abrarCode.draw4Cars();
+    abrarCode.drawCars();
     maher.draw(camX, camY, camZ);
     glPopMatrix();
     glEnd();
