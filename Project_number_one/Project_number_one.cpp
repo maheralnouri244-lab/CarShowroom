@@ -12,7 +12,7 @@
 
 using namespace std;
 
-float camX = 0.0f, camY = 32.0f, camZ = 20.0f;
+float camX = 0.0f, camY = 80.0f, camZ = 20.0f;
 float lookX = 0.0f, lookY = 0.0f, lookZ = -1.0f;
 float yaw = -90.0f, pitch = 0.0f;
 int lastMouseX, lastMouseY;
@@ -34,7 +34,6 @@ void updateLookVector() {
 
 void initRendering() {
     glEnable(GL_DEPTH_TEST);
-
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0); 
     glEnable(GL_LIGHT1);
@@ -73,8 +72,8 @@ void handleKeypress(unsigned char key, int x, int y) {
     case 's': camX -= lookX * speed; camZ -= lookZ * speed; break;
     case 'a': camX -= (lookZ * -1.0f) * speed; camZ -= lookX * speed; break;
     case 'd': camX += (lookZ * -1.0f) * speed; camZ += lookX * speed; break;
-    case 'q': camY -= 0.5; break;
-    case 'e': camY += 0.5; break;
+    case 'q': camY -= 1.0; break;
+    case 'e': camY += 1.0; break;
     case 27: exit(0); break;
     }
     glutPostRedisplay();
@@ -116,13 +115,6 @@ void display() {
         0.0f, 1.0f, 0.0f);
 
     maher.draw();
-    glColor3f(1, 1, 1);
-    glBegin(GL_QUADS);
-    glNormal3f(0.0f, 1.0f, 0.0f);
-    glVertex3f(1000.0f,-0.2f, 1000.0f);
-    glVertex3f(1000.0f, -0.2f, -1000.0f); 
-    glVertex3f(-1000.0f, -0.2f, -1000.0f); 
-    glVertex3f(-1000.0f, -0.2f, 1000.0f);
     glEnd();
     glutSwapBuffers();
 }
@@ -132,7 +124,7 @@ void handleResize(int w, int h) {
     glViewport(0, 0, w, h);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(45.0, (float)w / (float)h, 0.1, 200.0);
+    gluPerspective(45.0, (float)w / (float)h, 0.1, 1000.0);
     glMatrixMode(GL_MODELVIEW);
 }
 

@@ -16,6 +16,13 @@ public:
     void setColor(float red, float green, float blue);
     void draw() const;
     void drawC(float ringInnerRadius,float ringOuterRadius) const;
+
+    void drawColumns(float ringOuterRadius,
+        int columnCount,
+        float columnHeight,
+        float columnRadius,
+        float stretchX = 1.5f,
+        float stretchY = 1.0f) const;
 };
 
 #endif
