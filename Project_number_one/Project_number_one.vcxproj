@@ -141,6 +141,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AbrarCode.cpp" />
+    <ClCompile Include="BeetleCar.cpp" />
     <ClCompile Include="GlassWindow.cpp" />
     <ClCompile Include="House.cpp" />
     <ClCompile Include="Hpillar.cpp" />
@@ -156,6 +158,8 @@
     <ClCompile Include="Tree.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AbrarCode.h" />
+    <ClInclude Include="BeetleCar.h" />
     <ClInclude Include="GlassWindow.h" />
     <ClInclude Include="House.h" />
     <ClInclude Include="Hpillar.h" />
