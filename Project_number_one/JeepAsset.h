@@ -1,7 +1,4 @@
-﻿// ========================================================================
-// OpenGL Architect: GELILI
-// Asset: The Autonomous Jeep (Self-Contained & Protected)
-// ========================================================================
+﻿
 
 #include <GL/glut.h>
 #include <cmath>
