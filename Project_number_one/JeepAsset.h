@@ -273,31 +273,35 @@ public:
     // =========================================================
     // THE SELF-PROTECTING DRAW FUNCTION
     // =========================================================
-    void drawJeep(float x, float y, float z, float size) {
-        // 1. SAVE EVERYTHING (Protect the showroom from us, and us from the showroom)
+    void drawJeep(float x, float y, float z, float size, float rotationAngle) {
+
+        // 1. SAVE EVERYTHING (Protection Protocol)
         glPushAttrib(GL_ALL_ATTRIB_BITS);
 
-        // 2. THE FIX: FORCE DISABLE SHOWROOM TEXTURES
+        // 2. ENVIRONMENT ISOLATION
         glDisable(GL_TEXTURE_2D);
-
-        // 3. THE FIX: DISABLE COLOR MATERIAL (So our black/silver materials work)
         glDisable(GL_COLOR_MATERIAL);
-
-        // 4. THE FIX: ENABLE NORMALIZE (So the large scaling doesn't break lighting)
         glEnable(GL_NORMALIZE);
-
-        // 5. Ensure Lighting is ON
         glEnable(GL_LIGHTING);
 
-        // 6. Optional: Turn off extra showroom lights if it's too bright
-        // (Uncomment these if the car is still too white)
-        // glDisable(GL_LIGHT1); glDisable(GL_LIGHT2); glDisable(GL_LIGHT3);
-        // glDisable(GL_LIGHT4); glDisable(GL_LIGHT5); glDisable(GL_LIGHT6); glDisable(GL_LIGHT7);
-
-        // === START DRAWING ===
+        // === START GEOMETRY STACK ===
         glPushMatrix();
+
+        // --- T.R.S. ORDER (Translate, Rotate, Scale) ---
+        // هذا هو الترتيب الذهبي للمصفوفات في OpenGL
+
+        // 1. Translation: ضع السيارة في موقعها العالمي
         glTranslatef(x, y, z);
+
+        // 2. Rotation: قم بتدويرها حول مركزها المحلي (التعديل الجديد)
+        // نقوم بالتدوير حول المحور Y (0,1,0)
+        glRotatef(rotationAngle, 0.0f, 1.0f, 0.0f);
+
+        // 3. Scale: تغيير الحجم (يجب أن يكون بعد الدوران لضمان دوران المحاور بشكل صحيح)
         glScalef(size, size, size);
+
+
+        // ... (باقي كود رسم العجلات والجسم يظل كما هو دون تغيير) ...
 
         float chassisLenVal = CAR_LENGTH - 1.0f;
         float axleZ_Rear = (chassisLenVal / 2.0f) - 0.65f;
@@ -345,9 +349,11 @@ public:
 
         drawTransparentParts();
         glPopMatrix();
+
+        // END GEOMETRY STACK
         glPopMatrix();
 
-        // 7. RESTORE EVERYTHING (As if we were never here)
+        // 7. RESTORE EVERYTHING
         glPopAttrib();
     }
 };
