@@ -11,6 +11,9 @@
 #include "AbrarCode.h"
 #include "JeepAsset.h"
 #include "lake.h"
+#include "PersistentCloud.h"
+#include <ctime>
+#include "RainSystem.h"
 
 #define M_PI acos(-1)
 
@@ -25,7 +28,7 @@ bool isLightOn = false;
 float camX = 500, camY = 300, camZ = 500.0f;
 float lookX = -1.0f, lookY = -1.0f, lookZ = -1.0f;
 float yaw = -90.0f, pitch = 0.0f;
-int lastMouseX, lastMouseY;
+int lastMouseX, lastMouseY, weatherstatus=0;
 bool firstMouse = true, ignoreWarp;
 
 float maxX = 150, maxz = 200, diff = 45;
@@ -36,6 +39,7 @@ Maherheader maher;
 AbrarCode abrarCode;
 Jeep_Builder_Final myJeep;
 GlassWindow lake = GlassWindow(minX - 170, -0.2, maxz + 100, minX - 170, -0.2, maxz + 600, minX + 140, -0.2, maxz + 600, minX + 170, -0.2, maxz + 100);
+
 // --- نظام الاصطدام ---
 const float SHOWROOM_HEIGHT = 60.0f;
 const float GATE_WIDTH = 45.0f;
@@ -104,6 +108,8 @@ void createCollidables() {
     }
 }
 
+PersistentCloud myClouds[20];
+RainSystem myRain(1000);
 
 void updateLookVector() {
     if (abrarCode.getState() == STATE_ENTERING) return;
@@ -155,10 +161,7 @@ void initRendering() {
 
 void drawSkyBody(bool isDay) {
     glPushMatrix();
-
     glTranslatef(600.0f, 600.0f, 600.0f);
-
-
     glDisable(GL_LIGHTING);
 
     if (isDay) {
@@ -200,6 +203,7 @@ void handleKeypress(unsigned char key, int x, int y) {
         case 'q': nextY -= 1.0f; break;
         case 'e': nextY += 1.0f; break;
         case 'g': case 'f': abrarCode.handleInput(key, camX, camZ); glutPostRedisplay(); return;
+        case 'r':   weatherstatus=(weatherstatus+1)%3; break;
         case 27: exit(0); return;
         }
 
@@ -280,7 +284,7 @@ void handlePassiveMouse(int x, int y) {
 
 void update(int value) {
     abrarCode.update(camX, camY, camZ, yaw, pitch);
-
+    myRain.update();
     if (abrarCode.getState() != STATE_WALKING) {
         updateLookVector();
     }
@@ -294,13 +298,13 @@ void display() {
     // 1. (Background System)
     // ==========================================
     if (isLightOn) {
-
         glClearColor(0.52f, 0.80f, 0.92f, 1.0f);
     }
     else {
         glClearColor(0.05f, 0.05f, 0.1f, 1.0f);
     }
 
+        glEnable(GL_LIGHTING);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
 
@@ -312,28 +316,19 @@ void display() {
 
 
     if (isLightOn) {
-        glEnable(GL_LIGHTING);
+        glEnable(GL_LIGHT0);
+        GLfloat ambientDay[] = { 0.4f, 0.4f, 0.4f, 1.0f };
+        glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambientDay);
     }
     else {
-
-        glEnable(GL_LIGHTING);
-
-        glDisable(GL_LIGHTING);
+        glDisable(GL_LIGHT0);
+        GLfloat ambientNight[] = { 0.3f, 0.3f, 0.5f, 1.0f };
+        glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambientNight);
     }
 
+    if (weatherstatus==2)
+    myRain.draw();
     abrarCode.drawCars();
-    maher.draw(camX, camY, camZ);
-
-
-    glPushMatrix();
-    glTranslatef(0, -1, 0);
-    glScalef(1, -1, 1);
-    abrarCode.drawCars();
-    maher.draw(camX, camY, camZ);
-    glPopMatrix();
-
-    lake.setAlpha(0.3);
-    lake.draw();
 
     // =======================================================
     // (The Full Isolation Protocol)
@@ -365,6 +360,29 @@ void display() {
     }
 
     glPopAttrib();
+    for (int i = 0; weatherstatus > 0 && i < 20; i++) {
+        myClouds[i].draw();
+    }
+
+    maher.draw(camX, camY, camZ);
+
+    glPushMatrix();
+    glTranslatef(0, -1, 0);
+    glScalef(1, -1, 1);
+    if (weatherstatus == 2)
+    myRain.draw();
+    abrarCode.drawCars();
+    drawSkyBody(isLightOn);
+
+    for (int i = 0; weatherstatus>0&&i < 20; i++) {
+        myClouds[i].draw();
+    }
+    maher.draw(camX, camY, camZ);
+    glPopMatrix();
+    
+    lake.setAlpha(0.3);
+    lake.draw();
+
     glutSwapBuffers();
 }
 
@@ -379,6 +397,7 @@ void handleResize(int w, int h) {
 
 int main(int argc, char** argv) {
     glutInit(&argc, argv);
+    srand(time(0));
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
     glutInitWindowSize(1200, 800);
     glutCreateWindow("Showroom Simulator - Lighting Edition"); // Title Update

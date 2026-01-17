@@ -23,6 +23,12 @@
 
 using namespace std;
 
+#include <GL/glut.h>
+#include <vector>
+#include <cstdlib>
+#include <ctime>
+
+
 Maherheader::Maherheader():showroomdoor(0, 15, 200) {
     houseTexID[5] = {};
 }
@@ -82,6 +88,7 @@ void Maherheader::draw(float camX,float camY,float camZ) {
     glColor3f(0.35f, 0.65f, 0.20f);
 
     glBegin(GL_QUADS);
+    glNormal3f(0, 1, 0);
     glVertex3f(1000.0f, -0.2f, 1000.0f);
     glVertex3f(-1000.0f, -0.2f, 1000.0f);
     glVertex3f(-1000.0f, -0.2f, lakeMaxZ);
@@ -89,6 +96,7 @@ void Maherheader::draw(float camX,float camY,float camZ) {
     glEnd();
 
     glBegin(GL_QUADS);
+    glNormal3f(0, 1, 0);
     glVertex3f(1000.0f, -0.2f, lakeMinZ);
     glVertex3f(-1000.0f, -0.2f, lakeMinZ);
     glVertex3f(-1000.0f, -0.2f, -1000.0f);
@@ -96,6 +104,7 @@ void Maherheader::draw(float camX,float camY,float camZ) {
     glEnd();
 
     glBegin(GL_QUADS);
+    glNormal3f(0, 1, 0);
     glVertex3f(-1000.0f, -0.2f, lakeMaxZ);
     glVertex3f(lakeMinX, -0.2f, lakeMaxZ);
     glVertex3f(lakeMinX, -0.2f, lakeMinZ);
@@ -103,6 +112,7 @@ void Maherheader::draw(float camX,float camY,float camZ) {
     glEnd();
 
     glBegin(GL_QUADS);
+    glNormal3f(0, 1, 0);
     glVertex3f(lakeMaxX, -0.2f, lakeMaxZ);
     glVertex3f(1000.0f, -0.2f, lakeMaxZ);
     glVertex3f(1000.0f, -0.2f, lakeMinZ);
