@@ -108,6 +108,7 @@ void createCollidables() {
     }
 }
 
+
 PersistentCloud myClouds[20];
 RainSystem myRain(1000);
 
@@ -193,15 +194,15 @@ void handleKeypress(unsigned char key, int x, int y) {
     }
 
     if (abrarCode.getState() == STATE_WALKING) {
-        float speed = 3.0f;
+        float speed = 30.0f;
         float nextX = camX, nextY = camY, nextZ = camZ;
         switch (key) {
         case 'w': nextX += lookX * speed; nextZ += lookZ * speed; break;
         case 's': nextX -= lookX * speed; nextZ -= lookZ * speed; break;
         case 'a': nextX -= (lookZ * -1.0f) * speed; nextZ -= lookX * speed; break;
         case 'd': nextX += (lookZ * -1.0f) * speed; nextZ += lookX * speed; break;
-        case 'q': nextY -= 1.0f; break;
-        case 'e': nextY += 1.0f; break;
+        case 'q': nextY -= 10.0f; break;
+        case 'e': nextY += 10.0f; break;
         case 'g': case 'f': abrarCode.handleInput(key, camX, camZ); glutPostRedisplay(); return;
         case 'r':   weatherstatus=(weatherstatus+1)%3; break;
         case 27: exit(0); return;
@@ -331,24 +332,34 @@ void display() {
     abrarCode.drawCars();
 
     // =======================================================
-    // (The Full Isolation Protocol)
+    // (The Corrected Isolation Protocol) - Jeep Section
     // =======================================================
-    glPushAttrib(GL_LIGHTING_BIT | GL_CURRENT_BIT | GL_ENABLE_BIT | GL_TRANSFORM_BIT | GL_TEXTURE_BIT);
+    glPushAttrib(GL_LIGHTING_BIT | GL_CURRENT_BIT | GL_ENABLE_BIT | GL_TRANSFORM_BIT);
 
-    glDisable(GL_TEXTURE_2D);
-    glDisable(GL_COLOR_MATERIAL);
-    glEnable(GL_NORMALIZE);
+    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT0);
+
+    // 1. تفعيل خاصية تتبع الألوان (هذا هو الحل لمشكلة اللون الرمادي)
+    glEnable(GL_COLOR_MATERIAL);
+    glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
+
+    GLfloat ambientDay[] = { 0.2f, 0.2f, 0.2f, 1.0f };
+    GLfloat ambientNight[] = { 0.01f, 0.01f, 0.01f, 0.5f };
+
+    // نستخدم مؤشر ليؤشر على المصفوفة المناسبة حسب الحالة
+    GLfloat* currentAmbient;
 
     if (isLightOn) {
-        glEnable(GL_LIGHTING);
-        glEnable(GL_LIGHT0);
+        currentAmbient = ambientDay;
     }
     else {
-        glDisable(GL_LIGHTING);
-    }
+        currentAmbient = ambientNight;
+    }    // 2. ضبط إضاءة محيطة معتدلة (0.3 تجعل الألوان تظهر بوضوح دون أن تصبح بيضاء)
+    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, currentAmbient);
 
-    glDisable(GL_LIGHT1); glDisable(GL_LIGHT2); glDisable(GL_LIGHT3);
-    glDisable(GL_LIGHT4); glDisable(GL_LIGHT5); glDisable(GL_LIGHT6); glDisable(GL_LIGHT7);
+    // 3. منع انعكاس الضوء القوي الذي قد يسبب بقعاً بيضاء (Specular)
+    GLfloat noSpecular[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+    glMaterialfv(GL_FRONT, GL_SPECULAR, noSpecular);
 
     float x_jeep = 120.0f;
     float y_jeep = 0.0f;
@@ -360,6 +371,7 @@ void display() {
     }
 
     glPopAttrib();
+
     for (int i = 0; weatherstatus > 0 && i < 20; i++) {
         myClouds[i].draw();
     }
