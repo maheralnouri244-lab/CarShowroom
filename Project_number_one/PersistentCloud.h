@@ -18,7 +18,7 @@ private:
 
 public:
     PersistentCloud();
-    void draw() const;
+    void draw(int st) const;
     void regenerate();
 };
 

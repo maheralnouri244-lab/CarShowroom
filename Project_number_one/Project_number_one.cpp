@@ -29,6 +29,7 @@ float camX = 500, camY = 300, camZ = 500.0f;
 float lookX = -1.0f, lookY = -1.0f, lookZ = -1.0f;
 float yaw = -90.0f, pitch = 0.0f;
 int lastMouseX, lastMouseY, weatherstatus=0;
+const int CloudCount = 20;
 bool firstMouse = true, ignoreWarp;
 
 float maxX = 150, maxz = 200, diff = 45;
@@ -109,7 +110,7 @@ void createCollidables() {
 }
 
 
-PersistentCloud myClouds[20];
+PersistentCloud myClouds[CloudCount];
 RainSystem myRain(1000);
 
 void updateLookVector() {
@@ -194,7 +195,7 @@ void handleKeypress(unsigned char key, int x, int y) {
     }
 
     if (abrarCode.getState() == STATE_WALKING) {
-        float speed = 30.0f;
+        float speed = 3.0f;
         float nextX = camX, nextY = camY, nextZ = camZ;
         switch (key) {
         case 'w': nextX += lookX * speed; nextZ += lookZ * speed; break;
@@ -372,8 +373,8 @@ void display() {
 
     glPopAttrib();
 
-    for (int i = 0; weatherstatus > 0 && i < 20; i++) {
-        myClouds[i].draw();
+    for (int i = 0; weatherstatus > 0 && i < CloudCount; i++) {
+        myClouds[i].draw(weatherstatus);
     }
 
     maher.draw(camX, camY, camZ);
@@ -386,9 +387,10 @@ void display() {
     abrarCode.drawCars();
     drawSkyBody(isLightOn);
 
-    for (int i = 0; weatherstatus>0&&i < 20; i++) {
-        myClouds[i].draw();
-    }
+        for (int i = 0; weatherstatus > 0 && i < CloudCount; i++) {
+            myClouds[i].draw(weatherstatus);
+        }
+
     maher.draw(camX, camY, camZ);
     glPopMatrix();
     

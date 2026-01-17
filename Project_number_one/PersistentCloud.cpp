@@ -26,7 +26,7 @@ void PersistentCloud::regenerate() {
     }
 }
 
-void PersistentCloud::draw() const {
+void PersistentCloud::draw(int st) const {
     glPushMatrix();
     glTranslatef(posX, posY, posZ);
     glScalef(cloudScale, cloudScale, cloudScale);
@@ -39,6 +39,8 @@ void PersistentCloud::draw() const {
     for (const auto& b : balls) {
         glPushMatrix();
         glTranslatef(b.x, b.y, b.z);
+        if (st == 2)
+            glScalef(2, 2, 2);
         glColor4f(b.grayShade, b.grayShade, b.grayShade, 0.4f);
         glutSolidSphere(b.radius, 12, 12);
         glPopMatrix();
