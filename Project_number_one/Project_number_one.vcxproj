@@ -158,6 +158,7 @@
     <ClCompile Include="Showroomside.cpp" />
     <ClCompile Include="StageLight.cpp" />
     <ClCompile Include="SteveModel.cpp" />
+    <ClCompile Include="StreetLamp.cpp" />
     <ClCompile Include="Tree.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -178,6 +179,7 @@
     <ClInclude Include="Showroomside.h" />
     <ClInclude Include="StageLight.h" />
     <ClInclude Include="SteveModel.h" />
+    <ClInclude Include="StreetLamp.h" />
     <ClInclude Include="Tree.h" />
   </ItemGroup>
   <ItemGroup>

@@ -17,6 +17,7 @@
 #include <string>
 #include "Tree.h"
 #include "Showroomdoor.h"
+#include "StreetLamp.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "include\stb_image.h"
@@ -31,6 +32,23 @@ using namespace std;
 
 Maherheader::Maherheader():showroomdoor(0, 15, 200) {
     houseTexID[5] = {};
+}
+
+void Maherheader::drawLightBeam(float x, float y, float z) {
+    glPushMatrix();
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glDisable(GL_LIGHTING);
+
+    glTranslatef(x, y, z);
+    glRotatef(270.0f, 1.0f, 0.0f, 0.0f);
+
+    glColor4f(1.0f, 0.85f, 0.2f, 0.3f);
+    glutSolidCone(30.0, 33.0, 32, 16);
+
+    glEnable(GL_LIGHTING);
+    glDisable(GL_BLEND);
+    glPopMatrix();
 }
 
 unsigned int Maherheader::loadTextureFromFile(const char* path) {
@@ -57,7 +75,7 @@ unsigned int Maherheader::loadTextureFromFile(const char* path) {
     return newTexID;
 }
 
-void Maherheader::draw(float camX,float camY,float camZ) {
+void Maherheader::draw(float camX,float camY,float camZ,bool isday) {
 
     for (int i = 1; i < 5; i++) {
         string path = "images\\house" + to_string(i) + ".png";
@@ -476,8 +494,42 @@ void Maherheader::draw(float camX,float camY,float camZ) {
     plusring.draw();
     glPopMatrix();
 
-
     for (const auto& p : glasswindows) {
         p.draw();
+    }
+
+    int lightnum = 4;
+    for (int i = 1; i <= lightnum ; i++)
+    {
+        float x = 25.0f-18.7;
+        float z = 200.0f + (800.0f / lightnum) * i;
+        float y_lamp = 0;
+
+        glPushMatrix();
+        glTranslatef(25, 0, 200 + (800 / lightnum) * i);
+        glRotatef(270, 0, 1, 0);
+        StreetLamp lamp(50.0f, 0.8f);
+        lamp.draw();
+        glPopMatrix();
+
+        if (!isday)
+        drawLightBeam(x, y_lamp, z);
+    }
+
+    for (int i = 1; i <= lightnum; i++)
+    {
+
+        float x = -25.0f + 18.7;
+        float z = 200.0f + (800.0f / lightnum) * i - 400 / lightnum;
+        float y_lamp = 0;
+
+        glPushMatrix();
+        glTranslatef(-25, 0, 200 + (800 / lightnum) * i - 400 / lightnum);
+        glRotatef(90, 0, 1, 0);
+        StreetLamp lamp(50.0f, 0.8f);
+        lamp.draw();
+        glPopMatrix();
+        if (!isday)
+        drawLightBeam(x, y_lamp, z);
     }
 }

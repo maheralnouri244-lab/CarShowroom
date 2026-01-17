@@ -377,7 +377,7 @@ void display() {
         myClouds[i].draw(weatherstatus);
     }
 
-    maher.draw(camX, camY, camZ);
+    maher.draw(camX, camY, camZ, isLightOn);
 
     glPushMatrix();
     glTranslatef(0, -1, 0);
@@ -391,7 +391,7 @@ void display() {
             myClouds[i].draw(weatherstatus);
         }
 
-    maher.draw(camX, camY, camZ);
+    maher.draw(camX, camY, camZ, isLightOn);
     glPopMatrix();
     
     lake.setAlpha(0.3);
