@@ -1,0 +1,68 @@
+#ifndef RAIN_SYSTEM_H
+#define RAIN_SYSTEM_H
+
+#include <GL/glut.h>
+#include <vector>
+#include <cstdlib> // ÷—Ê—Ì ·‹ rand
+
+struct RainDrop {
+    float x, y, z;
+    float speed;
+    float length;
+};
+
+class RainSystem {
+private:
+    std::vector<RainDrop> drops;
+    // Õ–›‰« numDrops ﬂ„ €Ì— „‰›’· ·‰⁄ „œ ⁄·Ï drops.size() „»«‘—…
+
+public:
+    RainSystem(int count = 1000) {
+        // «·Õ· «·”Õ—Ì: resize  ﬁÊ„ »ÕÃ“ «·√„«ﬂ‰ ›⁄·Ì« ›Ì «·–«ﬂ—…
+        drops.resize(count);
+
+        for (int i = 0; i < (int)drops.size(); i++) {
+            resetDrop(i);
+            //  Ê“Ì⁄ ⁄‘Ê«∆Ì √Ê·Ì ·ﬂÌ ·« Ì”ﬁÿ «·„ÿ— ﬂŒÿ Ê«Õœ
+            drops[i].y = (float)(rand() % 500);
+        }
+    }
+
+    void resetDrop(int i) {
+        // «·¬‰ «·Ê’Ê· ·‹ drops[i] ¬„‰ ·√‰‰« «” ⁄„·‰« resize
+        drops[i].x = (float)((rand() % 2000) - 1000); // Ê”⁄‰« «·‰ÿ«ﬁ ·Ì€ÿÌ Œ—Ìÿ ﬂ
+        drops[i].y = 400.0f + (rand() % 100);
+        drops[i].z = (float)((rand() % 2000) - 1000);
+        drops[i].speed = 2.0f + (float)(rand() % 10 / 5.0f);
+        drops[i].length = 2.0f + (float)(rand() % 5);
+    }
+
+    void update() {
+        // Õ·ﬁ…  ﬂ—«— ¬„‰…  ⁄ „œ ⁄·Ï ÕÃ„ «·‹ vector «·ÕﬁÌﬁÌ
+        for (size_t i = 0; i < drops.size(); i++) {
+            drops[i].y -= drops[i].speed;
+
+            if (drops[i].y < 0) {
+                resetDrop((int)i);
+            }
+        }
+    }
+
+    void draw() const {
+        glPushAttrib(GL_LIGHTING_BIT | GL_CURRENT_BIT); // ÌÕ«›Ÿ ⁄·Ï ≈⁄œ«œ«  «·≈÷«¡… «·√’·Ì…
+        glDisable(GL_LIGHTING);
+        glEnable(GL_BLEND);
+
+        glBegin(GL_LINES);
+        for (const auto& d : drops) {
+            glColor4f(0.7f, 0.7f, 1.0f, 0.5f);
+            glVertex3f(d.x, d.y, d.z);
+            glVertex3f(d.x, d.y + d.length, d.z);
+        }
+        glEnd();
+
+        glPopAttrib(); // Ì⁄Ìœ «·≈÷«¡… ﬂ„« ﬂ«‰  »œﬁ…
+    }
+};
+
+#endif
