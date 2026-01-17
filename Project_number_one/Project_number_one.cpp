@@ -366,9 +366,10 @@ void display() {
     float y_jeep = 0.0f;
     float z_jeep = 50.0f;
     float size_jeep = 6.0f;
+    float angle = 90.0f;
 
     for (int i = 1; i <= 3; i++) {
-        myJeep.drawJeep(x_jeep, y_jeep, z_jeep * i, size_jeep);
+        myJeep.drawJeep(x_jeep, y_jeep, z_jeep * i, size_jeep, angle);
     }
 
     glPopAttrib();
