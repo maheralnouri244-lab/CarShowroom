@@ -7,7 +7,6 @@
 #include "Pillar.h"
 #include "Hpillar.h"
 #include "Showroomside.h"
-#include "GlassWindow.h"
 #include "NeonTube.h"
 // -------------------------
 
@@ -508,7 +507,7 @@ void AbrarCode::drawQueue(float x, float y, float z) {
     SteveModel c(0.3f); 
     for (int i = 0;i < 6;i++) { 
         SteveModel::setShirtColor(0.1 * (i + 1), 0.5, 0.8 - 0.1 * i); 
-        glPushMatrix(); glTranslatef(x, y, z + 20 + i * 15); glRotatef(180, 0, 1, 0); c.draw(); glPopMatrix(); 
+        glPushMatrix(); glTranslatef(x, y+ 1.5f, z + 20 + i * 15); glRotatef(180, 0, 1, 0); c.draw(); glPopMatrix();
     }
 }
 
@@ -557,7 +556,7 @@ void AbrarCode::drawPeopleOnFloor(float fy) {
     for (int i = 0;i < 10;i++) { 
         SteveModel::setShirtColor(0.1 * (i + 1), 0.5, 0.8); 
         glPushMatrix(); 
-        glTranslatef(p[i][0], fy + 0.2, p[i][2]); 
+        glTranslatef(p[i][0], fy + 1.5f, p[i][2]); 
         glRotatef(i * 45, 0, 1, 0); s.draw(); glPopMatrix(); 
     } 
 }
@@ -609,8 +608,7 @@ void AbrarCode::drawSecondFloor() {
     showroomsides.push_back(Showroomside(maxX, minX, minZ, minZ, h, 0.2, 0.2, 0.2, 40, 5)); 
     showroomsides.push_back(Showroomside(minX, minX, maxZ, minZ, h, 0.2, 0.2, 0.2, 40, 5)); 
     showroomsides.push_back(Showroomside(maxX, maxX, maxZ, minZ, h, 0.2, 0.2, 0.2, 40, 5)); 
-    showroomsides.push_back(Showroomside(minX + (maxX - minX - diff) / 2, minX, maxZ, maxZ, h, 0.2, 0.2, 0.2, 18, 5)); 
-    showroomsides.push_back(Showroomside(maxX, maxX - (maxX - minX - diff) / 2, maxZ, maxZ, h, 0.2, 0.2, 0.2, 18, 5)); 
+    showroomsides.push_back(Showroomside(maxX, minX, maxZ, maxZ, h, 0.2, 0.2, 0.2, 40, 5));
     for (const auto& p : showroomsides) 
         p.draw();
     

@@ -7,7 +7,6 @@
 #include "Pillar.h"
 #include "Hpillar.h"
 #include "Showroomside.h"
-#include "GlassWindow.h"
 #include "NeonTube.h"
 #include "SteveModel.h"
 #include "Furniture.h"
@@ -66,7 +65,6 @@ private:
 
     void drawRoom(float x, float y, float z, float w, float h, float d);
     void drawMegaAccessoriesShop(float x, float y, float z);
-    void drawShelfRow(float x, float y, float z, int length, int type);
     void drawProduct(int type);
     void drawCheckoutCounter(float x, float y, float z);
     void drawQueue(float x, float y, float z);
