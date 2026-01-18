@@ -14,6 +14,7 @@
 #include "PersistentCloud.h"
 #include <ctime>
 #include "RainSystem.h"
+#include "SaraCode.h"
 
 #define M_PI acos(-1)
 
@@ -22,13 +23,13 @@ using namespace std;
 // ==========================================
 // (Lighting Control)
 // ==========================================
-bool isLightOn = false; 
+bool isLightOn = false;
 
 // Camera Variables
 float camX = 500, camY = 300, camZ = 500.0f;
 float lookX = -1.0f, lookY = -1.0f, lookZ = -1.0f;
 float yaw = -90.0f, pitch = 0.0f;
-int lastMouseX, lastMouseY, weatherstatus=0;
+int lastMouseX, lastMouseY, weatherstatus = 0;
 const int CloudCount = 20;
 bool firstMouse = true, ignoreWarp;
 
@@ -39,76 +40,100 @@ float minX = -maxX, minz = -maxz;
 Maherheader maher;
 AbrarCode abrarCode;
 Jeep_Builder_Final myJeep;
+SaraCode saraCode;
 GlassWindow lake = GlassWindow(minX - 170, -0.2, maxz + 100, minX - 170, -0.2, maxz + 600, minX + 140, -0.2, maxz + 600, minX + 170, -0.2, maxz + 100);
 
-// --- نظام الاصطدام ---
+
 const float SHOWROOM_HEIGHT = 60.0f;
 const float GATE_WIDTH = 45.0f;
 const float GATE_MIN_X = -GATE_WIDTH / 2.0f;
 const float GATE_MAX_X = GATE_WIDTH / 2.0f;
 const float PLAYER_BUFFER_Y = 5.0f;
 const float COLLISION_BUFFER = 3.0f;
-const float GLOBAL_GROUND_LEVEL = 2.0f; 
+const float GLOBAL_GROUND_LEVEL = 2.0f;
 
-// هيكل لتمثيل صندوق الاصطدام
+
 struct BoundingBox {
     float minX, minY, minZ;
     float maxX, maxY, maxZ;
 };
 
-// قائمة تحتوي على كل الأجسام القابلة للاصطدام
 std::vector<BoundingBox> collidableObjects;
 
-// دالة مساعدة للتحقق من وجود الكاميرا داخل حدود المعرض
 bool isStrictlyInside(float x, float z) {
-    // استخدم المتغيرات minX, maxX, minz, maxz الموجودة لديك
     return (x > minX && x < maxX && z > minz && z < maxz);
 }
 void createCollidables() {
-    // 1. الجدران الداخلية
+    collidableObjects.clear();
+
+    // 1. جدران المعرض (لا تغيريها)
     float wall_1_x = minX + (maxX - minX - diff) / 2.0f;
     float wall_2_x = maxX - (maxX - minX - diff) / 2.0f;
     float wall_z_range = (maxz - minz - 2 * diff) / 2.0f;
-    collidableObjects.push_back({ wall_1_x - 2.0f, 0.0f, -wall_z_range, wall_1_x + 2.0f, SHOWROOM_HEIGHT, wall_z_range });
-    collidableObjects.push_back({ wall_2_x - 2.0f, 0.0f, -wall_z_range, wall_2_x + 2.0f, SHOWROOM_HEIGHT, wall_z_range });
 
-    // 2. الفواصل البيضاوية (التي تفصل الأجنحة)
+    float wallBuffer = 5.0f; // المسافة التي سيتوقف عندها اللاعب قبل الجدار
+
+    // الجدران الجانبية مع Buffer (زدنا السماكة من 2.0 إلى wallBuffer)
+    collidableObjects.push_back({ wall_1_x - wallBuffer, 0.0f, -wall_z_range, wall_1_x + wallBuffer, SHOWROOM_HEIGHT, wall_z_range });
+    collidableObjects.push_back({ wall_2_x - wallBuffer, 0.0f, -wall_z_range, wall_2_x + wallBuffer, SHOWROOM_HEIGHT, wall_z_range });
+
+    // إضافة جدران إضافية (الخلفي مثلاً) إذا أردتِ حماية كاملة:
+    // الجدار الخلفي (عند minz)
+    collidableObjects.push_back({ minX, 0.0f, minz - wallBuffer, maxX, SHOWROOM_HEIGHT, minz + wallBuffer });
+
+    // الجدار الأمامي (عند maxz) باستثناء منطقة البوابة
+    collidableObjects.push_back({ minX, 0.0f, maxz - wallBuffer, GATE_MIN_X, SHOWROOM_HEIGHT, maxz + wallBuffer }); // يمين البوابة
+    collidableObjects.push_back({ GATE_MAX_X, 0.0f, maxz - wallBuffer, maxX, SHOWROOM_HEIGHT, maxz + wallBuffer }); // يسار البوابة
+
+
+
+    float extentX = (40.0f / 2.0f) * 3.0f; // العرض الكلي للمنصة
+    float extentZ = (40.0f / 2.0f) * 1.0f; // سمك المنصة
     float center_x_C1 = -minX - (maxX - minX - diff) / 4.0f;
     float center_x_C2 = minX + (maxX - minX - diff) / 4.0f;
-    float extentX = (40.0f / 2.0f) * 3.0f;
-    float extentZ = (40.0f / 2.0f) * 1.0f;
+
+    // صندوق المنصة الأولى والثانية
     collidableObjects.push_back({ center_x_C1 - extentX, 0.0f, -extentZ, maxX, 30.0f, extentZ });
     collidableObjects.push_back({ minX, 0.0f, -extentZ, center_x_C2 + extentX, 30.0f, extentZ });
+    // 2. سيارات أبرار (Beetle) - جهة اليمين
+    float beetle_x = 90.0f;
+    float beetle_z[] = { -40.0f, -75.0f, -110.0f, -145.0f };
+    for (float z : beetle_z) {
+        collidableObjects.push_back({ beetle_x - 18.0f, 0.0f, z - 10.0f, beetle_x + 18.0f, 15.0f, z + 10.0f });
+    }
 
-    // 3. سيارات Beetle
-    float car_center_x = 90.0f; // تم تحديث الموقع
-    float car_y_pos = 2.0f;
-    float car_extent_x = 18.4f;
-    float car_extent_z = 7.2f;
-    float beetle_z_pos[] = { -40.0f, -75.0f, -110.0f, -145.0f };
-    for (float z_pos : beetle_z_pos) {
+    float myCarX = -110.0f;
+    float myCarZ[] = { 160.0f, 120.0f, 80.0f, 40.0f };
+
+    // التعديل هنا:
+    // قللنا نصف الطول (Z) لفتح ممر واسع بين السيارات
+    // زدنا مسافة الأمان الجانبية (X) لكي لا تلتصقي بالباب
+    float carBoxWidth = 10.0f;  // العرض الجانبي
+    float carBoxLength = 10.0f; // جعلنا طول الصندوق صغيراً جداً (فقط في منتصف السيارة) 
+    // لكي يفتح ممر واسع أمام وخلف كل سيارة
+
+    float sideSafety = 3.0f;    // مسافة أمان من جهة الأبواب
+
+    for (float zPos : myCarZ) {
         collidableObjects.push_back({
-            car_center_x - car_extent_x, car_y_pos, z_pos - car_extent_z,
-            car_center_x + car_extent_x, car_y_pos + 12.0f, z_pos + car_extent_z
+            myCarX - (carBoxWidth + sideSafety), 0.0f, zPos - carBoxLength,
+            myCarX + (carBoxWidth + sideSafety), 20.0f, zPos + carBoxLength
             });
     }
 
-    // 4. سيارات Jeep
-    float jeep_x = 120.0f, jeep_y = 0.0f, jeep_z_base = 50.0f, jeep_size = 6.0f;
-    float jeep_len = 6.3f * jeep_size;
-    float jeep_width = 2.8f * jeep_size;
-    float jeep_height = 3.25f * jeep_size;
-    float jeep_extent_x = jeep_width / 2.0f;
-    float jeep_extent_z = jeep_len / 2.0f;
+    // 4. سيارات الجيب (Jeep) - السماح بالمرور بين السيارات
+    float jeep_x = 120.0f;
+    float jeep_safety_X = 5.0f;  // مسافة أمان عرضية (للتوقف بعيداً عن الباب)
+    float jeep_box_Z = 12.0f;    // صغرنا الطول لترك فراغ للمشي بين كل سيارة وسيارة
+
     for (int i = 1; i <= 3; i++) {
-        float current_z = jeep_z_base * i;
+        float jZ = 50.0f * i;
         collidableObjects.push_back({
-            jeep_x - jeep_extent_x, jeep_y, current_z - jeep_extent_z,
-            jeep_x + jeep_extent_x, jeep_y + jeep_height, current_z + jeep_extent_z
+            jeep_x - (15.0f + jeep_safety_X), 0.0f, jZ - jeep_box_Z,
+            jeep_x + (15.0f + jeep_safety_X), 25.0f, jZ + jeep_box_Z
             });
     }
 }
-
 
 PersistentCloud myClouds[CloudCount];
 RainSystem myRain(1000);
@@ -185,11 +210,9 @@ void drawSkyBody(bool isDay) {
 
 void initEnvironment() {}
 
-// --- (الدالة الكاملة والمصححة) ---
 void handleKeypress(unsigned char key, int x, int y) {
-
     if (key == 'l' || key == 'L') {
-        isLightOn = !isLightOn; 
+        isLightOn = !isLightOn;
         glutPostRedisplay();
         return;
     }
@@ -197,6 +220,7 @@ void handleKeypress(unsigned char key, int x, int y) {
     if (abrarCode.getState() == STATE_WALKING) {
         float speed = 3.0f;
         float nextX = camX, nextY = camY, nextZ = camZ;
+
         switch (key) {
         case 'w': nextX += lookX * speed; nextZ += lookZ * speed; break;
         case 's': nextX -= lookX * speed; nextZ -= lookZ * speed; break;
@@ -205,48 +229,61 @@ void handleKeypress(unsigned char key, int x, int y) {
         case 'q': nextY -= 10.0f; break;
         case 'e': nextY += 10.0f; break;
         case 'g': case 'f': abrarCode.handleInput(key, camX, camZ); glutPostRedisplay(); return;
-        case 'r':   weatherstatus=(weatherstatus+1)%3; break;
+        case 'r':   weatherstatus = (weatherstatus + 1) % 3; break;
         case 27: exit(0); return;
         }
 
-        // --- 1. منطق الاصطدام العمودي ---
         if (nextY < GLOBAL_GROUND_LEVEL) {
             nextY = GLOBAL_GROUND_LEVEL;
         }
+        saraCode.handleInput(key);
         bool isOverShowroom = isStrictlyInside(nextX, nextZ);
+
         if (isOverShowroom) {
-            if (camY < SHOWROOM_HEIGHT && nextY >= SHOWROOM_HEIGHT) {
-                nextY = SHOWROOM_HEIGHT;
+            float roofMargin = 2.0f;
+
+            if (camY >= SHOWROOM_HEIGHT && nextY < (SHOWROOM_HEIGHT + roofMargin)) {
+                nextY = SHOWROOM_HEIGHT + roofMargin;
             }
-            else if (camY >= SHOWROOM_HEIGHT && nextY < SHOWROOM_HEIGHT) {
-                nextY = SHOWROOM_HEIGHT;
+            else if (camY < SHOWROOM_HEIGHT && nextY >(SHOWROOM_HEIGHT - roofMargin)) {
+                nextY = SHOWROOM_HEIGHT - roofMargin;
             }
+
             if (nextY < PLAYER_BUFFER_Y) {
                 nextY = PLAYER_BUFFER_Y;
             }
         }
+
         camY = nextY;
 
-        // --- 2. منطق الاصطدام الأفقي ---
         bool isCurrentlyInside = isStrictlyInside(camX, camZ);
         bool willBeInside = isStrictlyInside(nextX, nextZ);
-        bool landedOnRoof = (camY == SHOWROOM_HEIGHT && isOverShowroom);
 
-        if (!isCurrentlyInside && willBeInside && !landedOnRoof) {
-            bool enteringViaGate = (camZ >= maxz) && (nextX > GATE_MIN_X && nextX < GATE_MAX_X);
-            if (!enteringViaGate) { glutPostRedisplay(); return; }
-        }
-        else if (isCurrentlyInside && !willBeInside) {
-            bool exitingViaGate = (camZ >= maxz - COLLISION_BUFFER) && (nextX > GATE_MIN_X && nextX < GATE_MAX_X);
-            if (!exitingViaGate) { glutPostRedisplay(); return; }
+
+        if (camY < SHOWROOM_HEIGHT) {
+            if ((!isCurrentlyInside && willBeInside) || (isCurrentlyInside && !willBeInside)) {
+
+                // فحص: هل اللاعب ضمن عرض البوابة؟
+                bool inGateWidth = (nextX > GATE_MIN_X && nextX < GATE_MAX_X);
+
+                // فحص: هل اللاعب تحت مستوى الحائط العلوي؟ (الحائط يبدأ من ارتفاع 30)
+                bool isLowEnough = (camY < 30.0f);
+
+                // إذا كان خارج العرض "أو" مرتفع زيادة (رح يخبط بالحيط)، امنعي الحركة
+                if (!inGateWidth || !isLowEnough) {
+                    glutPostRedisplay();
+                    return;
+                }
+            }
         }
 
-        // -- (هذا هو الإصلاح الجوهري) --
-        // لا تتحقق من اصطدام الأجسام الداخلية إلا إذا كنت تحت السقف
-        if (willBeInside && !landedOnRoof && camY <= SHOWROOM_HEIGHT) {
+        if (willBeInside && camY < SHOWROOM_HEIGHT) {
             BoundingBox playerBox = { nextX - 1.5f, camY - PLAYER_BUFFER_Y, nextZ - 1.5f, nextX + 1.5f, camY, nextZ + 1.5f };
             for (const auto& objBox : collidableObjects) {
-                if (playerBox.maxX > objBox.minX && playerBox.minX < objBox.maxX && playerBox.maxY > objBox.minY && playerBox.minY < objBox.maxY && playerBox.maxZ > objBox.minZ && playerBox.minZ < objBox.maxZ) {
+                if (playerBox.maxX > objBox.minX && playerBox.minX < objBox.maxX &&
+                    playerBox.maxY > objBox.minY && playerBox.minY < objBox.maxY &&
+                    playerBox.maxZ > objBox.minZ && playerBox.minZ < objBox.maxZ)
+                {
                     glutPostRedisplay(); return;
                 }
             }
@@ -254,14 +291,16 @@ void handleKeypress(unsigned char key, int x, int y) {
 
         camX = nextX;
         camZ = nextZ;
-
     }
     else {
         abrarCode.handleInput(key, camX, camZ);
         if (key == 27) exit(0);
     }
+
+
     glutPostRedisplay();
 }
+
 void handlePassiveMouse(int x, int y) {
     if (abrarCode.getState() == STATE_ENTERING) return;
 
@@ -306,7 +345,7 @@ void display() {
         glClearColor(0.05f, 0.05f, 0.1f, 1.0f);
     }
 
-        glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHTING);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
 
@@ -328,10 +367,10 @@ void display() {
         glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambientNight);
     }
 
-    if (weatherstatus==2)
-    myRain.draw();
+    if (weatherstatus == 2)
+        myRain.draw();
     abrarCode.drawCars();
-
+    saraCode.drawAll();
     // =======================================================
     // (The Corrected Isolation Protocol) - Jeep Section
     // =======================================================
@@ -384,17 +423,17 @@ void display() {
     glTranslatef(0, -1, 0);
     glScalef(1, -1, 1);
     if (weatherstatus == 2)
-    myRain.draw();
+        myRain.draw();
     abrarCode.drawCars();
     drawSkyBody(isLightOn);
 
-        for (int i = 0; weatherstatus > 0 && i < CloudCount; i++) {
-            myClouds[i].draw(weatherstatus);
-        }
+    for (int i = 0; weatherstatus > 0 && i < CloudCount; i++) {
+        myClouds[i].draw(weatherstatus);
+    }
 
     maher.draw(camX, camY, camZ, isLightOn);
     glPopMatrix();
-    
+
     lake.setAlpha(0.3);
     lake.draw();
 
@@ -418,7 +457,7 @@ int main(int argc, char** argv) {
     glutCreateWindow("Showroom Simulator - Lighting Edition"); // Title Update
 
     initRendering();
-    createCollidables(); 
+    createCollidables();
     initEnvironment();
     updateLookVector();
 
