@@ -228,7 +228,9 @@ void handleKeypress(unsigned char key, int x, int y) {
         case 'd': nextX += (lookZ * -1.0f) * speed; nextZ += lookX * speed; break;
         case 'q': nextY -= 10.0f; break;
         case 'e': nextY += 10.0f; break;
-        case 'g': case 'f': abrarCode.handleInput(key, camX, camZ); glutPostRedisplay(); return;
+        case 'g': case 'f': case 'n': case 'N': case 'm': case 'M':
+            abrarCode.handleInput(key, camX, camY, camZ);
+            break;
         case 'r':   weatherstatus = (weatherstatus + 1) % 3; break;
         case 27: exit(0); return;
         }
@@ -293,7 +295,7 @@ void handleKeypress(unsigned char key, int x, int y) {
         camZ = nextZ;
     }
     else {
-        abrarCode.handleInput(key, camX, camZ);
+        abrarCode.handleInput(key, camX, camY, camZ);
         if (key == 27) exit(0);
     }
 
@@ -370,6 +372,8 @@ void display() {
     if (weatherstatus == 2)
         myRain.draw();
     abrarCode.drawCars();
+    abrarCode.drawGroundFloorElevator();
+    abrarCode.drawSecondFloor();
     saraCode.drawAll();
     // =======================================================
     // (The Corrected Isolation Protocol) - Jeep Section
@@ -425,6 +429,7 @@ void display() {
     if (weatherstatus == 2)
         myRain.draw();
     abrarCode.drawCars();
+    abrarCode.drawGroundFloorElevator();
     drawSkyBody(isLightOn);
 
     for (int i = 0; weatherstatus > 0 && i < CloudCount; i++) {

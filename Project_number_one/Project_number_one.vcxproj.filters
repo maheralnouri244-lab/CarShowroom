@@ -78,6 +78,12 @@
     <ClCompile Include="NormalCar.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Furniture.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AccessoriesSection.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Pillar.h">
@@ -141,6 +147,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SaraCode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Furniture.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AccessoriesSection.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

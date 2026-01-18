@@ -142,7 +142,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AbrarCode.cpp" />
+    <ClCompile Include="AccessoriesSection.cpp" />
     <ClCompile Include="BeetleCar.cpp" />
+    <ClCompile Include="Furniture.cpp" />
     <ClCompile Include="GlassWindow.cpp" />
     <ClCompile Include="House.cpp" />
     <ClCompile Include="Hpillar.cpp" />
@@ -165,7 +167,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AbrarCode.h" />
+    <ClInclude Include="AccessoriesSection.h" />
     <ClInclude Include="BeetleCar.h" />
+    <ClInclude Include="Furniture.h" />
     <ClInclude Include="GlassWindow.h" />
     <ClInclude Include="House.h" />
     <ClInclude Include="Hpillar.h" />
