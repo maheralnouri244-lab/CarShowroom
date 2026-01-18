@@ -580,7 +580,7 @@ void drawscene(bool drawcam=1)
     }
 
 
-    if (drawcam&& currentCam != 1)
+    if (drawcam && currentCam != 1)
     {
         glPushMatrix();
         glTranslatef(minX, 60, maxz);
@@ -638,9 +638,6 @@ void drawscene(bool drawcam=1)
     }
     drawSkyDome(2000, 64, 64, skyTex);
 
-    abrarCode.drawCars();
-    abrarCode.drawGroundFloorElevator();
-    abrarCode.drawSecondFloor();
 
     glPushMatrix();
     glTranslatef(minX, 60, maxz);
@@ -669,6 +666,10 @@ void drawscene(bool drawcam=1)
         cam.draw();
         glPopMatrix();
 
+    abrarCode.drawCars();
+    abrarCode.drawGroundFloorElevator();
+    abrarCode.drawSecondFloor();
+
     glPopMatrix();
     lake.setAlpha(0.7);
     lake.draw();
@@ -695,9 +696,8 @@ void display() {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         setCamera(lastCam);
-        drawscene();
-        glassMgr.drawAll();
         drawscene(0);
+        glassMgr.drawAll();
         if (cctvTexIDs[idx] == 0) glGenTextures(1, &cctvTexIDs[idx]);
         glBindTexture(GL_TEXTURE_2D, cctvTexIDs[idx]);
         glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, 1200, 800, 0);
