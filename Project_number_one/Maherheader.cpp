@@ -18,6 +18,8 @@
 #include "Tree.h"
 #include "Showroomdoor.h"
 #include "StreetLamp.h"
+#include "MonitorScreen.h"
+#include "OfficeDesk.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "include\stb_image.h"
@@ -75,7 +77,7 @@ unsigned int Maherheader::loadTextureFromFile(const char* path) {
     return newTexID;
 }
 
-void Maherheader::draw(float camX,float camY,float camZ,bool isday) {
+void Maherheader::draw(float camX,float camY,float camZ,bool isday, GLuint cctvTexIDs[4]) {
 
     for (int i = 1; i < 5; i++) {
         string path = "images\\house" + to_string(i) + ".png";
@@ -83,7 +85,6 @@ void Maherheader::draw(float camX,float camY,float camZ,bool isday) {
             const_cast<unsigned int&>(houseTexID[i]) = const_cast<Maherheader*>(this)->loadTextureFromFile(path.c_str());
         }
     }
-
 
 	PlusRing3D symbol;
 	vector<Pillar> pillars;
@@ -545,4 +546,25 @@ void Maherheader::draw(float camX,float camY,float camZ,bool isday) {
     for (const auto& p : glasswindows) {
         p.draw();
     }
+
+    MonitorScreen myMonitor;
+    OfficeDesk mydisk;
+
+    glPushMatrix();
+    glTranslatef(0, 400, 0);
+    myMonitor.draw(cctvTexIDs);
+    glPopMatrix();
+    glPushMatrix();
+    glTranslatef(0, 384.5, 0);
+    glScalef(0.5, 0.5, 0.5);
+    mydisk.draw();
+    glPopMatrix();
+    
+
 }
+/*
+-150.197 52 200.503 0.874371 -0.328867 0.356821
+152.003 62 201.193 -0.8138 -0.21303 0.540691
+-143.372 58 193.254 0.451159 -0.325568 -0.83094
+142.205 58 -193.402 -0.461055 -0.204496 0.863487
+*/

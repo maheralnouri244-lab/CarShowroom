@@ -15,6 +15,7 @@
 #include <ctime>
 #include "RainSystem.h"
 #include "SaraCode.h"
+#include <iostream>
 
 #define M_PI acos(-1)
 
@@ -25,16 +26,41 @@ using namespace std;
 // ==========================================
 bool isLightOn = false;
 
+struct Camera {
+    float posX, posY, posZ;   
+    float lookX, lookY, lookZ;
+};
+
+float lookX = -1.0f, lookY = -1.0f, lookZ = -1.0f;
+
+Camera cameras[4] = {
+    { -150.197f, 52.0f, 200.503f,  0.874371f, -0.328867f,  0.356821f },
+    {  152.003f, 62.0f, 201.193f, -0.813800f, -0.213030f,  0.540691f },
+    { -143.372f, 58.0f, 193.254f,  0.451159f, -0.325568f, -0.830940f },
+    {  142.205f, 58.0f,-193.402f, -0.461055f, -0.204496f,  0.863487f }
+};
+
+
+/*
+Camera cameras[4] = {
+    { -150.197f, 52.0f, 200.503f,lookX, lookY, lookZ },
+    {  152.003f, 62.0f, 201.193f,lookX, lookY, lookZ },
+    { -143.372f, 58.0f, 193.254f,lookX, lookY, lookZ },
+    {  142.205f, 58.0f,-193.402f,lookX, lookY, lookZ }
+};
+*/
+
 // Camera Variables
 float camX = 500, camY = 300, camZ = 500.0f;
-float lookX = -1.0f, lookY = -1.0f, lookZ = -1.0f;
 float yaw = -90.0f, pitch = 0.0f;
-int lastMouseX, lastMouseY, weatherstatus = 0;
+int lastMouseX, lastMouseY, weatherstatus = 0, currentCam=0;
 const int CloudCount = 20;
 bool firstMouse = true, ignoreWarp;
 
 float maxX = 150, maxz = 200, diff = 45;
 float minX = -maxX, minz = -maxz;
+int centerX ;
+int centerY , lastCam=0;
 
 // Instances
 Maherheader maher;
@@ -43,6 +69,8 @@ Jeep_Builder_Final myJeep;
 SaraCode saraCode;
 GlassWindow lake = GlassWindow(minX - 170, -0.2, maxz + 100, minX - 170, -0.2, maxz + 600, minX + 140, -0.2, maxz + 600, minX + 170, -0.2, maxz + 100);
 
+GLuint cctvTexIDs[4] = { 0, 0, 0, 0 };
+bool hasSnapshot[4] = { false, false, false, false },captureThisFrame;
 
 const float SHOWROOM_HEIGHT = 60.0f;
 const float GATE_WIDTH = 45.0f;
@@ -148,6 +176,11 @@ void updateLookVector() {
     lookX = cos(radPitch) * cos(radYaw);
     lookY = sin(radPitch);
     lookZ = cos(radPitch) * sin(radYaw);
+    if (currentCam){
+        cameras[currentCam - 1].lookX = lookX;
+        cameras[currentCam - 1].lookY = lookY;
+        cameras[currentCam - 1].lookZ = lookZ;
+}
 }
 
 // ==========================================
@@ -210,6 +243,15 @@ void drawSkyBody(bool isDay) {
 
 void initEnvironment() {}
 
+void switchCamera(int newCam) {
+    if (currentCam >= 1 && currentCam <= 4 && newCam != currentCam) {
+        captureThisFrame = true;
+        lastCam = currentCam;
+    }
+    currentCam = newCam;
+    glutPostRedisplay();
+}
+
 void handleKeypress(unsigned char key, int x, int y) {
     if (key == 'l' || key == 'L') {
         isLightOn = !isLightOn;
@@ -232,6 +274,12 @@ void handleKeypress(unsigned char key, int x, int y) {
             abrarCode.handleInput(key, camX, camY, camZ);
             break;
         case 'r':   weatherstatus = (weatherstatus + 1) % 3; break;
+        case 'i':  cout << camX << " " << camY << " " << camZ << " " << lookX << " " << lookY << " " << lookZ << "\n"; break;
+        case '1': switchCamera(0); break;
+        case '2': switchCamera(1); break;
+        case '3': switchCamera(2); break;
+        case '4': switchCamera(3); break;
+        case '5': switchCamera(4); break;
         case 27: exit(0); return;
         }
 
@@ -310,8 +358,9 @@ void handlePassiveMouse(int x, int y) {
         ignoreWarp = false;
         return;
     }
-    int centerX = glutGet(GLUT_WINDOW_WIDTH) / 2;
-    int centerY = glutGet(GLUT_WINDOW_HEIGHT) / 2;
+   centerX = glutGet(GLUT_WINDOW_WIDTH) / 2;
+   centerY = glutGet(GLUT_WINDOW_HEIGHT) / 2;
+
     float xOffset = x - centerX;
     float yOffset = centerY - y;
     float sensitivity = 0.1f;
@@ -336,25 +385,32 @@ void update(int value) {
     glutTimerFunc(16, update, 0);
 }
 
-void display() {
-    // ==========================================
-    // 1. (Background System)
-    // ==========================================
-    if (isLightOn) {
-        glClearColor(0.52f, 0.80f, 0.92f, 1.0f);
-    }
-    else {
-        glClearColor(0.05f, 0.05f, 0.1f, 1.0f);
-    }
-
-    glEnable(GL_LIGHTING);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+void setCamera(int camIndex) {
+    glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
-    gluLookAt(camX, camY, camZ,
-        camX + lookX, camY + lookY, camZ + lookZ,
-        0.0f, 1.0f, 0.0f);
+    if (camIndex == 0) {
+        gluLookAt(camX, camY, camZ,
+            camX + lookX, camY + lookY, camZ + lookZ,
+            0.0f, 1.0f, 0.0f);
+    }
+    else {
+        Camera& c = cameras[camIndex - 1];
+        lookX = c.lookX;
+        lookY = c.lookY;
+        lookZ = c.lookZ;
 
+        yaw = atan2(lookZ, lookX) * 180.0f / M_PI;
+        pitch = asin(lookY) * 180.0f / M_PI;
+
+        gluLookAt(c.posX, c.posY, c.posZ,
+            c.posX + lookX, c.posY + lookY, c.posZ + lookZ,
+            0.0f, 1.0f, 0.0f);
+    }
+}
+
+void drawscene()
+{
     drawSkyBody(isLightOn);
 
 
@@ -421,7 +477,7 @@ void display() {
         myClouds[i].draw(weatherstatus);
     }
 
-    maher.draw(camX, camY, camZ, isLightOn);
+    maher.draw(camX, camY, camZ, isLightOn, cctvTexIDs);
 
     glPushMatrix();
     glTranslatef(0, -1, 0);
@@ -436,10 +492,77 @@ void display() {
         myClouds[i].draw(weatherstatus);
     }
 
-    maher.draw(camX, camY, camZ, isLightOn);
+    maher.draw(camX, camY, camZ, isLightOn,cctvTexIDs);
     glPopMatrix();
     lake.setAlpha(0.7);
     lake.draw();
+}
+
+void display() {
+    // ==========================================
+    // 1. (Background System)
+    // ==========================================
+    if (isLightOn) {
+        glClearColor(0.52f, 0.80f, 0.92f, 1.0f);
+    }
+    else {
+        glClearColor(0.05f, 0.05f, 0.1f, 1.0f);
+    }
+
+    glEnable(GL_LIGHTING);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glLoadIdentity();
+
+
+    if (captureThisFrame) {
+        int idx = lastCam - 1;
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        setCamera(lastCam);
+        drawscene();
+
+        if (cctvTexIDs[idx] == 0) glGenTextures(1, &cctvTexIDs[idx]);
+        glBindTexture(GL_TEXTURE_2D, cctvTexIDs[idx]);
+        glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, 1200, 800, 0);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        hasSnapshot[idx] = true;
+        captureThisFrame = false;
+    }
+
+    setCamera(currentCam);
+
+    /*if (currentCam == 0) {
+        for (int i = 0; i < 4; i++) {
+            glPushMatrix();
+            glTranslatef(-50.0f + (i * 30.0f), 25.0f, -140.0f);
+
+            if (hasSnapshot[i]) {
+                glEnable(GL_TEXTURE_2D);
+                glBindTexture(GL_TEXTURE_2D, cctvTexIDs[i]);
+                glColor3f(1, 1, 1);
+                glBegin(GL_QUADS);
+                glTexCoord2f(0, 0); glVertex3f(-12, -8, 0);
+                glTexCoord2f(1, 0); glVertex3f(12, -8, 0);
+                glTexCoord2f(1, 1); glVertex3f(12, 8, 0);
+                glTexCoord2f(0, 1); glVertex3f(-12, 8, 0);
+                glEnd();
+                glDisable(GL_TEXTURE_2D);
+            }
+            else {
+                glColor3f(0, 0, 0);
+                glBegin(GL_QUADS);
+                glVertex3f(-12, -8, 0); glVertex3f(12, -8, 0);
+                glVertex3f(12, 8, 0); glVertex3f(-12, 8, 0);
+                glEnd();
+            }
+            glPopMatrix();
+        }
+    }*/
+
+    drawscene();
+
 
     glutSwapBuffers();
 }

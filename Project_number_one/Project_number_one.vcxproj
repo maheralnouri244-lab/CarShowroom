@@ -150,8 +150,10 @@
     <ClCompile Include="Hpillar.cpp" />
     <ClCompile Include="Lake.cpp" />
     <ClCompile Include="Maherheader.cpp" />
+    <ClCompile Include="MonitorScreen.cpp" />
     <ClCompile Include="NeonTube.cpp" />
     <ClCompile Include="NormalCar.cpp" />
+    <ClCompile Include="OfficeDesk.cpp" />
     <ClCompile Include="PersistentCloud.cpp" />
     <ClCompile Include="Pillar.cpp" />
     <ClCompile Include="PlusRing3D.cpp" />
@@ -175,8 +177,10 @@
     <ClInclude Include="Hpillar.h" />
     <ClInclude Include="lake.h" />
     <ClInclude Include="Maherheader.h" />
+    <ClInclude Include="MonitorScreen.h" />
     <ClInclude Include="NeonTube.h" />
     <ClInclude Include="NormalCar.h" />
+    <ClInclude Include="OfficeDesk.h" />
     <ClInclude Include="PersistentCloud.h" />
     <ClInclude Include="Pillar.h" />
     <ClInclude Include="PlusRing3D.h" />
