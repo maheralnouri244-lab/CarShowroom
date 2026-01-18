@@ -505,7 +505,11 @@ void AbrarCode::drawCheckoutCounter(float x, float y, float z) {
 }
 
 void AbrarCode::drawQueue(float x, float y, float z) {
-    SteveModel c(0.3f); for (int i = 0;i < 6;i++) { SteveModel::setShirtColor(0.1 * (i + 1), 0.5, 0.8 - 0.1 * i); glPushMatrix(); glTranslatef(x, y, z + 20 + i * 15); glRotatef(180, 0, 1, 0); c.draw(); glPopMatrix(); }
+    SteveModel c(0.3f); 
+    for (int i = 0;i < 6;i++) { 
+        SteveModel::setShirtColor(0.1 * (i + 1), 0.5, 0.8 - 0.1 * i); 
+        glPushMatrix(); glTranslatef(x, y, z + 20 + i * 15); glRotatef(180, 0, 1, 0); c.draw(); glPopMatrix(); 
+    }
 }
 
 void AbrarCode::drawVideoWall(float x, float y, float z, float w, float h) {
@@ -555,7 +559,8 @@ void AbrarCode::drawPeopleOnFloor(float fy) {
         glPushMatrix(); 
         glTranslatef(p[i][0], fy + 0.2, p[i][2]); 
         glRotatef(i * 45, 0, 1, 0); s.draw(); glPopMatrix(); 
-    } }
+    } 
+}
 
 void AbrarCode::drawMegaAccessoriesShop(float x, float y, float z) {
     for (int i = 0; i < 5; i++) drawMassiveShelf(-120.0f, 0, -100.0f + (i * 50.0f), 5, 6, i % 5);
@@ -579,20 +584,41 @@ void AbrarCode::drawSecondFloor() {
     glPushMatrix();
     glTranslatef(0.0f, floorY, 0.0f);
 
-    // 1. OPAQUE (الأرضية والسقف والهيكل)
     glColor3f(0.85f, 0.85f, 0.9f); glBegin(GL_QUADS); glNormal3f(0, 1, 0); glVertex3f(maxX, 0.1f, maxZ); glVertex3f(maxX, 0.1f, minZ); glVertex3f(minX, 0.1f, minZ); glVertex3f(minX, 0.1f, maxZ); glEnd();
     glColor3f(1, 1, 1); glBegin(GL_QUADS); glNormal3f(0, -1, 0); glVertex3f(maxX, h, maxZ); glVertex3f(maxX, h, minZ); glVertex3f(minX, h, minZ); glVertex3f(minX, h, maxZ); glEnd();
 
-    // الأعمدة والجدران (نفس الكود السابق تماماً)
-    std::vector<Pillar> pillars; pillars.push_back(Pillar(maxX, 0, maxZ, h)); for (const auto& p : pillars) p.draw();
-    std::vector<Hpillar> hpillars; hpillars.push_back(Hpillar(maxX, 0, 0, 0.4, 0.8, maxZ - minZ)); hpillars.push_back(Hpillar(maxX, h - 0.4, 0, 0.4, 0.8, maxZ - minZ));
-    hpillars.push_back(Hpillar(minX, 0, 0, 0.4, 0.8, maxZ - minZ)); hpillars.push_back(Hpillar(minX, h - 0.4, 0, 0.4, 0.8, maxZ - minZ));
-    hpillars.push_back(Hpillar(0, 0, minZ, 0.4, maxX - minX, 0.8)); hpillars.push_back(Hpillar(0, h - 0.4, minZ, 0.4, maxX - minX, 0.8));
-    hpillars.push_back(Hpillar(0, h - 0.4, maxZ, 0.4, maxX - minX, 0.8)); hpillars.push_back(Hpillar(minX + (maxX - minX - diff) / 4, 0, maxZ, 0.4, (maxX - minX - diff) / 2, 0.8)); hpillars.push_back(Hpillar(maxX - (maxX - minX - diff) / 4, 0, maxZ, 0.4, (maxX - minX - diff) / 2, 0.8));
-    for (const auto& p : hpillars) p.draw();
+    std::vector<Pillar> pillars; 
+    pillars.push_back(Pillar(maxX, 0, maxZ, h)); 
+    for (const auto& p : pillars) 
+        p.draw();
+   
+    std::vector<Hpillar> hpillars; 
+    hpillars.push_back(Hpillar(maxX, 0, 0, 0.4, 0.8, maxZ - minZ)); 
+    hpillars.push_back(Hpillar(maxX, h - 0.4, 0, 0.4, 0.8, maxZ - minZ));
+    hpillars.push_back(Hpillar(minX, 0, 0, 0.4, 0.8, maxZ - minZ)); 
+    hpillars.push_back(Hpillar(minX, h - 0.4, 0, 0.4, 0.8, maxZ - minZ));
+    hpillars.push_back(Hpillar(0, 0, minZ, 0.4, maxX - minX, 0.8)); 
+    hpillars.push_back(Hpillar(0, h - 0.4, minZ, 0.4, maxX - minX, 0.8));
+    hpillars.push_back(Hpillar(0, h - 0.4, maxZ, 0.4, maxX - minX, 0.8)); 
+    hpillars.push_back(Hpillar(minX + (maxX - minX - diff) / 4, 0, maxZ, 0.4, (maxX - minX - diff) / 2, 0.8)); 
+    hpillars.push_back(Hpillar(maxX - (maxX - minX - diff) / 4, 0, maxZ, 0.4, (maxX - minX - diff) / 2, 0.8));
+    for (const auto& p : hpillars) 
+        p.draw();
 
-    std::vector<Showroomside> showroomsides; showroomsides.push_back(Showroomside(maxX, minX, minZ, minZ, h, 0.2, 0.2, 0.2, 40, 5)); showroomsides.push_back(Showroomside(minX, minX, maxZ, minZ, h, 0.2, 0.2, 0.2, 40, 5)); showroomsides.push_back(Showroomside(maxX, maxX, maxZ, minZ, h, 0.2, 0.2, 0.2, 40, 5)); showroomsides.push_back(Showroomside(minX + (maxX - minX - diff) / 2, minX, maxZ, maxZ, h, 0.2, 0.2, 0.2, 18, 5)); showroomsides.push_back(Showroomside(maxX, maxX - (maxX - minX - diff) / 2, maxZ, maxZ, h, 0.2, 0.2, 0.2, 18, 5)); for (const auto& p : showroomsides) p.draw();
-    std::vector<NeonTube> neonyubes; neonyubes.push_back(NeonTube(minX + (maxX - minX - diff) / 2 + 4, 0, 0, maxZ - minZ - diff, 0.1, 'z')); neonyubes.push_back(NeonTube(maxX - (maxX - minX - diff) / 2 - 4, 0, 0, maxZ - minZ - diff, 0.1, 'z')); for (const auto& p : neonyubes) p.draw();
+    std::vector<Showroomside> showroomsides; 
+    showroomsides.push_back(Showroomside(maxX, minX, minZ, minZ, h, 0.2, 0.2, 0.2, 40, 5)); 
+    showroomsides.push_back(Showroomside(minX, minX, maxZ, minZ, h, 0.2, 0.2, 0.2, 40, 5)); 
+    showroomsides.push_back(Showroomside(maxX, maxX, maxZ, minZ, h, 0.2, 0.2, 0.2, 40, 5)); 
+    showroomsides.push_back(Showroomside(minX + (maxX - minX - diff) / 2, minX, maxZ, maxZ, h, 0.2, 0.2, 0.2, 18, 5)); 
+    showroomsides.push_back(Showroomside(maxX, maxX - (maxX - minX - diff) / 2, maxZ, maxZ, h, 0.2, 0.2, 0.2, 18, 5)); 
+    for (const auto& p : showroomsides) 
+        p.draw();
+    
+    std::vector<NeonTube> neonyubes; 
+    neonyubes.push_back(NeonTube(minX + (maxX - minX - diff) / 2 + 4, 0, 0, maxZ - minZ - diff, 0.1, 'z')); 
+    neonyubes.push_back(NeonTube(maxX - (maxX - minX - diff) / 2 - 4, 0, 0, maxZ - minZ - diff, 0.1, 'z')); 
+    for (const auto& p : neonyubes) 
+        p.draw();
 
     // المحتويات
     float rW = 60, rH = 40;
@@ -601,27 +627,15 @@ void AbrarCode::drawSecondFloor() {
     drawRoom(100, 0, 150, rW, rH, 80);
     drawMegaAccessoriesShop(-100, 0, 0);
     drawSecretariatOffice(120, 0, 50);
-    drawLuxurySofa(100, 2, 120, 45); drawChandelier(100, 30, 120); drawFountain(120, 0, 150);
+    drawLuxurySofa(100, 2, 120, 45); 
+    drawChandelier(100, 30, 120); 
+    drawFountain(120, 0, 150);
     drawHologram(100, 2, 150);
     drawPeopleOnFloor(0.2f);
 
     glPopMatrix();
 
-    // الكابينة (في الإحداثيات العالمية)
     drawElevatorCabin(ELEV_X, elevatorY, ELEV_Z);
-
-    // 2. GLASS (الآن نرسمه تماماً كما في الأرضي، بدون أي تغييرات خاصة)
-    glPushMatrix(); glTranslatef(0, floorY, 0);
-    std::vector<GlassWindow> glasswindows;
-    glasswindows.push_back(GlassWindow(maxX, 0, minZ, maxX, h, minZ, minX, h, minZ, minX, 0, minZ));
-    glasswindows.push_back(GlassWindow(maxX, 0, minZ, maxX, h, minZ, maxX, h, maxZ, maxX, 0, maxZ));
-    glasswindows.push_back(GlassWindow(minX, 0, minZ, minX, h, minZ, minX, h, maxZ, minX, 0, maxZ));
-    glasswindows.push_back(GlassWindow(minX, 0, maxZ, minX, h, maxZ, minX + (maxX - minX - diff) / 2 + 3, h, maxZ, minX + (maxX - minX - diff) / 2 + 3, 0, maxZ));
-    glasswindows.push_back(GlassWindow(maxX, 0, maxZ, maxX, h, maxZ, maxX - (maxX - minX - diff) / 2 - 3, h, maxZ, maxX - (maxX - minX - diff) / 2 - 3, 0, maxZ));
-
-    // إزالة أي إعدادات دمج يدوية هنا، وترك GlassWindow::draw يتعامل معها
-    // فقط نتأكد من تفعيل الدمج العام في main
-    for (const auto& p : glasswindows) p.draw();
 
     drawElevatorDoor(ELEV_X, 0, ELEV_Z + 15, doorGapSecond);
 
@@ -630,7 +644,10 @@ void AbrarCode::drawSecondFloor() {
 
 
 void AbrarCode::drawRoom(float x, float y, float z, float w, float h, float d) {
-    Pillar p1(x - w / 2, y, z - d / 2, h); p1.draw(); Pillar p2(x + w / 2, y, z - d / 2, h); p2.draw();
-    Pillar p3(x + w / 2, y, z + d / 2, h); p3.draw(); Pillar p4(x - w / 2, y, z + d / 2, h); p4.draw();
-    NeonTube n(x, y + h - 1, z, d - 2, 0.2, 'z'); n.draw();
+    Pillar p1(x - w / 2, y, z - d / 2, h); p1.draw(); 
+    Pillar p2(x + w / 2, y, z - d / 2, h); p2.draw();
+    Pillar p3(x + w / 2, y, z + d / 2, h); p3.draw(); 
+    Pillar p4(x - w / 2, y, z + d / 2, h); p4.draw();
+    NeonTube n(x, y + h - 1, z, d - 2, 0.2, 'z'); 
+    n.draw();
 }

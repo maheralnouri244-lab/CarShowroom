@@ -90,8 +90,7 @@ void Maherheader::draw(float camX,float camY,float camZ,bool isday, GLuint cctvT
 	vector<Pillar> pillars;
 	vector<Hpillar> hpillars;
 	vector<Showroomside> showroomsides;
-	vector<GlassWindow> glasswindows;
-    vector< NeonTube> neonyubes;
+    vector <NeonTube> neonyubes;
 	float maxX = 150, maxz = 200, diff = 45;
 	float minX = -maxX, minz = -maxz;
 	pair<float, float> p[4] = {{maxX,maxz},{minX,maxz},{maxX,minz},{minX,minz} };
@@ -172,16 +171,6 @@ void Maherheader::draw(float camX,float camY,float camZ,bool isday, GLuint cctvT
     //ground line
     showroomsides.push_back(Showroomside(minX + (maxX - minX - diff) / 2, minX + (maxX - minX - diff) / 2, (maxz - minz - 2 * diff) / 2, -(maxz - minz - 2 * diff) / 2, h, 0.2, 0.2, 0.2, 18, 5));
     showroomsides.push_back(Showroomside(maxX - (maxX - minX - diff) / 2, maxX - (maxX - minX - diff) / 2, (maxz - minz - 2 * diff) / 2, -(maxz - minz - 2 * diff) / 2, h, 0.2, 0.2, 0.2, 18, 5));
-
-    glasswindows.push_back(GlassWindow(maxX, 0, minz, maxX, h, minz, minX, h, minz, minX, 0, minz));
-    glasswindows.push_back(GlassWindow(maxX, 0, minz, maxX, h, minz, maxX, h, maxz, maxX, 0, maxz));
-    glasswindows.push_back(GlassWindow(minX, 0, minz, minX, h, minz, minX, h, maxz, minX, 0, maxz));
-    glasswindows.push_back(GlassWindow(minX, 0, maxz, minX, h, maxz, minX + (maxX - minX - diff) / 2 + 3, h, maxz, minX + (maxX - minX - diff) / 2 + 3, 0, maxz));
-    glasswindows.push_back(GlassWindow(maxX, 0, maxz, maxX, h, maxz, maxX - (maxX - minX - diff) / 2 - 3, h, maxz, maxX - (maxX - minX - diff) / 2 - 3, 0, maxz));
-
-    //ground line
-    glasswindows.push_back(GlassWindow(minX + (maxX - minX - diff) / 2, 0, (maxz - minz - 2 * diff) / 2, minX + (maxX - minX - diff) / 2, h, (maxz - minz - 2 * diff) / 2, minX + (maxX - minX - diff) / 2, h, -(maxz - minz - 2 * diff) / 2, minX + (maxX - minX - diff) / 2, 0, -(maxz - minz - 2 * diff) / 2));
-    glasswindows.push_back(GlassWindow(maxX - (maxX - minX - diff) / 2, 0, (maxz - minz - 2 * diff) / 2, maxX - (maxX - minX - diff) / 2, h, (maxz - minz - 2 * diff) / 2, maxX - (maxX - minX - diff) / 2, h, -(maxz - minz - 2 * diff) / 2, maxX - (maxX - minX - diff) / 2, 0, -(maxz - minz - 2 * diff) / 2));
 
     neonyubes.push_back(NeonTube(minX + (maxX - minX - diff) / 2 + 4, 0, 0, maxz - minz - diff, 0.1, 'z'));
     neonyubes.push_back(NeonTube(maxX - (maxX - minX - diff) / 2 - 4, 0, 0, maxz - minz - diff, 0.1, 'z'));
@@ -541,10 +530,6 @@ void Maherheader::draw(float camX,float camY,float camZ,bool isday, GLuint cctvT
         glPopMatrix();
         //if (!isday)
         //drawLightBeam(x, y_lamp, z);
-    }
-
-    for (const auto& p : glasswindows) {
-        p.draw();
     }
 
     MonitorScreen myMonitor;

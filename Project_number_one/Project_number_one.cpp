@@ -16,6 +16,7 @@
 #include "RainSystem.h"
 #include "SaraCode.h"
 #include <iostream>
+#include "GlassManager.h"
 
 #define M_PI acos(-1)
 
@@ -67,6 +68,7 @@ Maherheader maher;
 AbrarCode abrarCode;
 Jeep_Builder_Final myJeep;
 SaraCode saraCode;
+GlassManager glassMgr;
 GlassWindow lake = GlassWindow(minX - 170, -0.2, maxz + 100, minX - 170, -0.2, maxz + 600, minX + 140, -0.2, maxz + 600, minX + 170, -0.2, maxz + 100);
 
 GLuint cctvTexIDs[4] = { 0, 0, 0, 0 };
@@ -190,34 +192,28 @@ void initRendering() {
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
-
     glDisable(GL_LIGHT1);
-
-
     glEnable(GL_COLOR_MATERIAL);
     glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
-
     glEnable(GL_NORMALIZE);
     glShadeModel(GL_SMOOTH);
-
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     GLfloat globalAmbient[] = { 0.2f, 0.2f, 0.2f, 1.0f };
     glLightModelfv(GL_LIGHT_MODEL_AMBIENT, globalAmbient);
-
     GLfloat lightColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
     GLfloat lightSpecular[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-
     GLfloat lightPos[] = { 1.0f, 1.0f, 1.0f, 0.0f };
-
     glLightfv(GL_LIGHT0, GL_DIFFUSE, lightColor);
     glLightfv(GL_LIGHT0, GL_SPECULAR, lightSpecular);
     glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
-
     glClearColor(0.1f, 0.1f, 0.15f, 1.0f);
     myJeep.init();
+
+    glassMgr.initShowroomWindows();
 }
+
 
 void drawSkyBody(bool isDay) {
     glPushMatrix();
@@ -431,6 +427,7 @@ void drawscene()
     abrarCode.drawGroundFloorElevator();
     abrarCode.drawSecondFloor();
     saraCode.drawAll();
+    //glassMgr.drawAll();
     // =======================================================
     // (The Corrected Isolation Protocol) - Jeep Section
     // =======================================================
@@ -520,7 +517,7 @@ void display() {
 
         setCamera(lastCam);
         drawscene();
-
+        glassMgr.drawAll();
         if (cctvTexIDs[idx] == 0) glGenTextures(1, &cctvTexIDs[idx]);
         glBindTexture(GL_TEXTURE_2D, cctvTexIDs[idx]);
         glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, 1200, 800, 0);
@@ -562,7 +559,7 @@ void display() {
     }*/
 
     drawscene();
-
+    glassMgr.drawAll();
 
     glutSwapBuffers();
 }

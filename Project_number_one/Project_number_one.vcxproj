@@ -145,6 +145,7 @@
     <ClCompile Include="AccessoriesSection.cpp" />
     <ClCompile Include="BeetleCar.cpp" />
     <ClCompile Include="Furniture.cpp" />
+    <ClCompile Include="GlassManager.cpp" />
     <ClCompile Include="GlassWindow.cpp" />
     <ClCompile Include="House.cpp" />
     <ClCompile Include="Hpillar.cpp" />
@@ -172,6 +173,7 @@
     <ClInclude Include="AccessoriesSection.h" />
     <ClInclude Include="BeetleCar.h" />
     <ClInclude Include="Furniture.h" />
+    <ClInclude Include="GlassManager.h" />
     <ClInclude Include="GlassWindow.h" />
     <ClInclude Include="House.h" />
     <ClInclude Include="Hpillar.h" />

@@ -7,8 +7,8 @@
 
 class StreetLamp {
 private:
-    float poleHeight;    
-    float poleRadius;    
+    float poleHeight;
+    float poleRadius;
     float armCurveRadius;
     float lampColor[3];
     StageLight* headLight;
