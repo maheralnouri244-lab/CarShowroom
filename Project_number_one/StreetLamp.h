@@ -11,17 +11,17 @@ private:
     float poleRadius;    
     float armCurveRadius;
     float lampColor[3];
-
     StageLight* headLight;
 
-    void drawArmCurve() const;
+
+    void drawArmCurve(bool on) const;
 
 public:
     StreetLamp(float height = 5.0f, float radius = 0.15f);
     ~StreetLamp();
 
     void setLightColor(float r, float g, float b);
-    void draw() const;
+    void draw(bool on) const;
 };
 
 #endif

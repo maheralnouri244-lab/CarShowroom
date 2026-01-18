@@ -395,7 +395,7 @@ void display() {
     maher.draw(camX, camY, camZ, isLightOn);
     glPopMatrix();
     
-    lake.setAlpha(0.3);
+    lake.setAlpha(0.7);
     lake.draw();
 
     glutSwapBuffers();

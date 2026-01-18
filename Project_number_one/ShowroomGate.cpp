@@ -94,6 +94,11 @@ void ShowroomGate::drawGateArch(float cx, float cz) {
         light.setRotation(lightRotations[i][0],
             lightRotations[i][1],
             lightRotations[i][2]);
+        /*if (i % 2 == 0 && i % 3 == 0)
+        light.updateBeam(0.8, 0.8, 0.8, 0.3, 120, 100);
+        else*/
+         light.updateBeam(0.8, 0, 0, 0, 150, 1);
+
         light.draw();
         glPopMatrix();
     }

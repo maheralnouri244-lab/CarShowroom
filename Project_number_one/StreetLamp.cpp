@@ -14,7 +14,7 @@ StreetLamp::~StreetLamp() {
     delete headLight;
 }
 
-void StreetLamp::drawArmCurve() const {
+void StreetLamp::drawArmCurve(bool on) const {
     const int segments = 16;
     const float angleStep = 90.0f / segments;
 
@@ -30,13 +30,14 @@ void StreetLamp::drawArmCurve() const {
         glTranslatef(0.0f, 0.0f, armCurveRadius / segments);
         glRotatef(angleStep, 1.0f, 0.0f, 0.0f);
     }
-
+    if (on)
+        headLight->updateBeam(1.0f, 0.85f, 0.2f, 0.3f, 35, 27.5);
     headLight->draw();
 
     glPopMatrix();
 }
 
-void StreetLamp::draw() const {
+void StreetLamp::draw(bool on) const {
     glPushMatrix();
 
     glColor3f(0.15f, 0.15f, 0.15f);
@@ -49,7 +50,7 @@ void StreetLamp::draw() const {
     gluDisk(quad, 0.0f, poleRadius * 2.0f, 16, 1);
     glPopMatrix();
 
-    drawArmCurve();
+    drawArmCurve(on);
 
     gluDeleteQuadric(quad);
     glPopMatrix();

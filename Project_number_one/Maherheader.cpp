@@ -91,7 +91,6 @@ void Maherheader::draw(float camX,float camY,float camZ,bool isday) {
 	vector<Showroomside> showroomsides;
 	vector<GlassWindow> glasswindows;
     vector< NeonTube> neonyubes;
-    StageLight light;
 	float maxX = 150, maxz = 200, diff = 45;
 	float minX = -maxX, minz = -maxz;
 	pair<float, float> p[4] = {{maxX,maxz},{minX,maxz},{maxX,minz},{minX,minz} };
@@ -369,7 +368,21 @@ void Maherheader::draw(float camX,float camY,float camZ,bool isday) {
 
     glColor3f(0.6f, 0.6f, 0.6f);
 
-    glBegin(GL_QUADS);
+    
+    glPushMatrix();
+    glTranslatef(roadEdge+swWidth/2,1,(maxz+1000)/2);
+    glScalef(4, 1, 400);
+    glutSolidCube(2);
+    glPopMatrix();
+
+    glPushMatrix();
+    glTranslatef(-roadEdge - swWidth / 2, 1, (maxz + 1000) / 2);
+    glScalef(4, 1, 400);
+    glutSolidCube(2);
+    glPopMatrix();
+
+
+    /*glBegin(GL_QUADS);
 
     glNormal3f(0, 1, 0);
     glVertex3f(roadEdge, swHeight, swStart);
@@ -395,7 +408,7 @@ void Maherheader::draw(float camX,float camY,float camZ,bool isday) {
     glVertex3f(-roadEdge, swHeight, swEnd);
     glVertex3f(-roadEdge, 0, swEnd);
 
-    glEnd();
+    glEnd();*/
 
 
 
@@ -494,26 +507,22 @@ void Maherheader::draw(float camX,float camY,float camZ,bool isday) {
     plusring.draw();
     glPopMatrix();
 
-    for (const auto& p : glasswindows) {
-        p.draw();
-    }
-
     int lightnum = 4;
     for (int i = 1; i <= lightnum ; i++)
     {
         float x = 25.0f-18.7;
         float z = 200.0f + (800.0f / lightnum) * i;
-        float y_lamp = 0;
+        float y_lamp = swHeight+0.1;
 
         glPushMatrix();
-        glTranslatef(25, 0, 200 + (800 / lightnum) * i);
+        glTranslatef(25, y_lamp, 200 + (800 / lightnum) * i);
         glRotatef(270, 0, 1, 0);
         StreetLamp lamp(50.0f, 0.8f);
-        lamp.draw();
+        lamp.draw(!isday);
         glPopMatrix();
 
-        if (!isday)
-        drawLightBeam(x, y_lamp, z);
+        //if (!isday)
+        //drawLightBeam(x, y_lamp, z);
     }
 
     for (int i = 1; i <= lightnum; i++)
@@ -521,15 +530,19 @@ void Maherheader::draw(float camX,float camY,float camZ,bool isday) {
 
         float x = -25.0f + 18.7;
         float z = 200.0f + (800.0f / lightnum) * i - 400 / lightnum;
-        float y_lamp = 0;
+        float y_lamp = swHeight+0.1;
 
         glPushMatrix();
-        glTranslatef(-25, 0, 200 + (800 / lightnum) * i - 400 / lightnum);
+        glTranslatef(-25, y_lamp, 200 + (800 / lightnum) * i - 400 / lightnum);
         glRotatef(90, 0, 1, 0);
         StreetLamp lamp(50.0f, 0.8f);
-        lamp.draw();
+        lamp.draw(!isday);
         glPopMatrix();
-        if (!isday)
-        drawLightBeam(x, y_lamp, z);
+        //if (!isday)
+        //drawLightBeam(x, y_lamp, z);
+    }
+
+    for (const auto& p : glasswindows) {
+        p.draw();
     }
 }
