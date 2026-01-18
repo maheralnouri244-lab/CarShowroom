@@ -72,6 +72,12 @@
     <ClCompile Include="StreetLamp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="SaraCode.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="NormalCar.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Pillar.h">
@@ -129,6 +135,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="StreetLamp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NormalCar.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SaraCode.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
