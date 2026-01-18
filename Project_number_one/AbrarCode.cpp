@@ -36,17 +36,52 @@ AbrarCode::AbrarCode() {
     elevatorDoorsOpen = true; // Initially open at ground
     elevatorDoorOffset = 10.0f; // Visual only
 
-    float pX = 90.0f, s = 8.0f, r = -90.0f;
+    float pX = 120.0f, s = 8.0f, r = -90.0f;
     cars.push_back({ pX, 2.0f, -40.0f, s, r, 0, {0,0,0,0}, {0,0,0,0} });
     cars.push_back({ pX, 2.0f, -75.0f, s, r, 1, {0,0,0,0}, {0,0,0,0} });
     cars.push_back({ pX, 2.0f, -110.0f, s, r, 2, {0,0,0,0}, {0,0,0,0} });
     cars.push_back({ pX, 2.0f, -145.0f, s, r, 3, {0,0,0,0}, {0,0,0,0} });
 }
 
-void AbrarCode::drawCars() { for (int i = 0;i < cars.size();i++) { bool drv = (currentState == STATE_DRIVING && i == activeCarIndex);myCar.draw(cars[i].x, cars[i].y, cars[i].z, cars[i].scale, cars[i].rotY, cars[i].colorIdx, drv, cars[i].currentDoors); } }
-float AbrarCode::dist(float x1, float z1, float x2, float z2) { return sqrt(pow(x2 - x1, 2) + pow(z2 - z1, 2)); }
-void AbrarCode::attemptEnterCar(float cx, float cz) { int cl = -1;float md = 50;for (int i = 0;i < cars.size();i++) { float d = dist(cx, cz, cars[i].x, cars[i].z);if (d < md) { md = d;cl = i; } }if (cl != -1) { activeCarIndex = cl;currentState = STATE_ENTERING;animT = 0;cars[activeCarIndex].targetDoors[1] = 60; } }
-void AbrarCode::driveActiveCar(float s, float t) { if (activeCarIndex == -1)return;cars[activeCarIndex].rotY -= t;float r = cars[activeCarIndex].rotY * M_PI / 180;cars[activeCarIndex].x += sin(r) * s;cars[activeCarIndex].z += cos(r) * s; }
+void AbrarCode::drawCars() {
+    for (int i = 0;i < cars.size();i++) {
+        bool drv = (currentState == STATE_DRIVING && i == activeCarIndex);
+        myCar.draw(cars[i].x, cars[i].y, cars[i].z, cars[i].scale, cars[i].rotY, cars[i].colorIdx, drv, cars[i].currentDoors, cars[i].currentSteer);
+    } 
+}
+float AbrarCode::dist(float x1, float z1, float x2, float z2) { 
+    return sqrt(pow(x2 - x1, 2) + pow(z2 - z1, 2)); 
+}
+void AbrarCode::attemptEnterCar(float cx, float cz) { 
+    int cl = -1;float md = 50;
+    for (int i = 0;i < cars.size();i++) { 
+        float d = dist(cx, cz, cars[i].x, cars[i].z);
+        if (d < md) { 
+            md = d;cl = i; 
+        } 
+    } if (cl != -1) { 
+        activeCarIndex = cl;
+        currentState = STATE_ENTERING;
+        animT = 0;cars[activeCarIndex].targetDoors[1] = 60; 
+    }
+}
+
+void AbrarCode::driveActiveCar(float speed, float turn) {
+    if (activeCarIndex == -1)
+        return;
+    cars[activeCarIndex].rotY -= turn;
+    float steerLimit = 45.0f; // أقصى دوران للمقود
+    if (turn != 0) {
+        cars[activeCarIndex].currentSteer += turn * 5.0f;
+        // تقييد الزاوية
+        if (cars[activeCarIndex].currentSteer > steerLimit) cars[activeCarIndex].currentSteer = steerLimit;
+        if (cars[activeCarIndex].currentSteer < -steerLimit) cars[activeCarIndex].currentSteer = -steerLimit;
+    }
+    
+    float r = cars[activeCarIndex].rotY * M_PI / 180;
+    cars[activeCarIndex].x += sin(r) * speed;
+    cars[activeCarIndex].z += cos(r) * speed; 
+}
 
 // --- INPUT LOGIC ---
 void AbrarCode::handleInput(unsigned char key, float& camX, float& camY, float& camZ) {
@@ -126,8 +161,8 @@ void AbrarCode::handleInput(unsigned char key, float& camX, float& camY, float& 
         switch (key) {
         case 'w': driveActiveCar(s, 0); break;
         case 's': driveActiveCar(-s, 0); break;
-        case 'a': driveActiveCar(0, t); break;
-        case 'd': driveActiveCar(0, -t); break;
+        case 'a': driveActiveCar(0, -t); break;
+        case 'd': driveActiveCar(0, t); break;
         case 'g':
             cars[activeCarIndex].targetDoors[1] = 0.0f;
             currentState = STATE_WALKING;
@@ -135,8 +170,10 @@ void AbrarCode::handleInput(unsigned char key, float& camX, float& camY, float& 
             camY = 80.0f;
             break;
         case 'f':
-            if (cars[activeCarIndex].targetDoors[1] < 1) cars[activeCarIndex].targetDoors[1] = 60;
-            else cars[activeCarIndex].targetDoors[1] = 0;
+            if (cars[activeCarIndex].targetDoors[1] < 1) 
+                cars[activeCarIndex].targetDoors[1] = 60;
+            else 
+                cars[activeCarIndex].targetDoors[1] = 0;
             break;
         }
     }
@@ -150,22 +187,39 @@ void AbrarCode::update(float& camX, float& camY, float& camZ, float& yaw, float&
     // --- Elevator Movement ---
     if (elevState == ELEV_MOVING_UP) {
         elevatorY += liftSpeed;
-        if (elevatorY >= targetElevatorY) { elevatorY = targetElevatorY; elevState = ELEV_DOOR_OPENING; }
+        if (elevatorY >= targetElevatorY) { 
+            elevatorY = targetElevatorY; 
+            elevState = ELEV_DOOR_OPENING; 
+        }
     }
     if (elevState == ELEV_MOVING_DOWN) {
         elevatorY -= liftSpeed;
-        if (elevatorY <= targetElevatorY) { elevatorY = targetElevatorY; elevState = ELEV_DOOR_OPENING; }
+        if (elevatorY <= targetElevatorY) { 
+            elevatorY = targetElevatorY; 
+            elevState = ELEV_DOOR_OPENING; 
+        }
     }
-
+    // Auto-center steering if not turning
+    if (activeCarIndex != -1) {
+        // تخفيف الزاوية تدريجياً نحو الصفر
+        cars[activeCarIndex].currentSteer *= 0.9f;
+        if (fabs(cars[activeCarIndex].currentSteer) < 0.1f) cars[activeCarIndex].currentSteer = 0;
+    }
     // --- Door Opening ---
     if (elevState == ELEV_DOOR_OPENING) {
         doorGapCabin += doorSpeed;
         // Ground door at -60 (less than -30), Upper door at 0
-        if (elevatorY < -30) doorGapGround += doorSpeed; else doorGapSecond += doorSpeed;
+        if (elevatorY < -30) 
+            doorGapGround += doorSpeed; 
+        else 
+            doorGapSecond += doorSpeed;
 
         if (doorGapCabin >= 9.0f) {
             doorGapCabin = 9.0f;
-            if (elevatorY < -30) doorGapGround = 9.0f; else doorGapSecond = 9.0f;
+            if (elevatorY < -30) 
+                doorGapGround = 9.0f; 
+            else 
+                doorGapSecond = 9.0f;
             elevState = ELEV_IDLE;
 
             // Execute Exit Logic
@@ -173,8 +227,10 @@ void AbrarCode::update(float& camX, float& camY, float& camZ, float& yaw, float&
                 currentState = STATE_WALKING;
                 camZ += 40.0f; // Step out
                 // Set correct floor height
-                if (elevatorY > -30) camY = 140.0f; // Upper Floor
-                else camY = 80.0f;                  // Ground Floor
+                if (elevatorY > -30) 
+                    camY = 140.0f; // Upper Floor
+                else 
+                    camY = 80.0f;                  // Ground Floor
             }
         }
     }
@@ -182,11 +238,17 @@ void AbrarCode::update(float& camX, float& camY, float& camZ, float& yaw, float&
     // --- Door Closing ---
     if (elevState == ELEV_DOOR_CLOSING) {
         doorGapCabin -= doorSpeed;
-        if (elevatorY < -30) doorGapGround -= doorSpeed; else doorGapSecond -= doorSpeed;
+        if (elevatorY < -30) 
+            doorGapGround -= doorSpeed; 
+        else 
+            doorGapSecond -= doorSpeed;
 
         if (doorGapCabin <= 0.0f) {
             doorGapCabin = 0.0f;
-            if (elevatorY < -30) doorGapGround = 0.0f; else doorGapSecond = 0.0f;
+            if (elevatorY < -30) 
+                doorGapGround = 0.0f; 
+            else 
+                doorGapSecond = 0.0f;
 
             // Check if we need to move after closing
             if (fabs(elevatorY - targetElevatorY) > 1.0f)
@@ -205,24 +267,42 @@ void AbrarCode::update(float& camX, float& camY, float& camZ, float& yaw, float&
 
     // --- Car Animation ---
     myCar.updateAnimation();
-    for (int c = 0;c < cars.size();c++) for (int d = 0;d < 4;d++) {
-        float& cr = cars[c].currentDoors[d]; float tg = cars[c].targetDoors[d];
-        if (cr < tg) cr += 2; else if (cr > tg) cr -= 2;
-    }
+    for (int c = 0;c < cars.size();c++) 
+        for (int d = 0;d < 4;d++) {
+            float& cr = cars[c].currentDoors[d]; 
+            float tg = cars[c].targetDoors[d];
+            if (cr < tg) 
+                cr += 2; 
+            else if (cr > tg) 
+                cr -= 2;
+        }
 
     // --- Car Entering Animation ---
     if (currentState == STATE_ENTERING) {
         if (animT == 0) {
-            startX = camX;startY = camY;startZ = camZ;startYaw = yaw;startPitch = pitch;
-            CarData& c = cars[activeCarIndex]; float r = c.rotY * M_PI / 180;
+            startX = camX;
+            startY = camY;
+            startZ = camZ;
+            startYaw = yaw;
+            startPitch = pitch;
+
+            CarData& c = cars[activeCarIndex]; 
+            float r = c.rotY * M_PI / 180;
             targetX = c.x + (0.4f * c.scale * cos(r) + 0.4f * c.scale * sin(r));
             targetY = c.y + 1.1f * c.scale;
             targetZ = c.z + (-0.4f * c.scale * sin(r) + 0.4f * c.scale * cos(r));
             targetYaw = c.rotY - 90; targetPitch = 0;
         }
-        animT += 0.05f; if (animT >= 1) { animT = 1;currentState = STATE_DRIVING; }
-        camX = startX + (targetX - startX) * animT; camY = startY + (targetY - startY) * animT; camZ = startZ + (targetZ - startZ) * animT;
-        yaw = startYaw + (targetYaw - startYaw) * animT; pitch = startPitch + (targetPitch - startPitch) * animT;
+        animT += 0.05f; 
+        if (animT >= 1) { 
+            animT = 1;
+            currentState = STATE_DRIVING; 
+        }
+        camX = startX + (targetX - startX) * animT;
+        camY = startY + (targetY - startY) * animT;
+        camZ = startZ + (targetZ - startZ) * animT;
+        yaw = startYaw + (targetYaw - startYaw) * animT; 
+        pitch = startPitch + (targetPitch - startPitch) * animT;
     }
     else if (currentState == STATE_DRIVING) {
         CarData& c = cars[activeCarIndex]; float r = c.rotY * M_PI / 180;
@@ -236,41 +316,170 @@ void AbrarCode::update(float& camX, float& camY, float& camZ, float& yaw, float&
 
 void AbrarCode::drawElevatorShaft(float x, float z, float h) {
     float w = 30.0f;
-    glEnable(GL_BLEND); glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); glDepthMask(GL_FALSE);
-    glColor4f(0.5, 0.7, 0.9, 0.3); glPushMatrix(); glTranslatef(x, h / 2, z); glScalef(w, h, w); glutSolidCube(1); glPopMatrix();
-    glDepthMask(GL_TRUE); glDisable(GL_BLEND);
-    glColor3f(0.2, 0.2, 0.2); float p[] = { -1,1 }; for (int i = 0;i < 2;i++)for (int j = 0;j < 2;j++) { glPushMatrix();glTranslatef(x + p[i] * w / 2, h / 2, z + p[j] * w / 2);glScalef(2, h, 2);glutSolidCube(1);glPopMatrix(); }
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); 
+    glDepthMask(GL_FALSE);
+    glColor4f(0.5, 0.7, 0.9, 0.3); 
+    glPushMatrix(); 
+    glTranslatef(x, h / 2, z); 
+    glScalef(w, h, w); 
+    glutSolidCube(1); 
+    glPopMatrix();
+    glDepthMask(GL_TRUE); 
+    glDisable(GL_BLEND);
+    glColor3f(0.2, 0.2, 0.2); 
+    float p[] = { -1,1 }; 
+    for (int i = 0;i < 2;i++)
+        for (int j = 0;j < 2;j++) { 
+            glPushMatrix();
+            glTranslatef(x + p[i] * w / 2, h / 2, z + p[j] * w / 2);
+            glScalef(2, h, 2);glutSolidCube(1);glPopMatrix(); 
+        }
 }
+
 void AbrarCode::drawElevatorDoor(float x, float y, float z, float gap) {
-    float w = 18, h = 20; glColor3f(0.5, 0.5, 0.55);
-    glPushMatrix(); glTranslatef(x - w / 4 - gap / 2, y + h / 2, z); glScalef(w / 2, h, 1); glutSolidCube(1); glPopMatrix();
-    glPushMatrix(); glTranslatef(x + w / 4 + gap / 2, y + h / 2, z); glScalef(w / 2, h, 1); glutSolidCube(1); glPopMatrix();
-    glColor3f(0.2, 0.2, 0.2); glPushMatrix(); glTranslatef(x, y + h + 1, z); glScalef(w + 4, 2, 2); glutSolidCube(1); glPopMatrix();
+    float w = 18, h = 20; 
+    glColor3f(0.5, 0.5, 0.55);
+    glPushMatrix(); 
+    glTranslatef(x - w / 4 - gap / 2, y + h / 2, z); 
+    glScalef(w / 2, h, 1); 
+    glutSolidCube(1); 
+    glPopMatrix();
+
+    glPushMatrix(); 
+    glTranslatef(x + w / 4 + gap / 2, y + h / 2, z); 
+    glScalef(w / 2, h, 1); 
+    glutSolidCube(1); 
+    glPopMatrix();
+    glColor3f(0.2, 0.2, 0.2); 
+
+    glPushMatrix(); 
+    glTranslatef(x, y + h + 1, z); 
+    glScalef(w + 4, 2, 2); 
+    glutSolidCube(1); 
+    glPopMatrix();
 }
 void AbrarCode::drawElevatorCabin(float x, float y, float z) {
-    float w = 20; glPushMatrix(); glTranslatef(x, y + 10, z);
-    glColor3f(0.8, 0.8, 0.85); glPushMatrix(); glTranslatef(0, -9.5, 0); glScalef(w, 1, w); glutSolidCube(1); glPopMatrix();
-    glPushMatrix(); glTranslatef(0, 9.5, 0); glScalef(w, 1, w); glutSolidCube(1); glPopMatrix();
-    glPushMatrix(); glTranslatef(0, 0, -w / 2); glScalef(w, 20, 1); glutSolidCube(1); glPopMatrix();
-    glColor3f(0.5, 0.5, 0.5); drawElevatorDoor(0, -10, w / 2 - 1, doorGapCabin);
-    glColor3f(0.1, 0.1, 0.1); glPushMatrix(); glTranslatef(w / 2 - 2, 0, 0); glScalef(1, 6, 2); glutSolidCube(1); glPopMatrix();
-    if (elevState == ELEV_MOVING_UP) glColor3f(0, 1, 0); else glColor3f(0, 0.3, 0); glPushMatrix(); glTranslatef(w / 2 - 1.5, 1, 0); glutSolidSphere(0.3, 8, 8); glPopMatrix();
-    if (elevState == ELEV_MOVING_DOWN) glColor3f(1, 0, 0); else glColor3f(0.3, 0, 0); glPushMatrix(); glTranslatef(w / 2 - 1.5, -1, 0); glutSolidSphere(0.3, 8, 8); glPopMatrix();
+    float w = 20; 
+    glPushMatrix(); 
+    glTranslatef(x, y + 10, z);
+    glColor3f(0.8, 0.8, 0.85);
+
+    glPushMatrix(); 
+    glTranslatef(0, -9.5, 0); 
+    glScalef(w, 1, w); 
+    glutSolidCube(1); 
+    glPopMatrix();
+
+    glPushMatrix(); 
+    glTranslatef(0, 9.5, 0); 
+    glScalef(w, 1, w); 
+    glutSolidCube(1); 
+    glPopMatrix();
+
+    glPushMatrix(); 
+    glTranslatef(0, 0, -w / 2); 
+    glScalef(w, 20, 1); 
+    glutSolidCube(1); 
+    glPopMatrix();
+
+    glColor3f(0.5, 0.5, 0.5); 
+    drawElevatorDoor(0, -10, w / 2 - 1, doorGapCabin);
+
+    glColor3f(0.1, 0.1, 0.1); 
+    glPushMatrix(); 
+    glTranslatef(w / 2 - 2, 0, 0); 
+    glScalef(1, 6, 2); 
+    glutSolidCube(1); 
+    glPopMatrix();
+
+    if (elevState == ELEV_MOVING_UP) 
+        glColor3f(0, 1, 0); 
+    else 
+        glColor3f(0, 0.3, 0); 
+
+    glPushMatrix(); 
+    glTranslatef(w / 2 - 1.5, 1, 0); 
+    glutSolidSphere(0.3, 8, 8); 
+    glPopMatrix();
+
+    if (elevState == ELEV_MOVING_DOWN) 
+        glColor3f(1, 0, 0);
+    else 
+        glColor3f(0.3, 0, 0); 
+    glPushMatrix(); 
+    glTranslatef(w / 2 - 1.5, -1, 0); 
+    glutSolidSphere(0.3, 8, 8); 
+    glPopMatrix();
+
     glPopMatrix();
 }
 
 void AbrarCode::drawProduct(int type) {
-    if (type == 0) { glColor3f(0.9, 0.9, 0.95); glPushMatrix(); glRotatef(90, 1, 0, 0); glutSolidTorus(0.5, 1.8, 10, 20); glPopMatrix(); for (int i = 0;i < 5;i++) { glPushMatrix();glRotatef(72 * i, 0, 0, 1);glScalef(0.3, 1.5, 0.1);glutSolidCube(1);glPopMatrix(); } }
-    else if (type == 1) { glColor3f(0.15, 0.15, 0.15); glutSolidTorus(0.8, 2.0, 12, 20); glColor3f(0.1, 0.1, 0.1); glutWireTorus(0.81, 2.0, 8, 12); }
-    else if (type == 2) { glColor3f(1, 0.8, 0); glPushMatrix(); glScalef(1.5, 2.5, 1); glutSolidCube(1); glPopMatrix(); }
-    else if (type == 3) { glColor3f(0.1, 0.1, 0.1); glPushMatrix(); glScalef(2, 1.5, 1.5); glutSolidCube(1); glPopMatrix(); glColor3f(1, 0, 0); glPushMatrix(); glTranslatef(0.5, 0.6, 0); glutSolidCube(0.2); glPopMatrix(); glColor3f(0, 0, 1); glPushMatrix(); glTranslatef(-0.5, 0.6, 0); glutSolidCube(0.2); glPopMatrix(); }
-    else { glColor3f(0.8, 0.8, 0.85); GLUquadric* q = gluNewQuadric(); glPushMatrix(); glRotatef(-90, 1, 0, 0); gluCylinder(q, 0.8, 0.8, 2, 12, 1); glPopMatrix(); gluDeleteQuadric(q); }
+    if (type == 0) { 
+        glColor3f(0.9, 0.9, 0.95); 
+        glPushMatrix(); 
+        glRotatef(90, 1, 0, 0); 
+        glutSolidTorus(0.5, 1.8, 10, 20); 
+        glPopMatrix(); 
+        for (int i = 0;i < 5;i++) { 
+            glPushMatrix();
+            glRotatef(72 * i, 0, 0, 1);
+            glScalef(0.3, 1.5, 0.1);
+            glutSolidCube(1);
+            glPopMatrix(); 
+        } 
+    }
+
+    else if (type == 1) { 
+        glColor3f(0.15, 0.15, 0.15); 
+        glutSolidTorus(0.8, 2.0, 12, 20); 
+        glColor3f(0.1, 0.1, 0.1); 
+        glutWireTorus(0.81, 2.0, 8, 12); 
+    }
+    else if (type == 2) { 
+        glColor3f(1, 0.8, 0); 
+        glPushMatrix(); 
+        glScalef(1.5, 2.5, 1); 
+        glutSolidCube(1); 
+        glPopMatrix(); 
+    }
+    else if (type == 3) { 
+        glColor3f(0.1, 0.1, 0.1); 
+        glPushMatrix(); 
+        glScalef(2, 1.5, 1.5); 
+        glutSolidCube(1); 
+        glPopMatrix(); 
+        glColor3f(1, 0, 0);
+
+        glPushMatrix(); 
+        glTranslatef(0.5, 0.6, 0); 
+        glutSolidCube(0.2); 
+        glPopMatrix(); 
+        glColor3f(0, 0, 1);
+
+        glPushMatrix(); 
+        glTranslatef(-0.5, 0.6, 0);
+        glutSolidCube(0.2); 
+        glPopMatrix(); 
+    }
+    else { 
+        glColor3f(0.8, 0.8, 0.85); 
+        GLUquadric* q = gluNewQuadric(); 
+        glPushMatrix(); 
+        glRotatef(-90, 1, 0, 0); 
+        gluCylinder(q, 0.8, 0.8, 2, 12, 1); 
+        glPopMatrix(); 
+        gluDeleteQuadric(q); 
+    }
 }
 
 void AbrarCode::drawMassiveShelf(float x, float y, float z, int rows, int cols, int type) {
-    glPushMatrix(); glTranslatef(x, y, z);
+    glPushMatrix(); 
+    glTranslatef(x, y, z);
     float w = cols * 6.0f, h = rows * 6.0f, d = 4.0f;
-    glColor3f(0.4, 0.25, 0.1); glPushMatrix(); glTranslatef(0, h / 2, -d / 2); glScalef(w, h, 0.5); glutSolidCube(1); glPopMatrix();
+    glColor3f(0.4, 0.25, 0.1); 
+    glPushMatrix(); glTranslatef(0, h / 2, -d / 2); glScalef(w, h, 0.5); glutSolidCube(1); glPopMatrix();
     glPushMatrix(); glTranslatef(-w / 2, h / 2, 0); glScalef(0.5, h, d); glutSolidCube(1); glPopMatrix();
     glPushMatrix(); glTranslatef(w / 2, h / 2, 0); glScalef(0.5, h, d); glutSolidCube(1); glPopMatrix();
     for (int r = 0;r < rows;r++) {
@@ -285,7 +494,13 @@ void AbrarCode::drawCheckoutCounter(float x, float y, float z) {
     glColor3f(0.9, 0.9, 0.9); glPushMatrix(); glTranslatef(0, 5, 0); glScalef(40, 10, 8); glutSolidCube(1); glPopMatrix();
     glColor3f(0.1, 0.1, 0.1); glPushMatrix(); glTranslatef(5, 11, 0); glScalef(6, 4, 1); glutSolidCube(1); glPopMatrix();
     glColor3f(0.8, 0.8, 0.8); glPushMatrix(); glTranslatef(-10, 10.5, 0); glScalef(4, 1, 4); glutSolidCube(1); glPopMatrix();
-    SteveModel s(0.3f); SteveModel::setShirtColor(1, 1, 1); glPushMatrix(); glTranslatef(0, 0, -6); glRotatef(180, 0, 1, 0); s.draw(); glPopMatrix();
+    SteveModel s(0.3f); 
+    SteveModel::setShirtColor(1, 1, 1); 
+    glPushMatrix(); 
+    glTranslatef(0, 0, -6); 
+    glRotatef(180, 0, 1, 0); 
+    s.draw(); 
+    glPopMatrix();
     glPopMatrix();
 }
 
@@ -321,7 +536,26 @@ void AbrarCode::drawFountain(float x, float y, float z) { glPushMatrix(); glTran
 void AbrarCode::drawTV(float x, float y, float z, float r) { glPushMatrix(); glTranslatef(x, y, z); glRotatef(r, 0, 1, 0); glColor3f(0.1, 0.1, 0.1); glPushMatrix(); glScalef(20, 12, 1); glutSolidCube(1); glPopMatrix(); float t = glutGet(GLUT_ELAPSED_TIME) / 1000.0; glColor3f(fabs(sin(t)), fabs(cos(t)), 0.5); glPushMatrix(); glTranslatef(0, 0, 0.6); glScalef(18, 10, 0.1); glutSolidCube(1); glPopMatrix(); glPopMatrix(); }
 void AbrarCode::drawTechStation(float x, float y, float z) { glPushMatrix(); glTranslatef(x, y, z); glColor3f(0.3, 0.3, 0.35); glPushMatrix(); glTranslatef(0, 4, 0); glScalef(10, 8, 10); glutSolidCube(1.0); glPopMatrix(); glColor3f(0.6, 0.6, 0.6); glPushMatrix(); glTranslatef(0, 10, 0); glutSolidTeapot(3.0); glPopMatrix(); glPopMatrix(); }
 void AbrarCode::drawInfoKiosk(float x, float y, float z) { glPushMatrix(); glTranslatef(x, y, z); glColor3f(0.1, 0.1, 0.1); glPushMatrix(); glTranslatef(0, 8, 0); glScalef(4, 16, 2); glutSolidCube(1.0); glPopMatrix(); glColor3f(0.0, 0.5, 1.0); glPushMatrix(); glTranslatef(0, 12, 1.1); glScalef(3, 4, 0.1); glutSolidCube(1.0); glPopMatrix(); glPopMatrix(); }
-void AbrarCode::drawPeopleOnFloor(float fy) { SteveModel s(0.3f); float p[10][3] = { {80,fy,-50},{-80,fy,50},{0,fy,100},{50,fy,150},{-50,fy,-100},{100,fy,0},{-100,fy,0},{20,fy,20},{-20,fy,-20},{0,fy,-150} }; for (int i = 0;i < 10;i++) { SteveModel::setShirtColor(0.1 * (i + 1), 0.5, 0.8); glPushMatrix(); glTranslatef(p[i][0], 0, p[i][2]); glRotatef(i * 45, 0, 1, 0); s.draw(); glPopMatrix(); } }
+void AbrarCode::drawPeopleOnFloor(float fy) { 
+    SteveModel s(0.3f); 
+    float p[10][3] = { 
+        {80,fy,-50},
+        {-80,fy,50},
+        {0,fy,100},
+        {50,fy,150},
+        {-50,fy,-100},
+        {100,fy,0},
+        {-100,fy,0},
+        {20,fy,20},
+        {-20,fy,-20},
+        {0,fy,-150} 
+    }; 
+    for (int i = 0;i < 10;i++) { 
+        SteveModel::setShirtColor(0.1 * (i + 1), 0.5, 0.8); 
+        glPushMatrix(); 
+        glTranslatef(p[i][0], fy + 0.2, p[i][2]); 
+        glRotatef(i * 45, 0, 1, 0); s.draw(); glPopMatrix(); 
+    } }
 
 void AbrarCode::drawMegaAccessoriesShop(float x, float y, float z) {
     for (int i = 0; i < 5; i++) drawMassiveShelf(-120.0f, 0, -100.0f + (i * 50.0f), 5, 6, i % 5);
@@ -369,7 +603,7 @@ void AbrarCode::drawSecondFloor() {
     drawSecretariatOffice(120, 0, 50);
     drawLuxurySofa(100, 2, 120, 45); drawChandelier(100, 30, 120); drawFountain(120, 0, 150);
     drawHologram(100, 2, 150);
-    drawPeopleOnFloor(0.0f);
+    drawPeopleOnFloor(0.2f);
 
     glPopMatrix();
 

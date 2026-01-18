@@ -21,6 +21,7 @@ struct CarData {
     int colorIdx;
     float currentDoors[4];
     float targetDoors[4];
+    float currentSteer;
 };
 
 class AbrarCode {

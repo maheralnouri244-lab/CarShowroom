@@ -7,7 +7,7 @@ class BeetleCar {
 public:
     BeetleCar();
     // دالة الرسم تستقبل الإحداثيات، الحجم، الدوران، اللون، حالة القيادة، وزوايا الأبواب
-    void draw(float x, float y, float z, float scale, float rotateY, int colorIndex, bool isDriving, float doorAngles[]);
+    void draw(float x, float y, float z, float scale, float rotateY, int colorIndex, bool isDriving, float doorAngles[], float steeringAngle);
 
     // (لم نعد بحاجة لهذه الدوال العامة هنا لأن التحكم بالأبواب يتم خارجياً في AbrarCode، لكن يمكن إبقاؤها فارغة للتوافق)
     void toggleDoors();
@@ -27,10 +27,10 @@ private:
     void drawGenericDoor(bool isRight, bool hasMirror);
     void drawExtendedChassis();
     void drawFrontEnd();
-    void drawOpenCabin();
+    void drawOpenCabin(float steeringAngle);
     void drawDetails();
     void drawGlass();
-    void drawHands();
+    void drawHands(float steeringAngle);
 };
 
 #endif

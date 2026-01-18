@@ -115,26 +115,89 @@ void BeetleCar::drawFrontEnd() {
     setMaterial(COL_BLACK, 0.2f); glPushMatrix(); glTranslatef(0.0f, 0.15f, 2.38f); glScalef(1.0f, 0.1f, 0.05f); glutSolidCube(1.0f); glPopMatrix();
 }
 
-void BeetleCar::drawOpenCabin() {
+void BeetleCar::drawOpenCabin(float steeringAngle) {
     float y = 0.7f, z = 1.0f;
-    setMaterial(currentBodyColor, 0.8f); glPushMatrix(); glTranslatef(0, y + 0.35f, z); glRotatef(-30, 1, 0, 0);
-    for (int i = -1;i <= 1;i += 2) { glPushMatrix(); glTranslatef(i * 0.75f, 0, 0); glScalef(0.1f, 0.8f, 0.1f); glutSolidCube(1.0f); glPopMatrix(); }
-    glPushMatrix(); glTranslatef(0, 0.4f, 0); glScalef(1.6f, 0.1f, 0.1f); glutSolidCube(1.0f); glPopMatrix(); glPopMatrix();
-    for (int i = -1;i <= 1;i += 2) { glPushMatrix(); glTranslatef(i * 0.4f, 0.45f, 0.5f); drawSeat(); glPopMatrix(); }
-    glPushMatrix(); glTranslatef(0, 0.5f, -1.0f); glScalef(0.9f, 0.9f, 0.9f); drawSeat(); glPopMatrix();
-    setMaterial(currentBodyColor, 0.9f); glPushMatrix(); glTranslatef(0, y + 0.35f, -1.55f); glRotatef(20, 1, 0, 0); glPushMatrix(); glScalef(1.55f, 0.6f, 0.1f); glutSolidCube(1.0f); glPopMatrix(); glPopMatrix();
-    setMaterial(COL_BLACK, 0.2f); glPushMatrix(); glTranslatef(0, 0.65f, 1.2f); glScalef(1.4f, 0.3f, 0.4f); glutSolidCube(1.0f); glPopMatrix();
-    setMaterial(COL_BLACK, 0.1f); glPushMatrix(); glTranslatef(0.4f, 0.85f, 0.9f); glRotatef(-25, 1, 0, 0); glutSolidTorus(0.02, 0.16, 8, 20);
-    glPushMatrix(); glScalef(0.03f, 0.3f, 0.01f); glutSolidCube(1.0f); glPopMatrix(); glPushMatrix(); glRotatef(90, 0, 0, 1); glScalef(0.03f, 0.3f, 0.01f); glutSolidCube(1.0f); glPopMatrix(); glPopMatrix();
+    setMaterial(currentBodyColor, 0.8f); 
+    glPushMatrix(); 
+    glTranslatef(0, y + 0.35f, z); 
+    glRotatef(-30, 1, 0, 0);
+    for (int i = -1;i <= 1;i += 2) { 
+        glPushMatrix(); 
+        glTranslatef(i * 0.75f, 0, 0); 
+        glScalef(0.1f, 0.8f, 0.1f); 
+        glutSolidCube(1.0f); 
+        glPopMatrix(); 
+    }
+
+    glPushMatrix(); 
+    glTranslatef(0, 0.4f, 0);
+    glScalef(1.6f, 0.1f, 0.1f); 
+    glutSolidCube(1.0f); 
+    glPopMatrix(); 
+    glPopMatrix();
+
+    for (int i = -1;i <= 1;i += 2) { 
+        glPushMatrix();
+        glTranslatef(i * 0.4f, 0.45f, 0.5f); 
+        drawSeat(); 
+        glPopMatrix(); 
+    }
+    glPushMatrix(); 
+    glTranslatef(0, 0.5f, -1.0f); 
+    glScalef(0.9f, 0.9f, 0.9f); 
+    drawSeat(); 
+    glPopMatrix();
+
+    setMaterial(currentBodyColor, 0.9f); 
+    glPushMatrix(); 
+    glTranslatef(0, y + 0.35f, -1.55f); 
+    glRotatef(20, 1, 0, 0);
+    glPushMatrix(); 
+    glScalef(1.55f, 0.6f, 0.1f); 
+    glutSolidCube(1.0f); 
+    glPopMatrix(); 
+    glPopMatrix();
+
+    setMaterial(COL_BLACK, 0.2f); 
+    glPushMatrix();
+    glTranslatef(0, 0.65f, 1.2f); 
+    glScalef(1.4f, 0.3f, 0.4f); 
+    glutSolidCube(1.0f); 
+    glPopMatrix();
+
+    setMaterial(COL_BLACK, 0.1f); 
+    glPushMatrix(); 
+    glTranslatef(0.4f, 0.85f, 0.9f); 
+    glRotatef(-25, 1, 0, 0); 
+    ////
+    glRotatef(steeringAngle, 0, 0, 1);
+
+    glutSolidTorus(0.02, 0.16, 8, 20); // الحلقة
+    glPushMatrix(); glScalef(0.03f, 0.3f, 0.01f); glutSolidCube(1.0f); glPopMatrix(); // ذراع عمودي
+    glPushMatrix(); glRotatef(90, 0, 0, 1); glScalef(0.03f, 0.3f, 0.01f); glutSolidCube(1.0f); glPopMatrix(); // ذراع أفقي
+    glPopMatrix();
 }
 
 void BeetleCar::drawDetails() {
     for (int i = -1; i <= 1; i += 2) {
-        glPushMatrix(); glTranslatef(i * 0.55f, 0.55f, 2.2f); glRotatef(-20, 1, 0, 0); setMaterial(COL_CHROME, 0.9f); glutSolidTorus(0.03, 0.13, 12, 20);
-        setMaterial(COL_WHITE, 1.0f); glTranslatef(0, 0, 0.02f); drawDisk(0.13f, 16); glPopMatrix();
+        glPushMatrix(); 
+        glTranslatef(i * 0.55f, 0.55f, 2.2f); 
+        glRotatef(-20, 1, 0, 0); 
+        setMaterial(COL_CHROME, 0.9f); 
+        glutSolidTorus(0.03, 0.13, 12, 20);
+
+        setMaterial(COL_WHITE, 1.0f); 
+        glTranslatef(0, 0, 0.02f); 
+        drawDisk(0.13f, 16); 
+        glPopMatrix();
     }
     for (int i = -1; i <= 1; i += 2) {
-        glPushMatrix(); glTranslatef(i * 0.6f, 0.65f, -2.2f); setMaterial(COL_RED, 0.6f); glScalef(1.0f, 0.8f, 0.2f); glutSolidSphere(0.12f, 12, 12); glPopMatrix();
+        glPushMatrix(); 
+        glTranslatef(i * 0.6f, 0.65f, -2.2f); 
+        setMaterial(COL_RED, 0.6f); 
+        glScalef(1.0f, 0.8f, 0.2f); 
+        glutSolidSphere(0.12f, 12, 12); 
+        glPopMatrix();
     }
 }
 
@@ -148,13 +211,25 @@ void BeetleCar::drawGlass() {
     glDepthMask(GL_TRUE); glDisable(GL_BLEND);
 }
 
-void BeetleCar::drawHands() {
+void BeetleCar::drawHands(float steeringAngle) {
     setMaterial(COL_SKIN, 0.1f);
-    glPushMatrix(); glTranslatef(0.25f, 0.85f, 0.85f); glutSolidSphere(0.06f, 10, 10); glPopMatrix();
-    glPushMatrix(); glTranslatef(0.55f, 0.85f, 0.85f); glutSolidSphere(0.06f, 10, 10); glPopMatrix();
+
+    glPushMatrix();
+    glTranslatef(0.4f, 0.85f, 0.9f); // مركز المقود
+    glRotatef(-25, 1, 0, 0); // نفس ميلان المقود
+    glRotatef(steeringAngle, 0, 0, 1); // نفس دوران المقود
+
+    // اليدين مثبتتان على المقود (مسافة 0.16 من المركز)
+    // Left Hand (at 9 o'clock -> -0.15 X)
+    glPushMatrix(); glTranslatef(-0.15f, 0.0f, 0.0f); glutSolidSphere(0.06f, 10, 10); glPopMatrix();
+    // Right Hand (at 3 o'clock -> 0.15 X)
+    glPushMatrix(); glTranslatef(0.15f, 0.0f, 0.0f); glutSolidSphere(0.06f, 10, 10); glPopMatrix();
+
+    glPopMatrix();
 }
 
-void BeetleCar::draw(float x, float y, float z, float scale, float rotateY, int colorIndex, bool isDriving, float doorAngles[]) {
+
+void BeetleCar::draw(float x, float y, float z, float scale, float rotateY, int colorIndex, bool isDriving, float doorAngles[], float steeringAngle) {
     currentBodyColor = CAR_PALETTE[colorIndex % 4];
 
     glPushMatrix();
@@ -165,7 +240,7 @@ void BeetleCar::draw(float x, float y, float z, float scale, float rotateY, int 
     // 1. Opaque Parts First
     drawExtendedChassis();
     drawFrontEnd();
-    drawOpenCabin();
+    drawOpenCabin(steeringAngle);
     drawDetails();
 
     float W = 0.9f, F = 1.6f, R = -1.6f; float pos[4][3] = { {W,0,F},{-W,0,F},{W,0,R},{-W,0,R} };
@@ -182,7 +257,7 @@ void BeetleCar::draw(float x, float y, float z, float scale, float rotateY, int 
 
     // 3. Hands (if driving)
     if (isDriving) {
-        drawHands();
+        drawHands(steeringAngle);
     }
 
     glPopMatrix();
