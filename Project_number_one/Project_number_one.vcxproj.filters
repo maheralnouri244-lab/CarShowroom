@@ -78,10 +78,17 @@
     <ClCompile Include="NormalCar.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+<<<<<<< HEAD
     <ClCompile Include="Furniture.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="AccessoriesSection.cpp">
+=======
+    <ClCompile Include="MonitorScreen.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="OfficeDesk.cpp">
+>>>>>>> 6297268 (security cameras)
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -149,10 +156,17 @@
     <ClInclude Include="SaraCode.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+<<<<<<< HEAD
     <ClInclude Include="Furniture.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="AccessoriesSection.h">
+=======
+    <ClInclude Include="MonitorScreen.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OfficeDesk.h">
+>>>>>>> 6297268 (security cameras)
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
