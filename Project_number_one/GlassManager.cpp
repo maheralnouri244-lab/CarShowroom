@@ -8,7 +8,7 @@ void GlassManager::addWindow(
     float x2, float y2, float z2,
     float x3, float y3, float z3,
     float x4, float y4, float z4) {
-    windows.push_back(GlassWindow(x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4, 0.5f));
+    windows.push_back(GlassWindow(x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4, 0.3f));
 }
 
 void GlassManager::initShowroomWindows() {

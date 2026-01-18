@@ -20,6 +20,7 @@
 #include "StreetLamp.h"
 #include "MonitorScreen.h"
 #include "OfficeDesk.h"
+#include "CameraSphere.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "include\stb_image.h"
@@ -34,6 +35,7 @@ using namespace std;
 
 Maherheader::Maherheader():showroomdoor(0, 15, 200) {
     houseTexID[5] = {};
+    groundTex = 0;
 }
 
 void Maherheader::drawLightBeam(float x, float y, float z) {
@@ -86,6 +88,11 @@ void Maherheader::draw(float camX,float camY,float camZ,bool isday, GLuint cctvT
         }
     }
 
+    if (const_cast<unsigned int&>(groundTex) == 0)
+        const_cast<unsigned int&>(groundTex) = const_cast<Maherheader*>(this)->loadTextureFromFile("images\\groundtexture.png");
+
+
+
 	PlusRing3D symbol;
 	vector<Pillar> pillars;
 	vector<Hpillar> hpillars;
@@ -96,45 +103,64 @@ void Maherheader::draw(float camX,float camY,float camZ,bool isday, GLuint cctvT
 	pair<float, float> p[4] = {{maxX,maxz},{minX,maxz},{maxX,minz},{minX,minz} };
 	int h = 60;
 
+    // Õ”«» ÕœÊœ «·»ÕÌ—…
+    float lakeMinX = minX - 170.0f;
+    float lakeMaxX = minX + 170.0f;
+    float lakeMinZ = maxz + 100.0f;
+    float lakeMaxZ = maxz + 600.0f;
 
-    float lakeMinX = minX - 170;
-    float lakeMaxX = minX + 170;
-    float lakeMinZ = maxz + 100;
-    float lakeMaxZ = maxz + 600;
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, groundTex);
 
-    glColor3f(0.35f, 0.65f, 0.20f);
+    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    float tile = 1;
 
     glBegin(GL_QUADS);
-    glNormal3f(0, 1, 0);
-    glVertex3f(1000.0f, -0.2f, 1000.0f);
-    glVertex3f(-1000.0f, -0.2f, 1000.0f);
-    glVertex3f(-1000.0f, -0.2f, lakeMaxZ);
-    glVertex3f(1000.0f, -0.2f, lakeMaxZ);
+    glNormal3f(0.0f, 1.0f, 0.0f);
+
+    glTexCoord2f(tile, tile); glVertex3f(2000.0f, -0.2f, 2000.0f);
+    glTexCoord2f(0.0f, tile); glVertex3f(-2000.0f, -0.2f, 2000.0f);
+    glTexCoord2f(0.0f, 0.0f); glVertex3f(-2000.0f, -0.2f, lakeMaxZ);
+    glTexCoord2f(tile, 0.0f); glVertex3f(2000.0f, -0.2f, lakeMaxZ);
+
     glEnd();
 
     glBegin(GL_QUADS);
-    glNormal3f(0, 1, 0);
-    glVertex3f(1000.0f, -0.2f, lakeMinZ);
-    glVertex3f(-1000.0f, -0.2f, lakeMinZ);
-    glVertex3f(-1000.0f, -0.2f, -1000.0f);
-    glVertex3f(1000.0f, -0.2f, -1000.0f);
+    glNormal3f(0.0f, 1.0f, 0.0f);
+
+    glTexCoord2f(tile, tile); glVertex3f(2000.0f, -0.2f, lakeMinZ);
+    glTexCoord2f(0.0f, tile); glVertex3f(-2000.0f, -0.2f, lakeMinZ);
+    glTexCoord2f(0.0f, 0.0f); glVertex3f(-2000.0f, -0.2f, -2000.0f);
+    glTexCoord2f(tile, 0.0f); glVertex3f(2000.0f, -0.2f, -2000.0f);
+
     glEnd();
 
     glBegin(GL_QUADS);
-    glNormal3f(0, 1, 0);
-    glVertex3f(-1000.0f, -0.2f, lakeMaxZ);
-    glVertex3f(lakeMinX, -0.2f, lakeMaxZ);
-    glVertex3f(lakeMinX, -0.2f, lakeMinZ);
-    glVertex3f(-1000.0f, -0.2f, lakeMinZ);
+    glNormal3f(0.0f, 1.0f, 0.0f);
+
+    glTexCoord2f(tile, tile); glVertex3f(-2000.0f, -0.2f, lakeMaxZ);
+    glTexCoord2f(0.0f, tile); glVertex3f(lakeMinX, -0.2f, lakeMaxZ);
+    glTexCoord2f(0.0f, 0.0f); glVertex3f(lakeMinX, -0.2f, lakeMinZ);
+    glTexCoord2f(tile, 0.0f); glVertex3f(-2000.0f, -0.2f, lakeMinZ);
+
     glEnd();
 
     glBegin(GL_QUADS);
-    glNormal3f(0, 1, 0);
-    glVertex3f(lakeMaxX, -0.2f, lakeMaxZ);
-    glVertex3f(1000.0f, -0.2f, lakeMaxZ);
-    glVertex3f(1000.0f, -0.2f, lakeMinZ);
-    glVertex3f(lakeMaxX, -0.2f, lakeMinZ);
+    glNormal3f(0.0f, 1.0f, 0.0f);
+
+    glTexCoord2f(tile, tile); glVertex3f(lakeMaxX, -0.2f, lakeMaxZ);
+    glTexCoord2f(0.0f, tile); glVertex3f(2000.0f, -0.2f, lakeMaxZ);
+    glTexCoord2f(0.0f, 0.0f); glVertex3f(2000.0f, -0.2f, lakeMinZ);
+    glTexCoord2f(tile, 0.0f); glVertex3f(lakeMaxX, -0.2f, lakeMinZ);
+
     glEnd();
+
+    glDisable(GL_TEXTURE_2D);
+
 
 
 
@@ -307,7 +333,7 @@ void Maherheader::draw(float camX,float camY,float camZ,bool isday, GLuint cctvT
 
 
     float roadStartCoord = maxz;      
-    float roadEndCoord = 1000.0f;     
+    float roadEndCoord = 2000.0f;     
     float roadCenterLine = 0.0f;      
     float roadWidth = diff;           
     float halfW = roadWidth / 2.0f;
@@ -353,21 +379,21 @@ void Maherheader::draw(float camX,float camY,float camZ,bool isday, GLuint cctvT
     float swWidth = 8.0f; 
     float swHeight = 2.0f;
     float swStart = maxz; 
-    float swEnd = 1000.0f;
+    float swEnd = 2000.0f;
     float roadEdge = diff / 2.0f;
 
     glColor3f(0.6f, 0.6f, 0.6f);
 
     
     glPushMatrix();
-    glTranslatef(roadEdge+swWidth/2,1,(maxz+1000)/2);
-    glScalef(4, 1, 400);
+    glTranslatef(roadEdge+swWidth/2,1,(maxz+ swEnd)/2);
+    glScalef(4, 1, 900);
     glutSolidCube(2);
     glPopMatrix();
 
     glPushMatrix();
-    glTranslatef(-roadEdge - swWidth / 2, 1, (maxz + 1000) / 2);
-    glScalef(4, 1, 400);
+    glTranslatef(-roadEdge - swWidth / 2, 1, (maxz + swEnd) / 2);
+    glScalef(4, 1, 900);
     glutSolidCube(2);
     glPopMatrix();
 
@@ -501,11 +527,11 @@ void Maherheader::draw(float camX,float camY,float camZ,bool isday, GLuint cctvT
     for (int i = 1; i <= lightnum ; i++)
     {
         float x = 25.0f-18.7;
-        float z = 200.0f + (800.0f / lightnum) * i;
+        float z = 200.0f + (1800.0f / lightnum) * i;
         float y_lamp = swHeight+0.1;
 
         glPushMatrix();
-        glTranslatef(25, y_lamp, 200 + (800 / lightnum) * i);
+        glTranslatef(25, y_lamp, 200 + (1800 / lightnum) * i);
         glRotatef(270, 0, 1, 0);
         StreetLamp lamp(50.0f, 0.8f);
         lamp.draw(!isday);
@@ -519,11 +545,11 @@ void Maherheader::draw(float camX,float camY,float camZ,bool isday, GLuint cctvT
     {
 
         float x = -25.0f + 18.7;
-        float z = 200.0f + (800.0f / lightnum) * i - 400 / lightnum;
+        float z = 200.0f + (1800.0f / lightnum) * i - 900 / lightnum;
         float y_lamp = swHeight+0.1;
 
         glPushMatrix();
-        glTranslatef(-25, y_lamp, 200 + (800 / lightnum) * i - 400 / lightnum);
+        glTranslatef(-25, y_lamp, 200 + (1800 / lightnum) * i - 900 / lightnum);
         glRotatef(90, 0, 1, 0);
         StreetLamp lamp(50.0f, 0.8f);
         lamp.draw(!isday);
@@ -536,17 +562,18 @@ void Maherheader::draw(float camX,float camY,float camZ,bool isday, GLuint cctvT
     OfficeDesk mydisk;
 
     glPushMatrix();
-    glTranslatef(0, 400, 0);
+    glTranslatef(minX+30, h+16, maxz-23);
+    glRotatef(90, 0, 1, 0);
     myMonitor.draw(cctvTexIDs);
     glPopMatrix();
     glPushMatrix();
-    glTranslatef(0, 384.5, 0);
+    glTranslatef(minX+30, h-6+6.5,maxz-25);
     glScalef(0.5, 0.5, 0.5);
+    glRotatef(90, 0, 1, 0);
     mydisk.draw();
     glPopMatrix();
-    
-
 }
+
 /*
 -150.197 52 200.503 0.874371 -0.328867 0.356821
 152.003 62 201.193 -0.8138 -0.21303 0.540691

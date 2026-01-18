@@ -70,27 +70,30 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="StreetLamp.cpp">
-  <Filter>Source Files</Filter>
-</ClCompile>
-<ClCompile Include="SaraCode.cpp">
-  <Filter>Source Files</Filter>
-</ClCompile>
-<ClCompile Include="NormalCar.cpp">
-  <Filter>Source Files</Filter>
-</ClCompile>
-<ClCompile Include="Furniture.cpp">
-  <Filter>Source Files</Filter>
-</ClCompile>
-<ClCompile Include="AccessoriesSection.cpp">
-  <Filter>Source Files</Filter>
-</ClCompile>
-<ClCompile Include="MonitorScreen.cpp">
-  <Filter>Source Files</Filter>
-</ClCompile>
-<ClCompile Include="OfficeDesk.cpp">
-  <Filter>Source Files</Filter>
-</ClCompile>
-</ItemGroup>
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SaraCode.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="NormalCar.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Furniture.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AccessoriesSection.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MonitorScreen.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="OfficeDesk.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CameraSphere.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Pillar.h">
       <Filter>Header Files</Filter>
@@ -152,22 +155,25 @@
     <ClInclude Include="NormalCar.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-<ClInclude Include="SaraCode.h">
-  <Filter>Header Files</Filter>
-</ClInclude>
-<ClInclude Include="Furniture.h">
-  <Filter>Header Files</Filter>
-</ClInclude>
-<ClInclude Include="AccessoriesSection.h">
-  <Filter>Header Files</Filter>
-</ClInclude>
-<ClInclude Include="MonitorScreen.h">
-  <Filter>Header Files</Filter>
-</ClInclude>
-<ClInclude Include="OfficeDesk.h">
-  <Filter>Header Files</Filter>
-</ClInclude>
-</ItemGroup>
+    <ClInclude Include="SaraCode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Furniture.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AccessoriesSection.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MonitorScreen.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OfficeDesk.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CameraSphere.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>

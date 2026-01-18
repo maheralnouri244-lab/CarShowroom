@@ -19,8 +19,99 @@
 #include "GlassManager.h"
 
 #define M_PI acos(-1)
+#include "CameraSphere.h"
+#include "include\stb_image.h"
 
 using namespace std;
+
+
+#include <cmath>
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
+unsigned int loadTextureFromFile(const char* path) {
+    int w, h, n;
+    stbi_set_flip_vertically_on_load(true);
+    unsigned char* data = stbi_load(path, &w, &h, &n, 4);
+
+    if (!data) return 0;
+
+    unsigned int newTexID;
+    glGenTextures(1, &newTexID);
+    glBindTexture(GL_TEXTURE_2D, newTexID);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    gluBuild2DMipmaps(GL_TEXTURE_2D, GL_RGBA, w, h, GL_RGBA, GL_UNSIGNED_BYTE, data);
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+    stbi_image_free(data);
+
+    return newTexID;
+}
+
+void drawSkyDome(float radius, int slices, int stacks, GLuint textureID) {
+    glPushMatrix();
+
+    // 1. إعدادات "الخامة" للسماء
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, textureID);
+
+    // 2. إعدادات الإضاءة والعمق (مهم جداً!)
+    glDisable(GL_LIGHTING);      // السماء لا تتأثر بضوء الشمس، هي المصدر!
+    glDepthMask(GL_FALSE);       // نمنع السماء من كتابة العمق (تظل خلف كل شيء)
+
+    // لون أبيض نقي لضمان ظهور التيكستشر بألوانه الأصلية
+    glColor3f(1.0f, 1.0f, 1.0f);
+
+    // 3. خوارزمية النحت (Spherical Draw Loop)
+    // نتحرك لنصف التكرارات فقط (stacks / 2) لأننا نريد نصف كرة
+    for (int j = 0; j < stacks / 2; j++) {
+
+        // حساب زوايا الارتفاع (Latitude)
+        double lat1 = (M_PI * j) / stacks;
+        double lat2 = (M_PI * (j + 1)) / stacks;
+        double sinLat1 = sin(lat1);
+        double cosLat1 = cos(lat1);
+        double sinLat2 = sin(lat2);
+        double cosLat2 = cos(lat2);
+
+        glBegin(GL_QUAD_STRIP);
+        for (int i = 0; i <= slices; i++) {
+            // حساب زوايا الدوران (Longitude)
+            double lon = (2 * M_PI * i) / slices;
+            double sinLon = sin(lon);
+            double cosLon = cos(lon);
+
+            // حساب إحداثيات النسيج (Texture Coordinates)
+            // U: التكرار الأفقي، V: التكرار العمودي
+            float u = (float)i / slices;
+            float v1 = 1.0f - (2.0f * (float)j / stacks);       // تعديل لتناسب النصف
+            float v2 = 1.0f - (2.0f * (float)(j + 1) / stacks);
+
+            // النقطة الأولى (الشريط العلوي)
+            glNormal3f(sinLon * sinLat1, cosLat1, cosLon * sinLat1);
+            glTexCoord2f(u, v1);
+            glVertex3f(radius * sinLon * sinLat1, radius * cosLat1, radius * cosLon * sinLat1);
+
+            // النقطة الثانية (الشريط السفلي)
+            glNormal3f(sinLon * sinLat2, cosLat2, cosLon * sinLat2);
+            glTexCoord2f(u, v2);
+            glVertex3f(radius * sinLon * sinLat2, radius * cosLat2, radius * cosLon * sinLat2);
+        }
+        glEnd();
+    }
+
+    // 4. استعادة الحالة الأصلية
+    glDepthMask(GL_TRUE);        // إعادة تفعيل كتابة العمق
+    glEnable(GL_LIGHTING);       // إعادة تفعيل الإضاءة
+    glDisable(GL_TEXTURE_2D);
+    glPopMatrix();
+}
 
 // ==========================================
 // (Lighting Control)
@@ -33,13 +124,6 @@ struct Camera {
 };
 
 float lookX = -1.0f, lookY = -1.0f, lookZ = -1.0f;
-
-Camera cameras[4] = {
-    { -150.197f, 52.0f, 200.503f,  0.874371f, -0.328867f,  0.356821f },
-    {  152.003f, 62.0f, 201.193f, -0.813800f, -0.213030f,  0.540691f },
-    { -143.372f, 58.0f, 193.254f,  0.451159f, -0.325568f, -0.830940f },
-    {  142.205f, 58.0f,-193.402f, -0.461055f, -0.204496f,  0.863487f }
-};
 
 
 /*
@@ -70,8 +154,18 @@ Jeep_Builder_Final myJeep;
 SaraCode saraCode;
 GlassManager glassMgr;
 GlassWindow lake = GlassWindow(minX - 170, -0.2, maxz + 100, minX - 170, -0.2, maxz + 600, minX + 140, -0.2, maxz + 600, minX + 170, -0.2, maxz + 100);
+CameraSphere cam;
 
-GLuint cctvTexIDs[4] = { 0, 0, 0, 0 };
+
+Camera cameras[4] = {
+    { minX-0.5, 61, maxz+0.5,   0.833441, - 0.387516 ,0.393964 },
+    {  maxX + 0.5, 61, maxz + 0.5, -0.843008 ,- 0.305695 ,0.442593 },
+    { minX + 0.5, 59, maxz - 0.5,   0.798929, - 0.414692 ,- 0.435595 },
+    {  maxX - 0.5, 59, minz + 0.5, -0.783688, - 0.393941 ,0.480253},
+};
+
+
+GLuint cctvTexIDs[4] = { 0, 0, 0, 0 }, dayskyTex,nightskyTex,groundTex;
 bool hasSnapshot[4] = { false, false, false, false },captureThisFrame;
 
 const float SHOWROOM_HEIGHT = 60.0f;
@@ -208,6 +302,10 @@ void initRendering() {
     glLightfv(GL_LIGHT0, GL_DIFFUSE, lightColor);
     glLightfv(GL_LIGHT0, GL_SPECULAR, lightSpecular);
     glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
+
+    dayskyTex = loadTextureFromFile("images\\daytexture.png");
+    nightskyTex = loadTextureFromFile("images\\nighttexture.png");
+
     glClearColor(0.1f, 0.1f, 0.15f, 1.0f);
     myJeep.init();
 
@@ -240,6 +338,10 @@ void drawSkyBody(bool isDay) {
 void initEnvironment() {}
 
 void switchCamera(int newCam) {
+    
+    // minX+30, h+16, maxz-23
+    if (sqrt(pow(camX-(minX + 30),2)+pow(camY-(60+16),2)+pow(camZ-(maxz - 23),2)) > 100)
+        return;
     if (currentCam >= 1 && currentCam <= 4 && newCam != currentCam) {
         captureThisFrame = true;
         lastCam = currentCam;
@@ -405,20 +507,23 @@ void setCamera(int camIndex) {
     }
 }
 
-void drawscene()
+void drawscene(bool drawcam=1)
 {
     drawSkyBody(isLightOn);
+    GLuint skyTex;
 
 
     if (isLightOn) {
         glEnable(GL_LIGHT0);
         GLfloat ambientDay[] = { 0.4f, 0.4f, 0.4f, 1.0f };
         glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambientDay);
+        skyTex = dayskyTex;
     }
     else {
         glDisable(GL_LIGHT0);
         GLfloat ambientNight[] = { 0.3f, 0.3f, 0.5f, 1.0f };
         glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambientNight);
+        skyTex = nightskyTex;
     }
 
     if (weatherstatus == 2)
@@ -427,6 +532,7 @@ void drawscene()
     abrarCode.drawGroundFloorElevator();
     abrarCode.drawSecondFloor();
     saraCode.drawAll();
+    maher.draw(camX, camY, camZ, isLightOn, cctvTexIDs);
     //glassMgr.drawAll();
     // =======================================================
     // (The Corrected Isolation Protocol) - Jeep Section
@@ -442,7 +548,6 @@ void drawscene()
 
     GLfloat ambientDay[] = { 0.2f, 0.2f, 0.2f, 1.0f };
     GLfloat ambientNight[] = { 0.01f, 0.01f, 0.01f, 0.5f };
-
     // نستخدم مؤشر ليؤشر على المصفوفة المناسبة حسب الحالة
     GLfloat* currentAmbient;
 
@@ -474,22 +579,96 @@ void drawscene()
         myClouds[i].draw(weatherstatus);
     }
 
-    maher.draw(camX, camY, camZ, isLightOn, cctvTexIDs);
+
+    if (drawcam&& currentCam != 1)
+    {
+        glPushMatrix();
+        glTranslatef(minX, 60, maxz);
+        glRotatef(270, 0, 1, 0);
+        cam.setLookDirection(cameras[0].lookZ, cameras[0].lookY, -cameras[0].lookX);
+        cam.draw();
+        glPopMatrix();
+    }
+
+    if (drawcam && currentCam != 2)
+    {
+        glPushMatrix();
+        glTranslatef(maxX, 60, maxz);
+        cam.setLookDirection(cameras[1].lookX, cameras[1].lookY, cameras[1].lookZ);
+        cam.draw();
+        glPopMatrix();
+    }
+
+    if (drawcam && currentCam != 3)
+    {
+        glPushMatrix();
+        glTranslatef(minX + 1, 60 - 1, maxz - 1);
+        glRotatef(90, 0, 1, 0);
+        glRotatef(90, 1, 0, 0);
+        cam.setLookDirection(-cameras[2].lookZ, cameras[2].lookX, -cameras[2].lookY);
+
+        cam.draw();
+        glPopMatrix();
+    }
+
+    if (drawcam && currentCam != 4)
+    {
+        glPushMatrix();
+        glTranslatef(maxX - 1, 60 - 1, minz + 1);
+        glRotatef(270, 0, 1, 0);
+        glRotatef(90, 1, 0, 0);
+        cam.setLookDirection(cameras[3].lookZ, -cameras[3].lookX, -cameras[3].lookY);
+        cam.draw();
+        glPopMatrix();
+    }
+
+    drawSkyDome(2000, 64, 64, skyTex);
+
 
     glPushMatrix();
     glTranslatef(0, -1, 0);
     glScalef(1, -1, 1);
     if (weatherstatus == 2)
         myRain.draw();
-    abrarCode.drawCars();
-    abrarCode.drawGroundFloorElevator();
+    maher.draw(camX, camY, camZ, isLightOn,cctvTexIDs);
+    saraCode.drawAll();
     drawSkyBody(isLightOn);
-
     for (int i = 0; weatherstatus > 0 && i < CloudCount; i++) {
         myClouds[i].draw(weatherstatus);
     }
+    drawSkyDome(2000, 64, 64, skyTex);
 
-    maher.draw(camX, camY, camZ, isLightOn,cctvTexIDs);
+    abrarCode.drawCars();
+    abrarCode.drawGroundFloorElevator();
+    abrarCode.drawSecondFloor();
+
+    glPushMatrix();
+    glTranslatef(minX, 60, maxz);
+    glRotatef(270, 0, 1, 0);
+    cam.setLookDirection(cameras[0].lookZ, cameras[0].lookY, -cameras[0].lookX);
+    cam.draw();
+    glPopMatrix();
+        glPushMatrix();
+        glTranslatef(maxX, 60, maxz);
+        cam.setLookDirection(cameras[1].lookX, cameras[1].lookY, cameras[1].lookZ);
+        cam.draw();
+        glPopMatrix();
+        glPushMatrix();
+        glTranslatef(minX + 1, 60 - 1, maxz - 1);
+        glRotatef(90, 0, 1, 0);
+        glRotatef(90, 1, 0, 0);
+        cam.setLookDirection(-cameras[2].lookZ, cameras[2].lookX, -cameras[2].lookY);
+
+        cam.draw();
+        glPopMatrix();
+        glPushMatrix();
+        glTranslatef(maxX - 1, 60 - 1, minz + 1);
+        glRotatef(270, 0, 1, 0);
+        glRotatef(90, 1, 0, 0);
+        cam.setLookDirection(cameras[3].lookZ, -cameras[3].lookX, -cameras[3].lookY);
+        cam.draw();
+        glPopMatrix();
+
     glPopMatrix();
     lake.setAlpha(0.7);
     lake.draw();
@@ -518,6 +697,7 @@ void display() {
         setCamera(lastCam);
         drawscene();
         glassMgr.drawAll();
+        drawscene(0);
         if (cctvTexIDs[idx] == 0) glGenTextures(1, &cctvTexIDs[idx]);
         glBindTexture(GL_TEXTURE_2D, cctvTexIDs[idx]);
         glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, 1200, 800, 0);
@@ -529,35 +709,6 @@ void display() {
     }
 
     setCamera(currentCam);
-
-    /*if (currentCam == 0) {
-        for (int i = 0; i < 4; i++) {
-            glPushMatrix();
-            glTranslatef(-50.0f + (i * 30.0f), 25.0f, -140.0f);
-
-            if (hasSnapshot[i]) {
-                glEnable(GL_TEXTURE_2D);
-                glBindTexture(GL_TEXTURE_2D, cctvTexIDs[i]);
-                glColor3f(1, 1, 1);
-                glBegin(GL_QUADS);
-                glTexCoord2f(0, 0); glVertex3f(-12, -8, 0);
-                glTexCoord2f(1, 0); glVertex3f(12, -8, 0);
-                glTexCoord2f(1, 1); glVertex3f(12, 8, 0);
-                glTexCoord2f(0, 1); glVertex3f(-12, 8, 0);
-                glEnd();
-                glDisable(GL_TEXTURE_2D);
-            }
-            else {
-                glColor3f(0, 0, 0);
-                glBegin(GL_QUADS);
-                glVertex3f(-12, -8, 0); glVertex3f(12, -8, 0);
-                glVertex3f(12, 8, 0); glVertex3f(-12, 8, 0);
-                glEnd();
-            }
-            glPopMatrix();
-        }
-    }*/
-
     drawscene();
     glassMgr.drawAll();
 
@@ -569,7 +720,7 @@ void handleResize(int w, int h) {
     glViewport(0, 0, w, h);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(45.0, (float)w / (float)h, 0.1, 2000.0);
+    gluPerspective(45.0, (float)w / (float)h, 0.1, 4000.0);
     glMatrixMode(GL_MODELVIEW);
 }
 
@@ -578,7 +729,7 @@ int main(int argc, char** argv) {
     srand(time(0));
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
     glutInitWindowSize(1200, 800);
-    glutCreateWindow("Showroom Simulator - Lighting Edition"); // Title Update
+    glutCreateWindow("Showroom Simulator");
 
     initRendering();
     createCollidables();

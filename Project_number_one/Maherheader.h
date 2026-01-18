@@ -12,7 +12,7 @@ public:
     unsigned int loadTextureFromFile(const char* path);
     void drawLightBeam(float x, float y, float z);
 private:
-    unsigned int houseTexID[5];
+    unsigned int houseTexID[5],groundTex;
     ShowroomDoor showroomdoor;
 };
 

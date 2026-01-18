@@ -144,6 +144,7 @@
     <ClCompile Include="AbrarCode.cpp" />
     <ClCompile Include="AccessoriesSection.cpp" />
     <ClCompile Include="BeetleCar.cpp" />
+    <ClCompile Include="CameraSphere.cpp" />
     <ClCompile Include="Furniture.cpp" />
     <ClCompile Include="GlassManager.cpp" />
     <ClCompile Include="GlassWindow.cpp" />
@@ -172,6 +173,7 @@
     <ClInclude Include="AbrarCode.h" />
     <ClInclude Include="AccessoriesSection.h" />
     <ClInclude Include="BeetleCar.h" />
+    <ClInclude Include="CameraSphere.h" />
     <ClInclude Include="Furniture.h" />
     <ClInclude Include="GlassManager.h" />
     <ClInclude Include="GlassWindow.h" />
