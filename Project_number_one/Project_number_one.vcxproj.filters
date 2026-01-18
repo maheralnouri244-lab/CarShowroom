@@ -70,28 +70,27 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="StreetLamp.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SaraCode.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="NormalCar.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-<<<<<<< HEAD
-    <ClCompile Include="Furniture.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AccessoriesSection.cpp">
-=======
-    <ClCompile Include="MonitorScreen.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="OfficeDesk.cpp">
->>>>>>> 6297268 (security cameras)
-      <Filter>Source Files</Filter>
-    </ClCompile>
-  </ItemGroup>
+  <Filter>Source Files</Filter>
+</ClCompile>
+<ClCompile Include="SaraCode.cpp">
+  <Filter>Source Files</Filter>
+</ClCompile>
+<ClCompile Include="NormalCar.cpp">
+  <Filter>Source Files</Filter>
+</ClCompile>
+<ClCompile Include="Furniture.cpp">
+  <Filter>Source Files</Filter>
+</ClCompile>
+<ClCompile Include="AccessoriesSection.cpp">
+  <Filter>Source Files</Filter>
+</ClCompile>
+<ClCompile Include="MonitorScreen.cpp">
+  <Filter>Source Files</Filter>
+</ClCompile>
+<ClCompile Include="OfficeDesk.cpp">
+  <Filter>Source Files</Filter>
+</ClCompile>
+</ItemGroup>
   <ItemGroup>
     <ClInclude Include="Pillar.h">
       <Filter>Header Files</Filter>
