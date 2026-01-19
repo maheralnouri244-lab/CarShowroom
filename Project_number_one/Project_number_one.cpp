@@ -175,7 +175,8 @@ const float GATE_MAX_X = GATE_WIDTH / 2.0f;
 const float PLAYER_BUFFER_Y = 5.0f;
 const float COLLISION_BUFFER = 3.0f;
 const float GLOBAL_GROUND_LEVEL = 2.0f;
-
+float lastlookx = lookX, lastlooky = lookY, lastlookz = lookZ;
+float freeCamYaw = -90.0f, freeCamPitch = 0.0f;
 
 struct BoundingBox {
     float minX, minY, minZ;
@@ -303,8 +304,8 @@ void initRendering() {
     glLightfv(GL_LIGHT0, GL_SPECULAR, lightSpecular);
     glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
 
-    dayskyTex = loadTextureFromFile("images\\daytexture.png");
-    nightskyTex = loadTextureFromFile("images\\nighttexture.png");
+    dayskyTex = loadTextureFromFile("images\\finalday2.png");
+    nightskyTex = loadTextureFromFile("images\\finalnight2.png");
 
     glClearColor(0.1f, 0.1f, 0.15f, 1.0f);
     myJeep.init();
@@ -342,10 +343,16 @@ void switchCamera(int newCam) {
     // minX+30, h+16, maxz-23
     if (sqrt(pow(camX-(minX + 30),2)+pow(camY-(60+16),2)+pow(camZ-(maxz - 23),2)) > 100)
         return;
+
     if (currentCam >= 1 && currentCam <= 4 && newCam != currentCam) {
         captureThisFrame = true;
         lastCam = currentCam;
     }
+        if (currentCam == 0) {
+            freeCamYaw = yaw;
+            freeCamPitch = pitch;
+        }
+
     currentCam = newCam;
     glutPostRedisplay();
 }
@@ -706,6 +713,12 @@ void display() {
 
         hasSnapshot[idx] = true;
         captureThisFrame = false;
+
+        if (currentCam == 0) {
+            yaw = freeCamYaw;
+            pitch = freeCamPitch;
+            updateLookVector();
+        }
     }
 
     setCamera(currentCam);
