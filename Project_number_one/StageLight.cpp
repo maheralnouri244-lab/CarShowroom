@@ -4,7 +4,6 @@ StageLight::StageLight(float bSize, float cHeight, float cRadius, float r, float
     : baseSize(bSize), coneHeight(cHeight), coneRadius(cRadius), rotX(0.0f), rotY(0.0f), rotZ(0.0f) {
     color[0] = r; color[1] = g; color[2] = b;
 
-    // «·ﬁÌ„ «·«› —«÷Ì… ··‘⁄«⁄ („Œ›Ì  „«„«)
     bColor[0] = r; bColor[1] = g; bColor[2] = b;
     bOpacity = 0.0f;
     bLength = 1.0f;
@@ -57,8 +56,6 @@ void StageLight::draw() const {
 
         glPushMatrix();
         glTranslatef(0.0f, -coneHeight / 2 - baseSize / 3, -bLength - 0.3);
-
-        //glRotatef(180.0f, 1.0f, 0.0f, 0.0f);
 
         glColor4f(bColor[0], bColor[1], bColor[2], bOpacity);
         glutSolidCone(bRadius, bLength, 32, 32);
