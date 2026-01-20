@@ -21,6 +21,7 @@
 #include "GlassManager.h"
 #include "CameraSphere.h"
 #include "CityMasterPlan.h"
+#include "F1Car.h"
 #include "Lake.h" // كلاس البحيرة الجديد
 #include "include\\stb_image.h"
 
@@ -41,6 +42,9 @@ float lookX = -1.0f, lookY = -1.0f, lookZ = -1.0f;
 int lastMouseX, lastMouseY, weatherstatus = 0, currentCam = 0;
 bool firstMouse = true, ignoreWarp;
 int centerX, centerY, lastCam = 0;
+//const float F1Car::COL_BLACK[] = { 0.15f, 0.15f, 0.15f };
+//const float F1Car::COL_GREY[] = { 0.7f, 0.7f, 0.7f };
+//const float F1Car::COL_DARK[] = { 0.1f, 0.1f, 0.1f };
 
 // حدود المعرض القديمة (ما زالت تستخدم في التصادمات)
 float maxX = 150, maxz = 200, diff = 45;
@@ -53,6 +57,9 @@ Jeep_Builder_Final myJeep;
 SaraCode saraCode;
 GlassManager glassMgr;
 CameraSphere cam;
+F1Car carRed(0.8f, 0.1f, 0.1f);
+F1Car carBlue(0.1f, 0.3f, 0.8f);
+F1Car carYellow(0.9f, 0.8f, 0.1f);
 
 // --- تعريف البحيرة العاكسة ---
 // الإحداثيات مطابقة لما تم تحديده في CityMasterPlan::drawLakePark
@@ -592,6 +599,30 @@ void display() {
     glDisable(GL_STENCIL_TEST);
 
     drawscene();
+
+    // Red Car
+    glPushMatrix();
+    glTranslatef(-120.0f, 0.0f, -50.0f);
+    glRotatef(90.0f, 0, 1, 0);
+    glScalef(8.5f, 8.5f, 8.5f);
+    carRed.draw();
+    glPopMatrix();
+
+    // Blue Car
+    glPushMatrix();
+    glTranslatef(-120.0f, 0.0f, -90.0f);
+    glRotatef(90.0f, 0, 1, 0);
+    glScalef(8.5f, 8.5f, 8.5f);
+    carBlue.draw();
+    glPopMatrix();
+
+    // Yellow Car
+    glPushMatrix();
+    glTranslatef(-120.0f, 0.0f, -130.0f);
+    glRotatef(90.0f, 0, 1, 0);
+    glScalef(8.5f, 8.5f, 8.5f);
+    carYellow.draw();
+    glPopMatrix();
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
