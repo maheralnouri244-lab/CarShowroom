@@ -113,31 +113,26 @@ void CityMasterPlan::drawCafeSet(float x, float y, float z) {
     glPushMatrix();
     glTranslatef(x, y, z);
 
-    // تكبير الحجم 3 أضعاف
     glScalef(3.0f, 3.0f, 3.0f);
 
     glDisable(GL_TEXTURE_2D);
 
-    // الطاولة
     glColor3f(0.9f, 0.9f, 0.9f);
     glPushMatrix(); glTranslatef(0, 3, 0); glRotatef(-90, 1, 0, 0); glutSolidCone(4, 1, 10, 1); glPopMatrix();
     glColor3f(0.2f, 0.2f, 0.2f);
     glPushMatrix(); glTranslatef(0, 1.5, 0); glScalef(0.5, 3, 0.5); glutSolidCube(1); glPopMatrix();
 
-    // المظلة (قماش مخطط أحمر وأبيض لواقعية أكثر)
     glPushMatrix(); glTranslatef(0, 12, 0); glRotatef(-90, 1, 0, 0);
     glColor3f(0.8f, 0.2f, 0.2f); glutSolidCone(8, 4, 8, 1); // الجزء الأحمر
     glPopMatrix();
 
-    // عمود المظلة
     glColor3f(0.2f, 0.2f, 0.2f);
     glPushMatrix(); glTranslatef(0, 6, 0); glScalef(0.3, 12, 0.3); glutSolidCube(1); glPopMatrix();
 
-    // الكراسي
     for (int i = 0; i < 4; i++) {
         glPushMatrix();
         glRotatef(i * 90 + 45, 0, 1, 0);
-        glTranslatef(0, 0, 5); // أبعدنا الكراسي قليلاً لتناسب الحجم
+        glTranslatef(0, 0, 5);
 
         glColor3f(0.4f, 0.2f, 0.1f);
         glPushMatrix(); glTranslatef(0, 2, 0); glScalef(3, 0.5, 3); glutSolidCube(1); glPopMatrix();
@@ -155,28 +150,26 @@ void CityMasterPlan::drawModernKiosk(float x, float y, float z) {
     glColor3f(0.8f, 0.5f, 0.0f); glPushMatrix(); glTranslatef(0, 12.5f, 0); glScalef(16, 1, 12); glutSolidCube(1); glPopMatrix();
     glPopMatrix();
 }
+
 void CityMasterPlan::drawStreetLightRow(float x, float startZ, float spacing, int count, bool isRightSide, bool isNight) {
     for (int i = 0; i < count; i++) {
         glPushMatrix();
-        // الموقع
         glTranslatef(x, 0, startZ + i * spacing);
 
-        // التدوير: إذا كان على اليمين يدور باتجاه الطريق (-90)، والعكس
-        // StreetLamp عادة يرسم باتجاه Z، لذا ندوره حول Y
-        if (isRightSide) glRotatef(-90, 0, 1, 0); // ينظر لليسار (نحو الشارع)
-        else glRotatef(90, 0, 1, 0);              // ينظر لليمين (نحو الشارع)
+        if (isRightSide) glRotatef(-90, 0, 1, 0);
+        else glRotatef(90, 0, 1, 0);
 
         streetLightObj.draw(isNight);
         glPopMatrix();
     }
 }
+
 void CityMasterPlan::drawStreetLampBase(float x, float y, float z) {
     glPushMatrix(); glTranslatef(x, y, z); glDisable(GL_TEXTURE_2D);
     glColor3f(0.1f, 0.1f, 0.1f); glScalef(2, 1, 2); glutSolidCube(1);
     glPopMatrix();
 }
 
-// --- دالة رسم كشك العصير (تمت إضافتها هنا) ---
 void CityMasterPlan::drawJuiceStall(float x, float y, float z) {
     glPushMatrix(); glTranslatef(x, y, z); glDisable(GL_TEXTURE_2D);
     glColor3f(1.0f, 0.5f, 0.0f); glPushMatrix(); glTranslatef(0, 5, 0); glScalef(12, 10, 12); glutSolidCube(1); glPopMatrix();
@@ -216,9 +209,8 @@ void CityMasterPlan::drawBalloon(float x, float y, float z, float r, float g, fl
 void CityMasterPlan::drawGrandOpeningDecor() {
     float startZ = 200.0f; float endZ = 280.0f;
     glDisable(GL_TEXTURE_2D);
-    glColor3f(0.8f, 0.0f, 0.0f); // أحمر
+    glColor3f(0.8f, 0.0f, 0.0f);
 
-    // رفعنا السجادة إلى 0.15f لتكون آمنة تماماً من الوميض
     float carpetY = 0.15f;
 
     glBegin(GL_QUADS); glNormal3f(0, 1, 0);
@@ -226,7 +218,6 @@ void CityMasterPlan::drawGrandOpeningDecor() {
     glVertex3f(15, carpetY, endZ); glVertex3f(-15, carpetY, endZ);
     glEnd();
 
-    // البالونات
     for (int i = 0; i < 6; i++) {
         float z = startZ + 10 + i * 12;
         drawBalloon(20, 15 + (i % 2) * 2, z, 1, 0, 0); drawBalloon(22, 12 + (i % 2) * 2, z, 1, 1, 0);
@@ -234,10 +225,8 @@ void CityMasterPlan::drawGrandOpeningDecor() {
     }
 }
 
-
-
-// --- لم تعد تستخدم في الحديقة الجديدة ولكن قد تحتاجها للتوافق ---
 void CityMasterPlan::drawRock(float x, float y, float z, float size) {}
+
 void CityMasterPlan::drawReed(float x, float y, float z) {}
 
 // ==========================================
@@ -245,7 +234,6 @@ void CityMasterPlan::drawReed(float x, float y, float z) {}
 // ==========================================
 
 void CityMasterPlan::drawInfiniteGround() {
-    // 1. تفعيل الـ Stencil لمنع رسم العشب تحت البحيرة (كما هو)
     glEnable(GL_STENCIL_TEST);
     glClear(GL_STENCIL_BUFFER_BIT);
     glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE);
@@ -260,31 +248,24 @@ void CityMasterPlan::drawInfiniteGround() {
     glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
     glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 
-    // 2. إعدادات الخامة الاحترافية (Material Settings)
-    // نجعل العشب "مطفأ" (Matte) لا يعكس ضوء الشمس القوي
-    GLfloat mat_specular[] = { 0.0f, 0.0f, 0.0f, 1.0f }; // لا لمعان
+    GLfloat mat_specular[] = { 0.0f, 0.0f, 0.0f, 1.0f };
     GLfloat mat_shininess[] = { 0.0f };
     glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
     glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
 
-    // 3. الرسم
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, grassTex);
 
-    // تحسين جودة التكرار
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 
-    // لون أبيض كامل ليظهر لون الصورة الحقيقي
     glColor3f(1.0f, 1.0f, 1.0f);
 
-    float size = 6000.0f; // مساحة ضخمة جداً لتغطية الأفق
+    float size = 6000.0f;
     float y = -0.5f;
 
-    // التكرار الاحترافي: 0.1 يعني الصورة تتكرر كل 10 وحدات
-    // هذا يجعل العشب يبدو دقيقاً جداً
     float scaleFactor = 0.1f;
 
     glBegin(GL_QUADS); glNormal3f(0, 1, 0);
@@ -296,7 +277,6 @@ void CityMasterPlan::drawInfiniteGround() {
 
     glDisable(GL_TEXTURE_2D);
 
-    // إعادة إعدادات اللمعان الافتراضية لباقي المجسمات (السيارات وغيرها)
     GLfloat default_specular[] = { 1.0f, 1.0f, 1.0f, 1.0f };
     GLfloat default_shininess[] = { 50.0f };
     glMaterialfv(GL_FRONT, GL_SPECULAR, default_specular);
@@ -304,7 +284,6 @@ void CityMasterPlan::drawInfiniteGround() {
 
     glDisable(GL_STENCIL_TEST);
 }
-
 
 void CityMasterPlan::drawRoadMarkings(float x, float y, float z, float width, float length, bool isHorizontal) {
     glDisable(GL_TEXTURE_2D); float yL = y + 0.03f; glColor3f(1, 1, 1);
@@ -346,7 +325,6 @@ void CityMasterPlan::drawCrosswalk(float x, float y, float z, float width, float
 
 void CityMasterPlan::drawParkingLines(float x, float z, float width, float length, int rows, int cols) {
     glColor3f(1, 1, 1); glLineWidth(2); glBegin(GL_LINES);
-    // رفعنا الخطوط إلى 0.18f (فوق الأسفلت الذي هو 0.15f)
     float lineY = 0.18f;
     float s = width / cols;
     for (int i = 0; i <= cols; i++) {
@@ -358,7 +336,6 @@ void CityMasterPlan::drawParkingLines(float x, float z, float width, float lengt
 }
 
 
-
 // ==========================================
 // المناطق (Zones)
 // ==========================================
@@ -368,39 +345,33 @@ void CityMasterPlan::drawLakePark(bool isNight) {
     float parkW = 350.0f; float parkL = 500.0f;
     float lakeW = 200.0f; float lakeL = 300.0f;
 
-    // 1. الرصيف الجامع (الإطار الخارجي فقط مع تفريغ كامل للوسط)
     glEnable(GL_TEXTURE_2D); glBindTexture(GL_TEXTURE_2D, pavementTex); setupRepeatedTexture();
     glColor3f(0.9f, 0.9f, 0.9f); float tS = 0.02f;
     glBegin(GL_QUADS); glNormal3f(0, 1, 0);
-    // قطعة علوية
+
     float topH = (parkL - lakeL) / 2.0f; float topZ = parkZ - lakeL / 2 - topH / 2;
     glTexCoord2f(0, 0); glVertex3f(parkX - parkW / 2, 0.05f, topZ - topH / 2); glTexCoord2f(parkW * tS, 0); glVertex3f(parkX + parkW / 2, 0.05f, topZ - topH / 2);
     glTexCoord2f(parkW * tS, topH * tS); glVertex3f(parkX + parkW / 2, 0.05f, topZ + topH / 2); glTexCoord2f(0, topH * tS); glVertex3f(parkX - parkW / 2, 0.05f, topZ + topH / 2);
-    // قطعة سفلية
+
     float botZ = parkZ + lakeL / 2 + topH / 2;
     glTexCoord2f(0, 0); glVertex3f(parkX - parkW / 2, 0.05f, botZ - topH / 2); glTexCoord2f(parkW * tS, 0); glVertex3f(parkX + parkW / 2, 0.05f, botZ - topH / 2);
     glTexCoord2f(parkW * tS, topH * tS); glVertex3f(parkX + parkW / 2, 0.05f, botZ + topH / 2); glTexCoord2f(0, topH * tS); glVertex3f(parkX - parkW / 2, 0.05f, botZ + topH / 2);
-    // قطعة يسرى
+
     float sideW = (parkW - lakeW) / 2.0f; float leftX = parkX - lakeW / 2 - sideW / 2;
     glTexCoord2f(0, 0); glVertex3f(leftX - sideW / 2, 0.05f, parkZ - lakeL / 2); glTexCoord2f(sideW * tS, 0); glVertex3f(leftX + sideW / 2, 0.05f, parkZ - lakeL / 2);
     glTexCoord2f(sideW * tS, lakeL * tS); glVertex3f(leftX + sideW / 2, 0.05f, parkZ + lakeL / 2); glTexCoord2f(0, lakeL * tS); glVertex3f(leftX - sideW / 2, 0.05f, parkZ + lakeL / 2);
-    // قطعة يمنى
+
     float rightX = parkX + lakeW / 2 + sideW / 2;
     glTexCoord2f(0, 0); glVertex3f(rightX - sideW / 2, 0.05f, parkZ - lakeL / 2); glTexCoord2f(sideW * tS, 0); glVertex3f(rightX + sideW / 2, 0.05f, parkZ - lakeL / 2);
     glTexCoord2f(sideW * tS, lakeL * tS); glVertex3f(rightX + sideW / 2, 0.05f, parkZ + lakeL / 2); glTexCoord2f(0, lakeL * tS); glVertex3f(rightX - sideW / 2, 0.05f, parkZ + lakeL / 2);
     glEnd(); glDisable(GL_TEXTURE_2D);
 
-    // 2. السور والبوابة
     glPushMatrix(); glTranslatef(parkX, 0, parkZ); drawFence(parkW, parkL);
     glPushMatrix(); glTranslatef(parkW / 2, 0, 0); glRotatef(-90, 0, 1, 0); drawMainGate(); glPopMatrix();
     glPopMatrix();
 
-    // 3. (تم حذف الجسر والجزيرة وأي رصيف يقطع البحيرة)
-
-    // 4. الكوخ في الزاوية (بعيداً عن الماء)
     drawGazebo(parkX + lakeW / 2 + 40, 0.1f, parkZ - lakeL / 2 + 40);
 
-    // 5. المقاعد والإنارة (حول البحيرة فقط)
     float benchStart = parkZ - 120;
     for (int i = 0; i < 5; i++) {
         float posZ = benchStart + i * 60;
@@ -409,118 +380,100 @@ void CityMasterPlan::drawLakePark(bool isNight) {
         drawModernBench(parkX - lakeW / 2 - 20, 0.1f, posZ, 90);
         drawGardenLamp(parkX - lakeW / 2 - 35, 0.1f, posZ, isNight);
     }
-    // الأشجار المحيطة
+
     for (int i = 0; i < 6; i++) {
         drawSimpleTree(parkX - parkW / 2 + 30, 0.1f, parkZ - parkL / 2 + 30 + i * 80);
         drawSimpleTree(parkX + parkW / 2 - 30, 0.1f, parkZ - parkL / 2 + 30 + i * 80);
     }
-    // كشك العصير
+
     drawJuiceStall(parkX - parkW / 2 + 40, 0.1f, parkZ - parkL / 2 + 40);
 }
-
 
 void CityMasterPlan::buildShowroomPlaza() {
     float srMinX = -150.0f; float srMaxX = 150.0f; float srMinZ = -200.0f; float srMaxZ = 200.0f;
     float borderWidth = 30.0f; float frontPlazaDepth = 80.0f;
 
-    // 1. رسم الإطار المحيط (الرصيف) فقط - وترك الوسط فارغاً للأرضية الأصلية
     glEnable(GL_TEXTURE_2D); glBindTexture(GL_TEXTURE_2D, pavementTex); setupRepeatedTexture();
     glColor3f(0.9f, 0.9f, 0.9f); float tS = 0.02f;
     glBegin(GL_QUADS); glNormal3f(0, 1, 0);
-    // الأمامي (الساحة)
+
     glTexCoord2f(0, 0); glVertex3f(srMinX - borderWidth, 0.02f, srMaxZ);
     glTexCoord2f(10, 0); glVertex3f(srMaxX + borderWidth, 0.02f, srMaxZ);
     glTexCoord2f(10, 2); glVertex3f(srMaxX + borderWidth, 0.02f, srMaxZ + frontPlazaDepth);
     glTexCoord2f(0, 2); glVertex3f(srMinX - borderWidth, 0.02f, srMaxZ + frontPlazaDepth);
-    // اليمين
+
     glTexCoord2f(0, 0); glVertex3f(srMaxX, 0.02f, srMinZ - borderWidth);
     glTexCoord2f(1, 0); glVertex3f(srMaxX + borderWidth, 0.02f, srMinZ - borderWidth);
     glTexCoord2f(1, 10); glVertex3f(srMaxX + borderWidth, 0.02f, srMaxZ);
     glTexCoord2f(0, 10); glVertex3f(srMaxX, 0.02f, srMaxZ);
-    // اليسار
+
     glTexCoord2f(0, 0); glVertex3f(srMinX - borderWidth, 0.02f, srMinZ - borderWidth);
     glTexCoord2f(1, 0); glVertex3f(srMinX, 0.02f, srMinZ - borderWidth);
     glTexCoord2f(1, 10); glVertex3f(srMinX, 0.02f, srMaxZ);
     glTexCoord2f(0, 10); glVertex3f(srMinX - borderWidth, 0.02f, srMaxZ);
-    // الخلف
+
     glTexCoord2f(0, 0); glVertex3f(srMinX - borderWidth, 0.02f, srMinZ - borderWidth);
     glTexCoord2f(10, 0); glVertex3f(srMaxX + borderWidth, 0.02f, srMinZ - borderWidth);
     glTexCoord2f(10, 1); glVertex3f(srMaxX + borderWidth, 0.02f, srMinZ);
     glTexCoord2f(0, 1); glVertex3f(srMinX - borderWidth, 0.02f, srMinZ);
     glEnd(); glDisable(GL_TEXTURE_2D);
 
-    // 2. زينة الافتتاح (رفع السجادة الحمراء)
-    drawGrandOpeningDecor(); // تم تعديل ارتفاعها في الدالة الخاصة بها أدناه
+    drawGrandOpeningDecor(); 
 
-    // 3. التجميل المحيط
     drawFlowerBed(60.0f, 0.02f, srMaxZ + 40.0f); drawFlowerBed(-60.0f, 0.02f, srMaxZ + 40.0f);
     drawSimpleTree(srMaxX + 15, 0.02f, srMaxZ + 15); drawSimpleTree(srMinX - 15, 0.02f, srMaxZ + 15);
     drawSimpleTree(srMaxX + 15, 0.02f, srMinZ - 15); drawSimpleTree(srMinX - 15, 0.02f, srMinZ - 15);
 }
 
-
 void CityMasterPlan::buildMainBoulevard(bool isNight) {
-    float startZ = 280.0f; // بداية الطريق بعد الساحة
+    float startZ = 280.0f;
     float entryWidth = 100.0f; float entryLength = 100.0f; float splitZ = startZ + entryLength;
 
-    // --- الجزء الأول: المدخل ---
     drawRoadSegment(0, 0.05f, startZ, entryWidth, entryLength, false);
     drawSidewalk(entryWidth / 2 + 15, startZ + entryLength / 2, 30, entryLength, 0.5f);
     drawSidewalk(-(entryWidth / 2 + 15), startZ + entryLength / 2, 30, entryLength, 0.5f);
 
-    // أشجار المدخل
     for (int i = 0; i < 3; i++) {
         drawSimpleTree(entryWidth / 2 + 10, 0.5f, startZ + 20 + i * 40);
         drawSimpleTree(-(entryWidth / 2 + 10), 0.5f, startZ + 20 + i * 40);
     }
 
-    // --- الجزء الثاني: ما قبل الدوار ---
     float roundaboutCenterZ = 600.0f; float roadLen = roundaboutCenterZ - splitZ;
     float laneWidth = 40.0f; float medianWidth = 20.0f;
 
     drawRoadSegment(medianWidth / 2 + laneWidth / 2, 0.05f, splitZ, laneWidth, roadLen - 80, false);
     drawRoadSegment(-(medianWidth / 2 + laneWidth / 2), 0.05f, splitZ, laneWidth, roadLen - 80, false);
 
-    // الجزيرة الوسطية والأرصفة
     drawSidewalk(0, splitZ + (roadLen - 80) / 2, medianWidth, roadLen - 80, 0.5f);
     for (int i = 0; i < 5; i++) drawSimpleTree(0, 0.5f, splitZ + 20 + i * 40);
     drawSidewalk(medianWidth / 2 + laneWidth + 10, splitZ + (roadLen - 80) / 2, 20, roadLen - 80, 0.5f);
     drawSidewalk(-(medianWidth / 2 + laneWidth + 10), splitZ + (roadLen - 80) / 2, 20, roadLen - 80, 0.5f);
 
-    // >>> إضافة إنارة الشارع (الجزء الجنوبي) <<<
-    // نضع الأعمدة على الأرصفة الجانبية
-    float lampX = medianWidth / 2 + laneWidth + 10; // منتصف الرصيف الجانبي
-    // يمين
+    float lampX = medianWidth / 2 + laneWidth + 10;
+
     drawStreetLightRow(lampX, splitZ + 20, 60.0f, 3, true, isNight);
-    // يسار
+
     drawStreetLightRow(-lampX, splitZ + 20, 60.0f, 3, false, isNight);
 
 
-    // --- الجزء الثالث: ما بعد الدوار (الممتد للأفق) ---
-    float northStart = roundaboutCenterZ + (80 + 40); // 720
-    float northLength = 1500.0f; // مسافة طويلة
+    float northStart = roundaboutCenterZ + (80 + 40);
+    float northLength = 1500.0f;
 
     drawRoadSegment(medianWidth / 2 + laneWidth / 2, 0.05f, northStart, laneWidth, northLength, false);
     drawRoadSegment(-(medianWidth / 2 + laneWidth / 2), 0.05f, northStart, laneWidth, northLength, false);
 
-    // الجزيرة الوسطية الطويلة
     drawSidewalk(0, northStart + northLength / 2, medianWidth, northLength, 0.5f);
 
-    // الأرصفة الجانبية الطويلة
     drawSidewalk(medianWidth / 2 + laneWidth + 10, northStart + northLength / 2, 20, northLength, 0.5f);
     drawSidewalk(-(medianWidth / 2 + laneWidth + 10), northStart + northLength / 2, 20, northLength, 0.5f);
 
-    // أشجار النخيل الممتدة
     for (int i = 0; i < 20; i++) {
         drawSimpleTree(0, 0.5f, northStart + 50 + i * 80);
     }
 
-    // >>> إضافة إنارة الشارع (الجزء الشمالي الطويل) <<<
-    // نوزع الأعمدة كل 80 وحدة
     drawStreetLightRow(lampX, northStart + 40, 80.0f, 18, true, isNight);
     drawStreetLightRow(-lampX, northStart + 40, 80.0f, 18, false, isNight);
 
-    // ممرات المشاة
     drawCrosswalk(medianWidth / 2 + laneWidth / 2, 0.05f, startZ + 10, laneWidth, 15.0f, false);
     drawCrosswalk(-(medianWidth / 2 + laneWidth / 2), 0.05f, startZ + 10, laneWidth, 15.0f, false);
     drawCrosswalk(medianWidth / 2 + laneWidth / 2, 0.05f, 550.0f, laneWidth, 15.0f, false);
@@ -567,23 +520,19 @@ void CityMasterPlan::buildParkingZone() {
             drawGardenLamp(pX, 0.20f, cZ + rowHeight / 2, false);
         }
 
-        // رسم خطوط لمواقف أقل وأعرض
-        // عرض الموقف 40 (بدلاً من 20)
-        int spots = 7; // 7 مواقف فقط
+        int spots = 7;
         float sW = (pW - 40) / spots;
         glColor3f(1, 1, 1); glLineWidth(2); glBegin(GL_LINES);
         for (int k = 0; k <= spots; k++) { float cx = (pX - (pW - 40) / 2) + k * sW; glVertex3f(cx, 0.18f, cZ - (rowHeight - 20) / 2); glVertex3f(cx, 0.18f, cZ + (rowHeight - 20) / 2); } glEnd();
 
         drawParkingCanopy(pX, 0.10f, cZ - (rowHeight - 20) / 2 + 2, pW - 40, 5.0f);
 
-        // >>> توزيع السيارات (5 سيارات في الصف فقط) <<<
         for (int k = 0; k < spots; k++) {
             int randSeed = (int)(i * 99 + k * 17);
             if (randSeed % 3 == 0) continue;
 
             float carX = (pX - (pW - 40) / 2) + k * sW + sW / 2;
 
-            // رفعنا Z لتعويض حجم السيارة
             createAndDrawRandomCar(carX, 0.15f, cZ - (rowHeight - 20) / 2 + 15.0f, 90.0f, randSeed);
 
             if ((randSeed + 1) % 3 != 0) {
@@ -599,11 +548,10 @@ void CityMasterPlan::buildParkingZone() {
 void CityMasterPlan::createAndDrawRandomCar(float x, float y, float z, float rotation, int seed) {
     int type = seed % 10;
 
-    // ألوان عشوائية
     float r = (seed % 10) / 10.0f;
     float g = ((seed * 3) % 10) / 10.0f;
     float b = ((seed * 7) % 10) / 10.0f;
-    if (r < 0.2 && g < 0.2 && b < 0.2) r = 0.8f; // تجنب الأسود الكامل
+    if (r < 0.2 && g < 0.2 && b < 0.2) r = 0.8f; 
 
     Car* car = nullptr;
 
@@ -625,7 +573,7 @@ void CityMasterPlan::createAndDrawRandomCar(float x, float y, float z, float rot
 
     if (car) {
         car->draw();
-        delete car; // تنظيف الذاكرة فوراً (لأننا نرسم في كل فريم)
+        delete car; 
     }
 }
 
@@ -634,7 +582,6 @@ void CityMasterPlan::buildCommercialZone() {
 
     drawSidewalk(cX, cZ, cW, cL, 0.2f);
 
-    // توزيع متباعد (2x2 بدلاً من 3x3) لتستوعب الطاولات الكبيرة
     for (int row = 0; row < 2; row++) {
         for (int col = 0; col < 2; col++) {
             float tx = cX - cW / 4 + col * (cW / 2);
@@ -652,7 +599,6 @@ void CityMasterPlan::drawText3D(const char* text, float x, float y, float z, flo
     glPushMatrix();
     glTranslatef(x, y, z);
 
-    // حساب العرض للتوسيط
     float width = 0;
     for (const char* c = text; *c; c++) {
         width += glutStrokeWidth(GLUT_STROKE_ROMAN, *c);
@@ -661,19 +607,15 @@ void CityMasterPlan::drawText3D(const char* text, float x, float y, float z, flo
     glScalef(scale, scale, scale);
     glTranslatef(-width / 2.0f, 0, 0);
 
-    // سماكة الخط
     glLineWidth(3.0f);
 
-    // رسم النص عدة مرات لعمل عمق (3D)
-    for (int i = 0; i < 8; i++) { // زيادة الطبقات لعمق أكبر
+    for (int i = 0; i < 8; i++) {
         glPushMatrix();
-        glTranslatef(0, 0, i * 1.5f); // إزاحة في العمق
+        glTranslatef(0, 0, i * 1.5f);
 
-        // الطبقة الأمامية (الوجه)
         if (i == 7) {
-            glColor3f(r, g, b); // اللون المطلوب (الأزرق الفاتح)
+            glColor3f(r, g, b);
         }
-        // الجوانب (العمق) - نجعلها أغمق قليلاً لتبين التجسيم
         else {
             glColor3f(r * 0.6f, g * 0.6f, b * 0.6f);
         }
@@ -696,36 +638,28 @@ void CityMasterPlan::drawShowroomSign(bool isNight) {
     glTranslatef(0, signY, gateZ + 3.0f);
     glDisable(GL_TEXTURE_2D);
 
-    // 1. اللوحة الخلفية
-    glColor3f(0.8f, 0.8f, 0.85f); // إطار
+    glColor3f(0.8f, 0.8f, 0.85f);
     glPushMatrix(); glScalef(140, 20, 2); glutSolidCube(1); glPopMatrix();
 
-    glColor3f(0.05f, 0.05f, 0.1f); // خلفية سوداء
-    // الخلفية عند Z = 0.5
+    glColor3f(0.05f, 0.05f, 0.1f);
     glPushMatrix(); glTranslatef(0, 0, 0.5f); glScalef(135, 17, 1.5f); glutSolidCube(1); glPopMatrix();
 
-    // 2. النص (تم تعديل الإزاحة Z)
     if (isNight) {
         glDisable(GL_LIGHTING);
-        // تم تغيير Z من -3.0f إلى 4.0f ليكون بارزاً بوضوح أمام اللوحة السوداء
         drawText3D("CARS SHOWROOM", 0, -3.0f, 4.0f, 0.12f, 0.2f, 0.8f, 1.0f);
         glEnable(GL_LIGHTING);
     }
     else {
-        // تم تغيير Z من -3.0f إلى 4.0f
         drawText3D("CARS SHOWROOM", 0, -3.0f, 4.0f, 0.12f, 0.0f, 0.0f, 0.8f);
     }
 
-    // 3. شريط إضاءة
     if (isNight) glDisable(GL_LIGHTING);
     glColor3f(0.0f, 0.4f, 1.0f);
-    // الشريط أيضاً يجب أن يكون بارزاً (Z=2.0)
     glPushMatrix(); glTranslatef(0, -7.0f, 3.0f); glScalef(130, 0.5f, 0.5f); glutSolidCube(1); glPopMatrix();
     if (isNight) glEnable(GL_LIGHTING);
 
     glPopMatrix();
 }
-
 
 void CityMasterPlan::drawCityLayout(bool isNight) {
     glPushAttrib(GL_CURRENT_BIT | GL_ENABLE_BIT | GL_TEXTURE_BIT);
@@ -734,7 +668,6 @@ void CityMasterPlan::drawCityLayout(bool isNight) {
     buildShowroomPlaza();
 
     drawShowroomSign(isNight);
-    // تمرير متغير الليل هنا
     buildMainBoulevard(isNight);
 
     float roundR = 80.0f; float roadW = 40.0f;

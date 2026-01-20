@@ -80,7 +80,7 @@ private:
     void drawTechStation(float x, float y, float z);
     void drawInfoKiosk(float x, float y, float z);
     Furniture furniture;
-    AccessoriesSection accessories; // used for helper if needed
+    AccessoriesSection accessories;
 };
 
 #endif
