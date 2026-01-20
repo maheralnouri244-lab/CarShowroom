@@ -56,7 +56,7 @@ void StageLight::draw() const {
         glDepthMask(GL_TRUE);
 
         glPushMatrix();
-        glTranslatef(0.0f, -coneHeight / 2 - baseSize / 3, -bLength-0.3);
+        glTranslatef(0.0f, -coneHeight / 2 - baseSize / 3, -bLength - 0.3);
 
         //glRotatef(180.0f, 1.0f, 0.0f, 0.0f);
 

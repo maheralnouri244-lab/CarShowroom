@@ -13,6 +13,12 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\Cars">
+      <UniqueIdentifier>{f221156c-8e78-4ea1-ac6c-de38be6b1807}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Cars">
+      <UniqueIdentifier>{ea30bc3b-dd4b-4c5b-8f6c-ee33e7d1155f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Project_number_one.cpp">
@@ -93,6 +99,18 @@
     <ClCompile Include="CameraSphere.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CityMasterPlan.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GlassManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Car.cpp">
+      <Filter>Source Files\Cars</Filter>
+    </ClCompile>
+    <ClCompile Include="Garden.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Pillar.h">
@@ -149,9 +167,6 @@
     <ClInclude Include="RainSystem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="StreetLamp.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="NormalCar.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -171,6 +186,21 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="CameraSphere.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CityMasterPlan.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GlassManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StreetLamp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Car.h">
+      <Filter>Header Files\Cars</Filter>
+    </ClInclude>
+    <ClInclude Include="Garden.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

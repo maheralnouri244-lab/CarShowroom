@@ -8,7 +8,7 @@ void GlassManager::addWindow(
     float x2, float y2, float z2,
     float x3, float y3, float z3,
     float x4, float y4, float z4) {
-    windows.push_back(GlassWindow(x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4, 0.3f));
+    windows.push_back(GlassWindow(x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4, 0.6f));
 }
 
 void GlassManager::initShowroomWindows() {
@@ -31,8 +31,8 @@ void GlassManager::initShowroomWindows() {
     addWindow(maxX, floorY, minz, maxX, h2, minz, maxX, h2, maxz, maxX, floorY, maxz);
     addWindow(minX, floorY, minz, minX, h2, minz, minX, h2, maxz, minX, floorY, maxz);
     addWindow(maxX, floorY, minz, maxX, h2, minz, minX, h2, minz, minX, floorY, minz);
-/*    addWindow(minX, floorY, maxz, minX, h2, maxz, minX + (maxX - minX - diff) / 2 + 3, h2, maxz, minX + (maxX - minX - diff) / 2 + 3, floorY, maxz);
-    addWindow(maxX, floorY, maxz, maxX, h2, maxz, maxX - (maxX - minX - diff) / 2 - 3, h2, maxz, maxX - (maxX - minX - diff) / 2 - 3, floorY, maxz);*/
+    /*    addWindow(minX, floorY, maxz, minX, h2, maxz, minX + (maxX - minX - diff) / 2 + 3, h2, maxz, minX + (maxX - minX - diff) / 2 + 3, floorY, maxz);
+        addWindow(maxX, floorY, maxz, maxX, h2, maxz, maxX - (maxX - minX - diff) / 2 - 3, h2, maxz, maxX - (maxX - minX - diff) / 2 - 3, floorY, maxz);*/
     addWindow(minX, floorY, maxz, minX, h2, maxz, maxX, h2, maxz, maxX, floorY, maxz);
 }
 

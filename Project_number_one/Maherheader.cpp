@@ -1,6 +1,13 @@
-#include <GL/glut.h>
+﻿#include <GL/glut.h>
 #include <vector>
 #include <cmath>
+#include <iostream>
+#include <utility>
+#include <string>
+#include <cstdlib>
+#include <ctime>
+
+// تضمين ملفات المشروع
 #include "Pillar.h"
 #include "Hpillar.h"
 #include "Showroomside.h"
@@ -8,34 +15,32 @@
 #include "GlassWindow.h"
 #include "PlusRing3D.h"
 #include "Maherheader.h"
-#include <utility>
 #include "StageLight.h"
 #include "NeonTube.h"
 #include "SteveModel.h"
-#include <iostream>
 #include "House.h"
-#include <string>
 #include "Tree.h"
 #include "Showroomdoor.h"
 #include "StreetLamp.h"
 #include "MonitorScreen.h"
 #include "OfficeDesk.h"
 #include "CameraSphere.h"
+#include "CityMasterPlan.h"
 
 #define STB_IMAGE_IMPLEMENTATION
-#include "include\stb_image.h"
+#include "include\\stb_image.h"
 
 using namespace std;
 
-#include <GL/glut.h>
-#include <vector>
-#include <cstdlib>
-#include <ctime>
-
-
-Maherheader::Maherheader():showroomdoor(0, 15, 200) {
-    houseTexID[5] = {};
+Maherheader::Maherheader() : showroomdoor(0, 15, 200) {
+    for (int i = 0; i < 5; i++) houseTexID[i] = 0;
     groundTex = 0;
+
+    roadTexID = 0;
+    pavementTexID = 0;
+    grassTexID = 0;
+    parkingTexID = 0;
+    waterTexID = 0;
 }
 
 void Maherheader::drawLightBeam(float x, float y, float z) {
@@ -43,13 +48,10 @@ void Maherheader::drawLightBeam(float x, float y, float z) {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glDisable(GL_LIGHTING);
-
     glTranslatef(x, y, z);
     glRotatef(270.0f, 1.0f, 0.0f, 0.0f);
-
     glColor4f(1.0f, 0.85f, 0.2f, 0.3f);
     glutSolidCone(30.0, 33.0, 32, 16);
-
     glEnable(GL_LIGHTING);
     glDisable(GL_BLEND);
     glPopMatrix();
@@ -59,114 +61,60 @@ unsigned int Maherheader::loadTextureFromFile(const char* path) {
     int w, h, n;
     stbi_set_flip_vertically_on_load(true);
     unsigned char* data = stbi_load(path, &w, &h, &n, 4);
-
-    if (!data) return 0;
-
+    if (!data) {
+        return 0;
+    }
     unsigned int newTexID;
     glGenTextures(1, &newTexID);
     glBindTexture(GL_TEXTURE_2D, newTexID);
-
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
     gluBuild2DMipmaps(GL_TEXTURE_2D, GL_RGBA, w, h, GL_RGBA, GL_UNSIGNED_BYTE, data);
-
     glBindTexture(GL_TEXTURE_2D, 0);
     stbi_image_free(data);
-
     return newTexID;
 }
 
-void Maherheader::draw(float camX,float camY,float camZ,bool isday, GLuint cctvTexIDs[4]) {
+void Maherheader::draw(float camX, float camY, float camZ, bool isday, GLuint cctvTexIDs[4]) {
 
-    for (int i = 1; i < 5; i++) {
-        string path = "images\\house" + to_string(i) + ".png";
-        if (const_cast<unsigned int&>(houseTexID[i]) == 0) {
-            const_cast<unsigned int&>(houseTexID[i]) = const_cast<Maherheader*>(this)->loadTextureFromFile(path.c_str());
+    /*for (int i = 1; i < 5; i++) {
+        string path = "images\\\\house" + to_string(i) + ".png";
+        if (houseTexID[i] == 0) {
+            houseTexID[i] = loadTextureFromFile(path.c_str());
         }
-    }
+    }*/
 
-    if (const_cast<unsigned int&>(groundTex) == 0)
-        const_cast<unsigned int&>(groundTex) = const_cast<Maherheader*>(this)->loadTextureFromFile("images\\groundtexture.png");
+    if (groundTex == 0)
+        groundTex = loadTextureFromFile("images\\\\groundtexture.png");
 
+    if (roadTexID == 0)      roadTexID = loadTextureFromFile("images\\\\road.png");
+    if (pavementTexID == 0)  pavementTexID = loadTextureFromFile("images\\\\p2.png");
+    if (grassTexID == 0)     grassTexID = loadTextureFromFile("images\\\\grassg.png");
+    if (parkingTexID == 0)   parkingTexID = loadTextureFromFile("images\\\\parking.jpg");
+    if (waterTexID == 0)     waterTexID = loadTextureFromFile("images\\\\water.png");
 
+    if (grassTexID == 0) grassTexID = groundTex;
+    if (parkingTexID == 0) parkingTexID = roadTexID;
 
-	PlusRing3D symbol;
-	vector<Pillar> pillars;
-	vector<Hpillar> hpillars;
-	vector<Showroomside> showroomsides;
+    // =========================================================
+    // رسم تخطيط المدينة (الشوارع، الحديقة، المواقف)
+    // =========================================================
+    cityPlan.setTextures(roadTexID, pavementTexID, grassTexID, parkingTexID, waterTexID, pavementTexID);
+    cityPlan.drawCityLayout(true);
+
+    PlusRing3D symbol;
+    vector<Pillar> pillars;
+    vector<Hpillar> hpillars;
+    vector<Showroomside> showroomsides;
     vector <NeonTube> neonyubes;
-	float maxX = 150, maxz = 200, diff = 45;
-	float minX = -maxX, minz = -maxz;
-	pair<float, float> p[4] = {{maxX,maxz},{minX,maxz},{maxX,minz},{minX,minz} };
-	int h = 60;
-
-    // ���� ���� �������
-    float lakeMinX = minX - 170.0f;
-    float lakeMaxX = minX + 170.0f;
-    float lakeMinZ = maxz + 100.0f;
-    float lakeMaxZ = maxz + 600.0f;
-
-    glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, groundTex);
-
-    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-    float tile = 1;
-
-    glBegin(GL_QUADS);
-    glNormal3f(0.0f, 1.0f, 0.0f);
-
-    glTexCoord2f(tile, tile); glVertex3f(2000.0f, -0.2f, 2000.0f);
-    glTexCoord2f(0.0f, tile); glVertex3f(-2000.0f, -0.2f, 2000.0f);
-    glTexCoord2f(0.0f, 0.0f); glVertex3f(-2000.0f, -0.2f, lakeMaxZ);
-    glTexCoord2f(tile, 0.0f); glVertex3f(2000.0f, -0.2f, lakeMaxZ);
-
-    glEnd();
-
-    glBegin(GL_QUADS);
-    glNormal3f(0.0f, 1.0f, 0.0f);
-
-    glTexCoord2f(tile, tile); glVertex3f(2000.0f, -0.2f, lakeMinZ);
-    glTexCoord2f(0.0f, tile); glVertex3f(-2000.0f, -0.2f, lakeMinZ);
-    glTexCoord2f(0.0f, 0.0f); glVertex3f(-2000.0f, -0.2f, -2000.0f);
-    glTexCoord2f(tile, 0.0f); glVertex3f(2000.0f, -0.2f, -2000.0f);
-
-    glEnd();
-
-    glBegin(GL_QUADS);
-    glNormal3f(0.0f, 1.0f, 0.0f);
-
-    glTexCoord2f(tile, tile); glVertex3f(-2000.0f, -0.2f, lakeMaxZ);
-    glTexCoord2f(0.0f, tile); glVertex3f(lakeMinX, -0.2f, lakeMaxZ);
-    glTexCoord2f(0.0f, 0.0f); glVertex3f(lakeMinX, -0.2f, lakeMinZ);
-    glTexCoord2f(tile, 0.0f); glVertex3f(-2000.0f, -0.2f, lakeMinZ);
-
-    glEnd();
-
-    glBegin(GL_QUADS);
-    glNormal3f(0.0f, 1.0f, 0.0f);
-
-    glTexCoord2f(tile, tile); glVertex3f(lakeMaxX, -0.2f, lakeMaxZ);
-    glTexCoord2f(0.0f, tile); glVertex3f(2000.0f, -0.2f, lakeMaxZ);
-    glTexCoord2f(0.0f, 0.0f); glVertex3f(2000.0f, -0.2f, lakeMinZ);
-    glTexCoord2f(tile, 0.0f); glVertex3f(lakeMaxX, -0.2f, lakeMinZ);
-
-    glEnd();
-
-    glDisable(GL_TEXTURE_2D);
-
-
-
-
+    float maxX = 150, maxz = 200, diff = 45;
+    float minX = -maxX, minz = -maxz;
+    pair<float, float> p[4] = { {maxX,maxz},{minX,maxz},{maxX,minz},{minX,minz} };
+    int h = 60;
 
     for (int i = 0; i < 1; i++) {
-        //cout << p[i].first << " " << p[i].second << "\n";
         pillars.push_back(Pillar(p[i].first, 0, p[i].second, h));
     }
 
@@ -180,11 +128,8 @@ void Maherheader::draw(float camX,float camY,float camZ,bool isday, GLuint cctvT
     hpillars.push_back(Hpillar(minX + (maxX - minX - diff) / 4, 0, maxz, 0.4, (maxX - minX - diff) / 2, 0.8));
     hpillars.push_back(Hpillar(maxX - (maxX - minX - diff) / 4, 0, maxz, 0.4, (maxX - minX - diff) / 2, 0.8));
 
-    // ground line
     hpillars.push_back(Hpillar(maxX - (maxX - minX - diff) / 2, 0, 0, 0.4, 0.8, maxz - minz - 2 * diff));
     hpillars.push_back(Hpillar(minX + (maxX - minX - diff) / 2, 0, 0, 0.4, 0.8, maxz - minz - 2 * diff));
-
-    // roof line
     hpillars.push_back(Hpillar(maxX - (maxX - minX - diff) / 2, h, 0, 0.4, 0.8, maxz - minz - 2 * diff));
     hpillars.push_back(Hpillar(minX + (maxX - minX - diff) / 2, h, 0, 0.4, 0.8, maxz - minz - 2 * diff));
 
@@ -194,39 +139,26 @@ void Maherheader::draw(float camX,float camY,float camZ,bool isday, GLuint cctvT
     showroomsides.push_back(Showroomside(minX + (maxX - minX - diff) / 2, minX, maxz, maxz, h, 0.2, 0.2, 0.2, 18, 5));
     showroomsides.push_back(Showroomside(maxX, maxX - (maxX - minX - diff) / 2, maxz, maxz, h, 0.2, 0.2, 0.2, 18, 5));
 
-    //ground line
     showroomsides.push_back(Showroomside(minX + (maxX - minX - diff) / 2, minX + (maxX - minX - diff) / 2, (maxz - minz - 2 * diff) / 2, -(maxz - minz - 2 * diff) / 2, h, 0.2, 0.2, 0.2, 18, 5));
     showroomsides.push_back(Showroomside(maxX - (maxX - minX - diff) / 2, maxX - (maxX - minX - diff) / 2, (maxz - minz - 2 * diff) / 2, -(maxz - minz - 2 * diff) / 2, h, 0.2, 0.2, 0.2, 18, 5));
 
     neonyubes.push_back(NeonTube(minX + (maxX - minX - diff) / 2 + 4, 0, 0, maxz - minz - diff, 0.1, 'z'));
     neonyubes.push_back(NeonTube(maxX - (maxX - minX - diff) / 2 - 4, 0, 0, maxz - minz - diff, 0.1, 'z'));
-    neonyubes.push_back(NeonTube(0, 0, (maxz - minz - diff) / 2, (maxX - minX - diff/2), 0.1, 'x'));
-    neonyubes.push_back(NeonTube(0, 0, -(maxz - minz - diff) / 2, (maxX - minX - diff/2), 0.1, 'x'));
-    neonyubes.push_back(NeonTube(minX + (maxX - minX - diff) / 4, 0, (maxz + minz) / 2 +  2*diff, (maxz - minz) / 2 - 2*diff, 0.1, 'z'));
-    neonyubes.push_back(NeonTube(minX + (maxX - minX - diff) / 4, 0, - (maxz + minz) / 2 - 2*diff, (maxz - minz) / 2 - 2*diff, 0.1, 'z'));
+    neonyubes.push_back(NeonTube(0, 0, (maxz - minz - diff) / 2, (maxX - minX - diff / 2), 0.1, 'x'));
+    neonyubes.push_back(NeonTube(0, 0, -(maxz - minz - diff) / 2, (maxX - minX - diff / 2), 0.1, 'x'));
+    neonyubes.push_back(NeonTube(minX + (maxX - minX - diff) / 4, 0, (maxz + minz) / 2 + 2 * diff, (maxz - minz) / 2 - 2 * diff, 0.1, 'z'));
+    neonyubes.push_back(NeonTube(minX + (maxX - minX - diff) / 4, 0, -(maxz + minz) / 2 - 2 * diff, (maxz - minz) / 2 - 2 * diff, 0.1, 'z'));
     neonyubes.push_back(NeonTube(-minX - (maxX - minX - diff) / 4, 0, (maxz + minz) / 2 + 2 * diff, (maxz - minz) / 2 - 2 * diff, 0.1, 'z'));
     neonyubes.push_back(NeonTube(-minX - (maxX - minX - diff) / 4, 0, -(maxz + minz) / 2 - 2 * diff, (maxz - minz) / 2 - 2 * diff, 0.1, 'z'));
 
-    
-    for (const auto& p : pillars) {
-        p.draw();
-    }
-
-    for (const auto& p : hpillars) {
-        p.draw();
-    }
-
-    for (const auto& p : showroomsides) {
-        p.draw();
-    }
-
-    for (const auto& p : neonyubes) {
-        p.draw();
-    }
+    for (const auto& p : pillars) p.draw();
+    for (const auto& p : hpillars) p.draw();
+    for (const auto& p : showroomsides) p.draw();
+    for (const auto& p : neonyubes) p.draw();
 
     ShowroomGate showroomgate;
     showroomgate.draw();
-    
+
     glPushMatrix();
     glTranslatef(0, 0, (maxz - minz - 2 * diff) / 2);
     showroomgate.drawGateArch();
@@ -257,73 +189,66 @@ void Maherheader::draw(float camX,float camY,float camZ,bool isday, GLuint cctvT
 
     int cnt = 5;
     for (int i = 0; i <= cnt; i++) {
-        NeonTube C1 = NeonTube(-minX - (maxX - minX - diff) / 4, (30.0/cnt)*i, 0, (maxz - minz) / 2 - 2 * diff, 0.1, 'z');
+        NeonTube C1 = NeonTube(-minX - (maxX - minX - diff) / 4, (30.0 / cnt) * i, 0, (maxz - minz) / 2 - 2 * diff, 0.1, 'z');
         C1.drawC(0.2, 40);
-        if (i == 0)
-            C1.drawColumns(40, 12, 30, 0.2, 3, 1);
+        if (i == 0) C1.drawColumns(40, 12, 30, 0.2, 3, 1);
     }
-
     for (int i = 0; i <= cnt; i++) {
         NeonTube C2 = NeonTube(minX + (maxX - minX - diff) / 4, (30.0 / cnt) * i, 0, (maxz - minz) / 2 - 2 * diff, 0.1, 'z');
         C2.drawC(0.2, 40);
-        if (i == 0)
-            C2.drawColumns(40, 12, 30, 0.2, 3, 1);
+        if (i == 0) C2.drawColumns(40, 12, 30, 0.2, 3, 1);
     }
 
-    // steves draw
+    // رسم شخصيات ستيف (Steves)
     float groupBaseX = minX + (maxX - minX - diff) / 4.0f;
     float steveData[41][15] = {
-    { -40.0f, 230.0f, 180.0f, 0.70f, 0.47f, 0.35f, 0.25f, 0.15f, 0.10f, 0.00f, 0.65f, 0.65f, 0.25f, 0.25f, 0.60f },
-    { 40.0f, 250.0f, 170.0f, 0.80f, 0.55f, 0.40f, 0.20f, 0.20f, 0.20f, 0.80f, 0.20f, 0.20f, 0.10f, 0.10f, 0.40f },
-    { 60.0f, 280.0f, 190.0f, 0.60f, 0.40f, 0.30f, 0.10f, 0.10f, 0.10f, 0.20f, 0.70f, 0.20f, 0.30f, 0.30f, 0.30f },
-    { -80.0f, 300.0f, 160.0f, 0.75f, 0.50f, 0.38f, 0.30f, 0.20f, 0.10f, 0.90f, 0.90f, 0.20f, 0.20f, 0.20f, 0.50f },
-    { 100.0f, 240.0f, 200.0f, 0.50f, 0.35f, 0.25f, 0.10f, 0.05f, 0.05f, 0.50f, 0.50f, 0.50f, 0.15f, 0.15f, 0.20f },
-    { -120.0f, 260.0f, 180.0f, 0.70f, 0.47f, 0.35f, 0.40f, 0.30f, 0.20f, 0.20f, 0.20f, 0.80f, 0.10f, 0.10f, 0.10f },
-    { 140.0f, 350.0f, 175.0f, 0.85f, 0.60f, 0.45f, 0.60f, 0.50f, 0.30f, 0.70f, 0.40f, 0.20f, 0.30f, 0.30f, 0.50f },
-    { 20.0f, -230.0f, 0.0f, 0.70f, 0.47f, 0.35f, 0.25f, 0.15f, 0.10f, 0.40f, 0.10f, 0.60f, 0.20f, 0.20f, 0.20f },
-    { -50.0f, -260.0f, 10.0f, 0.65f, 0.45f, 0.30f, 0.15f, 0.15f, 0.15f, 0.20f, 0.60f, 0.80f, 0.25f, 0.25f, 0.40f },
-    { 90.0f, -290.0f, 350.0f, 0.55f, 0.38f, 0.28f, 0.05f, 0.05f, 0.05f, 0.80f, 0.80f, 0.80f, 0.20f, 0.20f, 0.30f },
-    { -10.0f, -320.0f, 5.0f, 0.72f, 0.48f, 0.36f, 0.35f, 0.25f, 0.15f, 0.10f, 0.50f, 0.10f, 0.40f, 0.40f, 0.30f },
-    { -130.0f, -240.0f, 340.0f, 0.80f, 0.55f, 0.40f, 0.50f, 0.40f, 0.20f, 0.90f, 0.50f, 0.10f, 0.20f, 0.20f, 0.50f },
-    { 110.0f, -270.0f, 15.0f, 0.60f, 0.40f, 0.30f, 0.20f, 0.10f, 0.05f, 0.30f, 0.30f, 0.60f, 0.15f, 0.15f, 0.25f },
-    { -90.0f, -380.0f, 0.0f, 0.70f, 0.47f, 0.35f, 0.25f, 0.15f, 0.10f, 0.70f, 0.20f, 0.40f, 0.25f, 0.25f, 0.60f },
-    { 180.0f, 0.0f, 270.0f, 0.70f, 0.47f, 0.35f, 0.25f, 0.15f, 0.10f, 0.00f, 0.65f, 0.65f, 0.25f, 0.25f, 0.60f },
-    { 200.0f, 80.0f, 260.0f, 0.50f, 0.35f, 0.25f, 0.10f, 0.10f, 0.10f, 0.50f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f },
-    { 220.0f, -60.0f, 280.0f, 0.80f, 0.55f, 0.40f, 0.40f, 0.30f, 0.10f, 0.20f, 0.60f, 0.20f, 0.20f, 0.30f, 0.20f },
-    { 250.0f, 120.0f, 275.0f, 0.70f, 0.47f, 0.35f, 0.30f, 0.20f, 0.15f, 0.10f, 0.40f, 0.70f, 0.30f, 0.30f, 0.40f },
-    { 190.0f, -150.0f, 265.0f, 0.65f, 0.45f, 0.30f, 0.20f, 0.10f, 0.05f, 0.60f, 0.60f, 0.20f, 0.20f, 0.20f, 0.30f },
-    { 280.0f, 40.0f, 255.0f, 0.75f, 0.50f, 0.38f, 0.50f, 0.20f, 0.10f, 0.80f, 0.40f, 0.40f, 0.30f, 0.10f, 0.10f },
-    { 320.0f, -90.0f, 290.0f, 0.55f, 0.38f, 0.28f, 0.05f, 0.05f, 0.05f, 0.40f, 0.40f, 0.40f, 0.10f, 0.10f, 0.20f },
-    { 210.0f, 180.0f, 270.0f, 0.82f, 0.60f, 0.50f, 0.60f, 0.50f, 0.20f, 0.20f, 0.20f, 0.50f, 0.15f, 0.15f, 0.25f },
-    { -180.0f, 20.0f, 90.0f, 0.60f, 0.40f, 0.30f, 0.15f, 0.15f, 0.15f, 0.30f, 0.70f, 0.70f, 0.10f, 0.10f, 0.30f },
-    { -210.0f, -50.0f, 85.0f, 0.70f, 0.47f, 0.35f, 0.25f, 0.15f, 0.10f, 0.70f, 0.30f, 0.30f, 0.25f, 0.25f, 0.40f },
-    { -230.0f, 100.0f, 95.0f, 0.80f, 0.55f, 0.40f, 0.45f, 0.35f, 0.25f, 0.40f, 0.20f, 0.60f, 0.20f, 0.20f, 0.20f },
-    { -260.0f, -120.0f, 80.0f, 0.72f, 0.48f, 0.36f, 0.30f, 0.20f, 0.10f, 0.20f, 0.60f, 0.20f, 0.20f, 0.40f, 0.20f },
-    { -195.0f, 160.0f, 100.0f, 0.50f, 0.35f, 0.25f, 0.10f, 0.10f, 0.10f, 0.90f, 0.50f, 0.10f, 0.30f, 0.30f, 0.40f },
-    { -300.0f, -20.0f, 90.0f, 0.75f, 0.50f, 0.38f, 0.55f, 0.45f, 0.35f, 0.30f, 0.30f, 0.80f, 0.10f, 0.10f, 0.30f },
-    { -220.0f, 190.0f, 90.0f, 0.65f, 0.45f, 0.30f, 0.20f, 0.10f, 0.10f, 0.50f, 0.50f, 0.20f, 0.20f, 0.30f, 0.20f },
-    { -280.0f, -180.0f, 110.0f, 0.70f, 0.47f, 0.35f, 0.25f, 0.15f, 0.10f, 0.60f, 0.20f, 0.20f, 0.15f, 0.15f, 0.25f },
-    { groupBaseX + 0.0f,   0.0f,   0.0f,   0.70f, 0.47f, 0.35f,  0.25f, 0.15f, 0.10f,  0.10f, 0.50f, 0.80f,  0.20f, 0.20f, 0.50f },
-    { groupBaseX + 12.0f,  8.0f,   140.0f, 0.80f, 0.55f, 0.40f,  0.10f, 0.10f, 0.10f,  0.90f, 0.20f, 0.20f,  0.15f, 0.15f, 0.25f },
-    { groupBaseX - 12.0f,  5.0f,   30.0f,  0.60f, 0.40f, 0.30f,  0.35f, 0.25f, 0.15f,  0.20f, 0.70f, 0.20f,  0.30f, 0.30f, 0.30f },
-    { groupBaseX + 2.0f,  -10.0f,  200.0f, 0.75f, 0.50f, 0.38f,  0.20f, 0.20f, 0.20f,  0.50f, 0.50f, 0.50f,  0.10f, 0.10f, 0.10f },
-    { -groupBaseX + 0.0f,   5.0f,   180.0f, 0.70f, 0.47f, 0.35f, 0.25f, 0.15f, 0.10f, 0.80f, 0.10f, 0.10f, 0.10f, 0.10f, 0.40f },
-    { -groupBaseX + 10.0f, -5.0f,   210.0f, 0.80f, 0.55f, 0.40f, 0.10f, 0.10f, 0.10f, 0.20f, 0.60f, 0.20f, 0.20f, 0.30f, 0.20f },
-    { -groupBaseX - 8.0f,  15.0f,   160.0f, 0.60f, 0.40f, 0.30f, 0.35f, 0.25f, 0.15f, 0.50f, 0.50f, 0.10f, 0.30f, 0.10f, 0.10f },
-    //{ -groupBaseX + 4.0f,  25.0f,   190.0f, 0.75f, 0.50f, 0.38f, 0.20f, 0.20f, 0.20f, 0.10f, 0.10f, 0.70f, 0.25f, 0.25f, 0.25f },
-    { -groupBaseX - 12.0f, -15.0f,  300.0f, 0.50f, 0.35f, 0.25f, 0.10f, 0.05f, 0.05f, 0.70f, 0.30f, 0.80f, 0.15f, 0.15f, 0.20f },
-    { -groupBaseX + 15.0f, 10.0f,   45.0f,  0.85f, 0.60f, 0.45f, 0.60f, 0.50f, 0.30f, 0.30f, 0.70f, 0.30f, 0.10f, 0.40f, 0.10f },
+        { -40.0f, 230.0f, 180.0f, 0.70f, 0.47f, 0.35f, 0.25f, 0.15f, 0.10f, 0.00f, 0.65f, 0.65f, 0.25f, 0.25f, 0.60f },
+        { 40.0f, 250.0f, 170.0f, 0.80f, 0.55f, 0.40f, 0.20f, 0.20f, 0.20f, 0.80f, 0.20f, 0.20f, 0.10f, 0.10f, 0.40f },
+        { 60.0f, 280.0f, 190.0f, 0.60f, 0.40f, 0.30f, 0.10f, 0.10f, 0.10f, 0.20f, 0.70f, 0.20f, 0.30f, 0.30f, 0.30f },
+        { -80.0f, 300.0f, 160.0f, 0.75f, 0.50f, 0.38f, 0.30f, 0.20f, 0.10f, 0.90f, 0.90f, 0.20f, 0.20f, 0.20f, 0.50f },
+        { 100.0f, 240.0f, 200.0f, 0.50f, 0.35f, 0.25f, 0.10f, 0.05f, 0.05f, 0.50f, 0.50f, 0.50f, 0.15f, 0.15f, 0.20f },
+        { -120.0f, 260.0f, 180.0f, 0.70f, 0.47f, 0.35f, 0.40f, 0.30f, 0.20f, 0.20f, 0.20f, 0.80f, 0.10f, 0.10f, 0.10f },
+        { 140.0f, 350.0f, 175.0f, 0.85f, 0.60f, 0.45f, 0.60f, 0.50f, 0.30f, 0.70f, 0.40f, 0.20f, 0.30f, 0.30f, 0.50f },
+        { 20.0f, -230.0f, 0.0f, 0.70f, 0.47f, 0.35f, 0.25f, 0.15f, 0.10f, 0.40f, 0.10f, 0.60f, 0.20f, 0.20f, 0.20f },
+        { -50.0f, -260.0f, 10.0f, 0.65f, 0.45f, 0.30f, 0.15f, 0.15f, 0.15f, 0.20f, 0.60f, 0.80f, 0.25f, 0.25f, 0.40f },
+        { 90.0f, -290.0f, 350.0f, 0.55f, 0.38f, 0.28f, 0.05f, 0.05f, 0.05f, 0.80f, 0.80f, 0.80f, 0.20f, 0.20f, 0.30f },
+        { -10.0f, -320.0f, 5.0f, 0.72f, 0.48f, 0.36f, 0.35f, 0.25f, 0.15f, 0.10f, 0.50f, 0.10f, 0.40f, 0.40f, 0.30f },
+        { -130.0f, -240.0f, 340.0f, 0.80f, 0.55f, 0.40f, 0.50f, 0.40f, 0.20f, 0.90f, 0.50f, 0.10f, 0.20f, 0.20f, 0.50f },
+        { 110.0f, -270.0f, 15.0f, 0.60f, 0.40f, 0.30f, 0.20f, 0.10f, 0.05f, 0.30f, 0.30f, 0.60f, 0.15f, 0.15f, 0.25f },
+        { -90.0f, -380.0f, 0.0f, 0.70f, 0.47f, 0.35f, 0.25f, 0.15f, 0.10f, 0.70f, 0.20f, 0.40f, 0.25f, 0.25f, 0.60f },
+        { 180.0f, 0.0f, 270.0f, 0.70f, 0.47f, 0.35f, 0.25f, 0.15f, 0.10f, 0.00f, 0.65f, 0.65f, 0.25f, 0.25f, 0.60f },
+        { 200.0f, 80.0f, 260.0f, 0.50f, 0.35f, 0.25f, 0.10f, 0.10f, 0.10f, 0.50f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f },
+        { 220.0f, -60.0f, 280.0f, 0.80f, 0.55f, 0.40f, 0.40f, 0.30f, 0.10f, 0.20f, 0.60f, 0.20f, 0.20f, 0.30f, 0.20f },
+        { 250.0f, 120.0f, 275.0f, 0.70f, 0.47f, 0.35f, 0.30f, 0.20f, 0.15f, 0.10f, 0.40f, 0.70f, 0.30f, 0.30f, 0.40f },
+        { 190.0f, -150.0f, 265.0f, 0.65f, 0.45f, 0.30f, 0.20f, 0.10f, 0.05f, 0.60f, 0.60f, 0.20f, 0.20f, 0.20f, 0.30f },
+        { 280.0f, 40.0f, 255.0f, 0.75f, 0.50f, 0.38f, 0.50f, 0.20f, 0.10f, 0.80f, 0.40f, 0.40f, 0.30f, 0.10f, 0.10f },
+        { 320.0f, -90.0f, 290.0f, 0.55f, 0.38f, 0.28f, 0.05f, 0.05f, 0.05f, 0.40f, 0.40f, 0.40f, 0.10f, 0.10f, 0.20f },
+        { 210.0f, 180.0f, 270.0f, 0.82f, 0.60f, 0.50f, 0.60f, 0.50f, 0.20f, 0.20f, 0.20f, 0.50f, 0.15f, 0.15f, 0.25f },
+        { -180.0f, 20.0f, 90.0f, 0.60f, 0.40f, 0.30f, 0.15f, 0.15f, 0.15f, 0.30f, 0.70f, 0.70f, 0.10f, 0.10f, 0.30f },
+        { -210.0f, -50.0f, 85.0f, 0.70f, 0.47f, 0.35f, 0.25f, 0.15f, 0.10f, 0.70f, 0.30f, 0.30f, 0.25f, 0.25f, 0.40f },
+        { -230.0f, 100.0f, 95.0f, 0.80f, 0.55f, 0.40f, 0.45f, 0.35f, 0.25f, 0.40f, 0.20f, 0.60f, 0.20f, 0.20f, 0.20f },
+        { -260.0f, -120.0f, 80.0f, 0.72f, 0.48f, 0.36f, 0.30f, 0.20f, 0.10f, 0.20f, 0.60f, 0.20f, 0.40f, 0.20f },
+        { -195.0f, 160.0f, 100.0f, 0.50f, 0.35f, 0.25f, 0.10f, 0.10f, 0.10f, 0.90f, 0.50f, 0.10f, 0.30f, 0.30f, 0.40f },
+        { -300.0f, -20.0f, 90.0f, 0.75f, 0.50f, 0.38f, 0.55f, 0.45f, 0.35f, 0.30f, 0.30f, 0.80f, 0.10f, 0.10f, 0.30f },
+        { -220.0f, 190.0f, 90.0f, 0.65f, 0.45f, 0.30f, 0.20f, 0.10f, 0.10f, 0.50f, 0.50f, 0.20f, 0.20f, 0.30f, 0.20f },
+        { -280.0f, -180.0f, 110.0f, 0.70f, 0.47f, 0.35f, 0.25f, 0.15f, 0.10f, 0.60f, 0.20f, 0.20f, 0.15f, 0.15f, 0.25f },
+        { groupBaseX + 0.0f,   0.0f,   0.0f,   0.70f, 0.47f, 0.35f,  0.25f, 0.15f, 0.10f,  0.10f, 0.50f, 0.80f,  0.20f, 0.20f, 0.50f },
+        { groupBaseX + 12.0f,  8.0f,   140.0f, 0.80f, 0.55f, 0.40f,  0.10f, 0.10f, 0.10f,  0.90f, 0.20f, 0.20f,  0.15f, 0.15f, 0.25f },
+        { groupBaseX - 12.0f,  5.0f,   30.0f,  0.60f, 0.40f, 0.30f,  0.35f, 0.25f, 0.15f,  0.20f, 0.70f, 0.20f,  0.30f, 0.30f, 0.30f },
+        { groupBaseX + 2.0f,  -10.0f,  200.0f, 0.75f, 0.50f, 0.38f,  0.20f, 0.20f, 0.20f,  0.50f, 0.50f, 0.50f,  0.10f, 0.10f, 0.10f },
+        { -groupBaseX + 0.0f,   5.0f,   180.0f, 0.70f, 0.47f, 0.35f, 0.25f, 0.15f, 0.10f, 0.80f, 0.10f, 0.10f, 0.10f, 0.10f, 0.40f },
+        { -groupBaseX + 10.0f, -5.0f,   210.0f, 0.80f, 0.55f, 0.40f, 0.10f, 0.10f, 0.10f, 0.20f, 0.60f, 0.20f, 0.20f, 0.30f, 0.20f },
+        { -groupBaseX - 8.0f,  15.0f,   160.0f, 0.60f, 0.40f, 0.30f, 0.35f, 0.25f, 0.15f, 0.50f, 0.50f, 0.10f, 0.30f, 0.10f, 0.10f },
+        { -groupBaseX - 12.0f, -15.0f,  300.0f, 0.50f, 0.35f, 0.25f, 0.10f, 0.05f, 0.05f, 0.70f, 0.30f, 0.80f, 0.15f, 0.15f, 0.20f },
+        { -groupBaseX + 15.0f, 10.0f,   45.0f,  0.85f, 0.60f, 0.45f, 0.60f, 0.50f, 0.30f, 0.30f, 0.70f, 0.30f, 0.10f, 0.40f, 0.10f },
     };
 
     SteveModel steve(0.3f);
-
-    for (int i = 0; i < 39; i++)
-    {
+    for (int i = 0; i < 39; i++) {
         SteveModel::setSkinColor(steveData[i][3], steveData[i][4], steveData[i][5]);
         SteveModel::setHairColor(steveData[i][6], steveData[i][7], steveData[i][8]);
         SteveModel::setShirtColor(steveData[i][9], steveData[i][10], steveData[i][11]);
         SteveModel::setPantsColor(steveData[i][12], steveData[i][13], steveData[i][14]);
-
         glPushMatrix();
         glTranslatef(steveData[i][0], 0.0f, steveData[i][1]);
         glRotatef(steveData[i][2], 0.0f, 1.0f, 0.0f);
@@ -331,146 +256,22 @@ void Maherheader::draw(float camX,float camY,float camZ,bool isday, GLuint cctvT
         glPopMatrix();
     }
 
+    /*ProceduralHouse myHouse;
+    glPushMatrix(); glTranslatef(-400, 5, 400); glRotatef(120, 0, 1, 0); glScaled(10, 5, 10);
+    glEnable(GL_TEXTURE_2D); glBindTexture(GL_TEXTURE_2D, houseTexID[1]); myHouse.draw(houseTexID[1]); glPopMatrix();
 
-    float roadStartCoord = maxz;      
-    float roadEndCoord = 2000.0f;     
-    float roadCenterLine = 0.0f;      
-    float roadWidth = diff;           
-    float halfW = roadWidth / 2.0f;
-    float roadY = 0.01f;              
+    glPushMatrix(); glTranslatef(-350, 5, 200); glRotatef(70, 0, 1, 0); glScaled(10, 5, 10);
+    glEnable(GL_TEXTURE_2D); glBindTexture(GL_TEXTURE_2D, houseTexID[2]); myHouse.draw(houseTexID[2]); glPopMatrix();
 
-    glColor3f(0.15f, 0.15f, 0.15f);
-    glBegin(GL_QUADS);
-    glNormal3f(0, 1, 0);
-    glVertex3f(-halfW, roadY, roadStartCoord);
-    glVertex3f(halfW, roadY, roadStartCoord);
-    glVertex3f(halfW, roadY, roadEndCoord);
-    glVertex3f(-halfW, roadY, roadEndCoord);
-    glEnd();
+    glPushMatrix(); glTranslatef(400, 5, 350); glRotatef(300, 0, 1, 0); glScaled(10, 5, 10);
+    glEnable(GL_TEXTURE_2D); glBindTexture(GL_TEXTURE_2D, houseTexID[3]); myHouse.draw(houseTexID[3]); glPopMatrix();
 
-    float sY = roadY + 0.01f;
-    glColor3f(1.0f, 1.0f, 1.0f);
-    glBegin(GL_QUADS);
-    glVertex3f(halfW - 1.0f, sY, roadStartCoord);
-    glVertex3f(halfW - 0.5f, sY, roadStartCoord);
-    glVertex3f(halfW - 0.5f, sY, roadEndCoord);
-    glVertex3f(halfW - 1.0f, sY, roadEndCoord);
+    glPushMatrix(); glTranslatef(400, 5, -200); glRotatef(330, 0, 1, 0); glScaled(10, 5, 10);
+    glEnable(GL_TEXTURE_2D); glBindTexture(GL_TEXTURE_2D, houseTexID[4]); myHouse.draw(houseTexID[4]); glPopMatrix();*/
 
-    glVertex3f(-halfW + 0.5f, sY, roadStartCoord);
-    glVertex3f(-halfW + 1.0f, sY, roadStartCoord);
-    glVertex3f(-halfW + 1.0f, sY, roadEndCoord);
-    glVertex3f(-halfW + 0.5f, sY, roadEndCoord);
-    glEnd();
-
-    glColor3f(1.0f, 0.8f, 0.0f);
-    float dLen = 10.0f;
-    float dGap = 10.0f;
-    float dWidth = 1.0f;
-
-    glBegin(GL_QUADS);
-    for (float z = roadStartCoord; z < roadEndCoord; z += (dLen + dGap)) {
-        glVertex3f(-dWidth / 2.0f, sY, z);
-        glVertex3f(dWidth / 2.0f, sY, z);
-        glVertex3f(dWidth / 2.0f, sY, z + dLen);
-        glVertex3f(-dWidth / 2.0f, sY, z + dLen);
-    }
-    glEnd();
-
-    float swWidth = 8.0f; 
-    float swHeight = 2.0f;
-    float swStart = maxz; 
-    float swEnd = 2000.0f;
-    float roadEdge = diff / 2.0f;
-
-    glColor3f(0.6f, 0.6f, 0.6f);
-
-    
-    glPushMatrix();
-    glTranslatef(roadEdge+swWidth/2,1,(maxz+ swEnd)/2);
-    glScalef(4, 1, 900);
-    glutSolidCube(2);
-    glPopMatrix();
-
-    glPushMatrix();
-    glTranslatef(-roadEdge - swWidth / 2, 1, (maxz + swEnd) / 2);
-    glScalef(4, 1, 900);
-    glutSolidCube(2);
-    glPopMatrix();
-
-
-    /*glBegin(GL_QUADS);
-
-    glNormal3f(0, 1, 0);
-    glVertex3f(roadEdge, swHeight, swStart);
-    glVertex3f(roadEdge + swWidth, swHeight, swStart);
-    glVertex3f(roadEdge + swWidth, swHeight, swEnd);
-    glVertex3f(roadEdge, swHeight, swEnd);
-
-    glNormal3f(-1, 0, 0);
-    glVertex3f(roadEdge, 0, swStart);
-    glVertex3f(roadEdge, swHeight, swStart);
-    glVertex3f(roadEdge, swHeight, swEnd);
-    glVertex3f(roadEdge, 0, swEnd);
-
-    glNormal3f(0, 1, 0);
-    glVertex3f(-roadEdge, swHeight, swStart);
-    glVertex3f(-roadEdge - swWidth, swHeight, swStart);
-    glVertex3f(-roadEdge - swWidth, swHeight, swEnd);
-    glVertex3f(-roadEdge, swHeight, swEnd);
-
-    glNormal3f(1, 0, 0);
-    glVertex3f(-roadEdge, 0, swStart);
-    glVertex3f(-roadEdge, swHeight, swStart);
-    glVertex3f(-roadEdge, swHeight, swEnd);
-    glVertex3f(-roadEdge, 0, swEnd);
-
-    glEnd();*/
-
-
-
-    ProceduralHouse myHouse;
-
-    glPushMatrix();
-    glTranslatef(-400, 5, 400);
-    glRotatef(120, 0, 1, 0);
-    glScaled(10, 5, 10);
-    glEnable(GL_TEXTURE_2D); 
-    glBindTexture(GL_TEXTURE_2D, houseTexID[1]);
-    myHouse.draw(houseTexID[1]);
-    glPopMatrix();
-
-    glPushMatrix();
-    glTranslatef(-350, 5, 200);
-    glRotatef(70, 0, 1, 0);
-    glScaled(10, 5, 10);
-    glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, houseTexID[2]);
-    myHouse.draw(houseTexID[2]);
-    glPopMatrix();
-
-    glPushMatrix();
-    glTranslatef(400, 5, 350);
-    glRotatef(300, 0, 1, 0);
-    glScaled(10, 5, 10);
-    glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, houseTexID[3]);
-    myHouse.draw(houseTexID[3]);
-    glPopMatrix();
-
-    glPushMatrix();
-    glTranslatef(400, 5, -200);
-    glRotatef(330, 0, 1, 0);
-    glScaled(10, 5, 10);
-    glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, houseTexID[4]);
-    myHouse.draw(houseTexID[4]);
-    glPopMatrix();
-
-
-    float offset = 30.0f;
-    float treesCoords[20][2];
-
-    for (int i = 0; i < 20; i++) {
+    /*float offset = 30.0f;
+    float treesCoords[20][2];*/
+    /*for (int i = 0; i < 20; i++) {
         if (i < 5) {
             treesCoords[i][0] = maxX + offset + (i * 20);
             treesCoords[i][1] = minz + (i * (maxz - minz) / 4.0f);
@@ -488,95 +289,46 @@ void Maherheader::draw(float camX,float camY,float camZ,bool isday, GLuint cctvT
             treesCoords[i][1] = maxz + offset + ((i - 15) * 20);
         }
     }
-
     for (int i = 0; i < 20; i++) {
-        if (i == 17)
-            continue;
+        if (i == 17) continue;
         glPushMatrix();
         glTranslatef(treesCoords[i][0], 0.0f, treesCoords[i][1]);
         glScalef(10.0f, 10.0f, 10.0f);
         Tree forest;
         forest.draw(0.0f, 0.0f, 0.0f);
-
         glPopMatrix();
-    }
+    }*/
 
     showroomdoor.draw();
-
     if (sqrt((pow(camX - 0, 2) + pow(camY - 0, 2) + pow(camZ - maxz, 2))) <= 100.0)
         showroomdoor.moveUp(1);
     else
         showroomdoor.moveDown(1);
 
-
     glPushMatrix();
     glColor3f(1, 1, 1);
-    glTranslatef(0, h+1, 0);
-    glScalef(2 * maxX,1, 2 * maxz);
+    glTranslatef(0, h + 1, 0);
+    glScalef(2 * maxX, 1, 2 * maxz);
     glutSolidCube(1);
     glPopMatrix();
 
-    PlusRing3D plusring;
     glPushMatrix();
-    glTranslatef(0, h+3, maxz + 6);
+    glTranslatef(0, h + 3, maxz + 6);
     glScalef(14, 14, 14);
-    plusring.draw();
+    symbol.draw();
     glPopMatrix();
-
-    int lightnum = 4;
-    for (int i = 1; i <= lightnum ; i++)
-    {
-        float x = 25.0f-18.7;
-        float z = 200.0f + (1800.0f / lightnum) * i;
-        float y_lamp = swHeight+0.1;
-
-        glPushMatrix();
-        glTranslatef(25, y_lamp, 200 + (1800 / lightnum) * i);
-        glRotatef(270, 0, 1, 0);
-        StreetLamp lamp(50.0f, 0.8f);
-        lamp.draw(!isday);
-        glPopMatrix();
-
-        //if (!isday)
-        //drawLightBeam(x, y_lamp, z);
-    }
-
-    for (int i = 1; i <= lightnum; i++)
-    {
-
-        float x = -25.0f + 18.7;
-        float z = 200.0f + (1800.0f / lightnum) * i - 900 / lightnum;
-        float y_lamp = swHeight+0.1;
-
-        glPushMatrix();
-        glTranslatef(-25, y_lamp, 200 + (1800 / lightnum) * i - 900 / lightnum);
-        glRotatef(90, 0, 1, 0);
-        StreetLamp lamp(50.0f, 0.8f);
-        lamp.draw(!isday);
-        glPopMatrix();
-        //if (!isday)
-        //drawLightBeam(x, y_lamp, z);
-    }
 
     MonitorScreen myMonitor;
     OfficeDesk mydisk;
-
     glPushMatrix();
-    glTranslatef(minX+30, h+16, maxz-23);
+    glTranslatef(minX + 30, h + 16, maxz - 23);
     glRotatef(90, 0, 1, 0);
     myMonitor.draw(cctvTexIDs);
     glPopMatrix();
     glPushMatrix();
-    glTranslatef(minX+30, h-6+6.5,maxz-25);
+    glTranslatef(minX + 30, h - 6 + 6.5, maxz - 25);
     glScalef(0.5, 0.5, 0.5);
     glRotatef(90, 0, 1, 0);
     mydisk.draw();
     glPopMatrix();
 }
-
-/*
--150.197 52 200.503 0.874371 -0.328867 0.356821
-152.003 62 201.193 -0.8138 -0.21303 0.540691
--143.372 58 193.254 0.451159 -0.325568 -0.83094
-142.205 58 -193.402 -0.461055 -0.204496 0.863487
-*/

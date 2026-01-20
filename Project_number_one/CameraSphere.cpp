@@ -3,7 +3,8 @@
 
 CameraSphere::CameraSphere(float cubeSize, float sphereRadius, float smallCubeSize)
     : cubeSize(cubeSize), sphereRadius(sphereRadius), smallCubeSize(smallCubeSize),
-    lookX(1.0f), lookY(0.0f), lookZ(0.0f) {}
+    lookX(1.0f), lookY(0.0f), lookZ(0.0f) {
+}
 
 void CameraSphere::setLookDirection(float lx, float ly, float lz) {
     lookX = lx;

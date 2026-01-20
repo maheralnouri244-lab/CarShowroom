@@ -117,58 +117,58 @@ void BeetleCar::drawFrontEnd() {
 
 void BeetleCar::drawOpenCabin(float steeringAngle) {
     float y = 0.7f, z = 1.0f;
-    setMaterial(currentBodyColor, 0.8f); 
-    glPushMatrix(); 
-    glTranslatef(0, y + 0.35f, z); 
-    glRotatef(-30, 1, 0, 0);
-    for (int i = -1;i <= 1;i += 2) { 
-        glPushMatrix(); 
-        glTranslatef(i * 0.75f, 0, 0); 
-        glScalef(0.1f, 0.8f, 0.1f); 
-        glutSolidCube(1.0f); 
-        glPopMatrix(); 
-    }
-
-    glPushMatrix(); 
-    glTranslatef(0, 0.4f, 0);
-    glScalef(1.6f, 0.1f, 0.1f); 
-    glutSolidCube(1.0f); 
-    glPopMatrix(); 
-    glPopMatrix();
-
-    for (int i = -1;i <= 1;i += 2) { 
-        glPushMatrix();
-        glTranslatef(i * 0.4f, 0.45f, 0.5f); 
-        drawSeat(); 
-        glPopMatrix(); 
-    }
-    glPushMatrix(); 
-    glTranslatef(0, 0.5f, -1.0f); 
-    glScalef(0.9f, 0.9f, 0.9f); 
-    drawSeat(); 
-    glPopMatrix();
-
-    setMaterial(currentBodyColor, 0.9f); 
-    glPushMatrix(); 
-    glTranslatef(0, y + 0.35f, -1.55f); 
-    glRotatef(20, 1, 0, 0);
-    glPushMatrix(); 
-    glScalef(1.55f, 0.6f, 0.1f); 
-    glutSolidCube(1.0f); 
-    glPopMatrix(); 
-    glPopMatrix();
-
-    setMaterial(COL_BLACK, 0.2f); 
+    setMaterial(currentBodyColor, 0.8f);
     glPushMatrix();
-    glTranslatef(0, 0.65f, 1.2f); 
-    glScalef(1.4f, 0.3f, 0.4f); 
-    glutSolidCube(1.0f); 
+    glTranslatef(0, y + 0.35f, z);
+    glRotatef(-30, 1, 0, 0);
+    for (int i = -1;i <= 1;i += 2) {
+        glPushMatrix();
+        glTranslatef(i * 0.75f, 0, 0);
+        glScalef(0.1f, 0.8f, 0.1f);
+        glutSolidCube(1.0f);
+        glPopMatrix();
+    }
+
+    glPushMatrix();
+    glTranslatef(0, 0.4f, 0);
+    glScalef(1.6f, 0.1f, 0.1f);
+    glutSolidCube(1.0f);
+    glPopMatrix();
     glPopMatrix();
 
-    setMaterial(COL_BLACK, 0.1f); 
-    glPushMatrix(); 
-    glTranslatef(0.4f, 0.85f, 0.9f); 
-    glRotatef(-25, 1, 0, 0); 
+    for (int i = -1;i <= 1;i += 2) {
+        glPushMatrix();
+        glTranslatef(i * 0.4f, 0.45f, 0.5f);
+        drawSeat();
+        glPopMatrix();
+    }
+    glPushMatrix();
+    glTranslatef(0, 0.5f, -1.0f);
+    glScalef(0.9f, 0.9f, 0.9f);
+    drawSeat();
+    glPopMatrix();
+
+    setMaterial(currentBodyColor, 0.9f);
+    glPushMatrix();
+    glTranslatef(0, y + 0.35f, -1.55f);
+    glRotatef(20, 1, 0, 0);
+    glPushMatrix();
+    glScalef(1.55f, 0.6f, 0.1f);
+    glutSolidCube(1.0f);
+    glPopMatrix();
+    glPopMatrix();
+
+    setMaterial(COL_BLACK, 0.2f);
+    glPushMatrix();
+    glTranslatef(0, 0.65f, 1.2f);
+    glScalef(1.4f, 0.3f, 0.4f);
+    glutSolidCube(1.0f);
+    glPopMatrix();
+
+    setMaterial(COL_BLACK, 0.1f);
+    glPushMatrix();
+    glTranslatef(0.4f, 0.85f, 0.9f);
+    glRotatef(-25, 1, 0, 0);
     ////
     glRotatef(steeringAngle, 0, 0, 1);
 
@@ -180,23 +180,23 @@ void BeetleCar::drawOpenCabin(float steeringAngle) {
 
 void BeetleCar::drawDetails() {
     for (int i = -1; i <= 1; i += 2) {
-        glPushMatrix(); 
-        glTranslatef(i * 0.55f, 0.55f, 2.2f); 
-        glRotatef(-20, 1, 0, 0); 
-        setMaterial(COL_CHROME, 0.9f); 
+        glPushMatrix();
+        glTranslatef(i * 0.55f, 0.55f, 2.2f);
+        glRotatef(-20, 1, 0, 0);
+        setMaterial(COL_CHROME, 0.9f);
         glutSolidTorus(0.03, 0.13, 12, 20);
 
-        setMaterial(COL_WHITE, 1.0f); 
-        glTranslatef(0, 0, 0.02f); 
-        drawDisk(0.13f, 16); 
+        setMaterial(COL_WHITE, 1.0f);
+        glTranslatef(0, 0, 0.02f);
+        drawDisk(0.13f, 16);
         glPopMatrix();
     }
     for (int i = -1; i <= 1; i += 2) {
-        glPushMatrix(); 
-        glTranslatef(i * 0.6f, 0.65f, -2.2f); 
-        setMaterial(COL_RED, 0.6f); 
-        glScalef(1.0f, 0.8f, 0.2f); 
-        glutSolidSphere(0.12f, 12, 12); 
+        glPushMatrix();
+        glTranslatef(i * 0.6f, 0.65f, -2.2f);
+        setMaterial(COL_RED, 0.6f);
+        glScalef(1.0f, 0.8f, 0.2f);
+        glutSolidSphere(0.12f, 12, 12);
         glPopMatrix();
     }
 }

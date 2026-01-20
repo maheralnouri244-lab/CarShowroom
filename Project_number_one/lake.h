@@ -1,16 +1,13 @@
-#pragma once
+#ifndef LAKE_H
+#define LAKE_H
 #include <GL/glut.h>
 
 class Lake {
-private:
-    float x, y, z;     
-    float width, depth;
-    float alpha;       
-
 public:
-    Lake(float posX, float posY, float posZ,
-        float w = 100.0f, float d = 60.0f, float a = 0.5f);
+    float x, y, z, width, depth, alpha;
 
-    void drawSurface() const;
+    Lake(float posX, float posY, float posZ, float w, float d, float a);
+    void drawSurface();
     void drawReflection(void (*scene)());
 };
+#endif
