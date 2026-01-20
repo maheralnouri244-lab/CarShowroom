@@ -102,7 +102,7 @@ void Maherheader::draw(float camX, float camY, float camZ, bool isday, GLuint cc
     // رسم تخطيط المدينة (الشوارع، الحديقة، المواقف)
     // =========================================================
     cityPlan.setTextures(roadTexID, pavementTexID, grassTexID, parkingTexID, waterTexID, pavementTexID);
-    cityPlan.drawCityLayout(true);
+    cityPlan.drawCityLayout(!isday);
 
     PlusRing3D symbol;
     vector<Pillar> pillars;
