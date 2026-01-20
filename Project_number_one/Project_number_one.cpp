@@ -147,6 +147,11 @@ float minX = -maxX, minz = -maxz;
 int centerX ;
 int centerY , lastCam=0;
 
+float lakeMinX = minX - 170.0f;
+float lakeMaxX = minX + 170.0f;
+float lakeMinZ = maxz + 100.0f;
+float lakeMaxZ = maxz + 600.0f;
+
 // Instances
 Maherheader maher;
 AbrarCode abrarCode;
@@ -165,7 +170,7 @@ Camera cameras[4] = {
 };
 
 
-GLuint cctvTexIDs[4] = { 0, 0, 0, 0 }, dayskyTex,nightskyTex,groundTex;
+GLuint cctvTexIDs[4] = { 0, 0, 0, 0 }, dayskyTex, nightskyTex, groundTex;// lakeTex;
 bool hasSnapshot[4] = { false, false, false, false },captureThisFrame;
 
 const float SHOWROOM_HEIGHT = 60.0f;
@@ -306,6 +311,7 @@ void initRendering() {
 
     dayskyTex = loadTextureFromFile("images\\finalday2.png");
     nightskyTex = loadTextureFromFile("images\\finalnight2.png");
+    //lakeTex = loadTextureFromFile("images\\output.png");
 
     glClearColor(0.1f, 0.1f, 0.15f, 1.0f);
     myJeep.init();
@@ -570,6 +576,26 @@ void drawscene(bool drawcam=1)
     GLfloat noSpecular[] = { 0.0f, 0.0f, 0.0f, 1.0f };
     glMaterialfv(GL_FRONT, GL_SPECULAR, noSpecular);
 
+    /*//glEnable(GL_TEXTURE_2D);
+    //glBindTexture(GL_TEXTURE_2D, lakeTex);
+
+    glBegin(GL_QUADS);
+    //glTexCoord2f(0.0f, 0.0f);
+    glVertex3f(lakeMinX, 0.0f, lakeMinZ);
+
+    //glTexCoord2f(1.0f, 0.0f);
+    glVertex3f(lakeMaxX, 0.0f, lakeMinZ);
+
+    //glTexCoord2f(1.0f, 1.0f);
+    glVertex3f(lakeMaxX, 0.0f, lakeMaxZ);
+
+    //glTexCoord2f(0.0f, 1.0f);
+    glVertex3f(lakeMinX, 0.0f, lakeMaxZ);
+    glEnd();
+
+    //glDisable(GL_TEXTURE_2D);*/
+
+
     float x_jeep = 120.0f;
     float y_jeep = 0.0f;
     float z_jeep = 50.0f;
@@ -628,6 +654,9 @@ void drawscene(bool drawcam=1)
         cam.draw();
         glPopMatrix();
     }
+
+    // نفترض أن lakeTex هو GLuint للـ texture محمّل مسبقاً
+    
 
     drawSkyDome(2000, 64, 64, skyTex);
 
