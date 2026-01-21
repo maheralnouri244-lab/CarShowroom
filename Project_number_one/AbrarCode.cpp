@@ -20,12 +20,16 @@
 const float ELEV_X = -120.0f;
 const float ELEV_Z = -170.0f;
 const float FLOOR_H = 60.0f;
+void updateAmbientSound();
+void updateAmbientSound1();
+
 
 AbrarCode::AbrarCode() {
     currentState = STATE_WALKING;
     activeCarIndex = -1;
     animT = 0.0f;
-
+    lastCollisionSoundTime = 0;
+    carWasInsideShowroom = true; 
     elevatorY = 0.0f;
     targetElevatorY = 0.0f;
     elevState = ELEV_IDLE;
@@ -68,123 +72,90 @@ void AbrarCode::attemptEnterCar(float cx, float cz) {
     }
 
 }
-bool AbrarCode::isCarOnAllowedSurface(float x, float z) {
-    // قائمة بكل المناطق المسموح للسيارة بالقيادة عليها خارج المعرض
-    static const std::vector<BoundingBox> allowedDrivingZones = {
-        // --- الساحة حول المعرض (Showroom Plaza) ---
-        { -180.0f, 0, -230.0f, 180.0f, 1, 280.0f },
-
-        // --- الشارع الرئيسي المؤدي للدوار ---
-        { -50.0f, 0, 280.0f, 50.0f, 1, 520.0f }, // الطريق الرئيسي العمودي
-
-        // --- الدوار نفسه ---
-        { -120.0f, 0, 480.0f, 120.0f, 1, 720.0f }, // منطقة الدوار الكبيرة
-
-        // --- الطرق الأفقية المتفرعة من الدوار ---
-        { -1120.0f, 0, 570.0f, 1120.0f, 1, 630.0f },
-
-        // --- منطقة مواقف السيارات Parking Zone ---
-        { 170.0f, 0, 360.0f, 530.0f, 1, 840.0f },
-
-        // --- المنطقة التجارية Commercial Zone ---
-        { -500.0f, 0, 0.0f, -200.0f, 1, 400.0f }
-    };
-
-    // تحقق مما إذا كانت إحداثيات السيارة داخل أي من هذه المناطق
-    for (const auto& zone : allowedDrivingZones) {
-        if (x > zone.minX && x < zone.maxX && z > zone.minZ && z < zone.maxZ) {
-            return true; // نعم، السيارة في منطقة مسموحة
-        }
-    }
-
-    return false; // لا، السيارة على العشب
-}
 
 bool AbrarCode::checkCarCollision(float nextX, float nextZ, const std::vector<BoundingBox>& collidableObjects) {
-    // --- 1. إنشاء الصندوق المحيط بالسيارة ---
-    float carWidth = 15.0f;
-    float carLength = 30.0f;
-    float carHeight = 15.0f;
-    BoundingBox carBox = { nextX - carWidth / 2, cars[activeCarIndex].y, nextZ - carLength / 2, nextX + carWidth / 2, cars[activeCarIndex].y + carHeight, nextZ + carLength / 2 };
+    bool isInsideShowroom = (nextZ < 200.0f && abs(nextX) < 150.0f);
 
-    // --- 2. التحقق من التصادم مع العوائق الثابتة ---
-    for (const auto& objBox : collidableObjects) {
-        const float BEETLE_BOX_MAX_Y = 15.0f;
-        const float BEETLE_BOX_MIN_X = 120.0f - 18.0f;
-        const float epsilon = 0.1f;
-        if (fabs(objBox.maxY - BEETLE_BOX_MAX_Y) < epsilon && fabs(objBox.minX - BEETLE_BOX_MIN_X) < epsilon) {
-            continue; // تجاهل سيارات البيتل الأخرى
-        }
-        if (objBox.minY < FLOOR_H) {
-            if (carBox.maxX > objBox.minX && carBox.minX < objBox.maxX && carBox.maxY > objBox.minY && carBox.minY < objBox.maxY && carBox.maxZ > objBox.minZ && carBox.minZ < objBox.maxZ) {
-                return true; // تصادم
-            }
-        }
-    }
-
-    // --- 3. التحقق من التصادم مع الأشكال الدائرية ---
-    if (dist(nextX, nextZ, 120.0f, 150.0f) < (carWidth / 2 + 8.0f)) return true; // النافورة
-    if (dist(nextX, nextZ, 100.0f, 150.0f) < (carWidth / 2 + 7.5f)) return true; // المجسم
-
-    // --- 4. التحقق من التصادم مع سيارات البيتل الأخرى ---
-    for (int i = 0; i < cars.size(); i++) {
-        if (i == activeCarIndex) continue;
-        if (dist(nextX, nextZ, cars[i].x, cars[i].z) < 25.0f) {
-            return true;
-        }
-    }
-
-    // --- 5. التحقق الدقيق من حدود المعرض (الجدران) ---
-    float halfWidth = carWidth / 2.0f;
-    float halfLength = carLength / 2.0f;
+    float carWidth = 10.0f;  
+    float carLength = 22.0f; 
+    float carHeight = 12.0f; 
     float angleRad = cars[activeCarIndex].rotY * M_PI / 180.0f;
     float cosAngle = cos(angleRad);
     float sinAngle = sin(angleRad);
-    float front_left_x = nextX + halfWidth * cosAngle - halfLength * sinAngle;
-    float back_left_x = nextX + halfWidth * cosAngle + halfLength * sinAngle;
-    float front_right_x = nextX - halfWidth * cosAngle - halfLength * sinAngle;
-    float back_right_x = nextX - halfWidth * cosAngle + halfLength * sinAngle;
-    float front_left_z = nextZ - halfWidth * sinAngle - halfLength * cosAngle;
-    float back_left_z = nextZ - halfWidth * sinAngle + halfLength * cosAngle;
-    float front_right_z = nextZ + halfWidth * sinAngle - halfLength * cosAngle;
-    float back_right_z = nextZ + halfWidth * sinAngle + halfLength * cosAngle;
 
-    if (front_left_x > 150.0f || front_right_x > 150.0f || back_left_x > 150.0f || back_right_x > 150.0f) return true;
-    if (front_left_x < -150.0f || front_right_x < -150.0f || back_left_x < -150.0f || back_right_x < -150.0f) return true;
-    if (front_left_z < -200.0f || front_right_z < -200.0f || back_left_z < -200.0f || back_right_z < -200.0f) return true;
+    float corner_fl_x = nextX + (-carWidth / 2) * cosAngle - (-carLength / 2) * sinAngle;
+    float corner_fl_z = nextZ - (-carWidth / 2) * sinAngle - (-carLength / 2) * cosAngle;
 
-    // --- 6. التحقق من عبور البوابة (فقط في لحظة الخروج) ---
-    bool isCurrentlyInside = (cars[activeCarIndex].z < 200.0f);
-    bool willBeOutside = (nextZ >= 200.0f);
-    if (isCurrentlyInside && willBeOutside) {
-        if (nextX < -22.5f || nextX > 22.5f) { // عرض البوابة
-            return true;
+    float corner_fr_x = nextX + (carWidth / 2) * cosAngle - (-carLength / 2) * sinAngle;
+    float corner_fr_z = nextZ - (carWidth / 2) * sinAngle - (-carLength / 2) * cosAngle;
+
+    float corner_bl_x = nextX + (-carWidth / 2) * cosAngle - (carLength / 2) * sinAngle;
+    float corner_bl_z = nextZ - (-carWidth / 2) * sinAngle - (carLength / 2) * cosAngle;
+
+    float corner_br_x = nextX + (carWidth / 2) * cosAngle - (carLength / 2) * sinAngle;
+    float corner_br_z = nextZ - (carWidth / 2) * sinAngle - (carLength / 2) * cosAngle;
+
+    float minObbX = fmin(fmin(corner_fl_x, corner_fr_x), fmin(corner_bl_x, corner_br_x));
+    float maxObbX = fmax(fmax(corner_fl_x, corner_fr_x), fmax(corner_bl_x, corner_br_x));
+    float minObbZ = fmin(fmin(corner_fl_z, corner_fr_z), fmin(corner_bl_z, corner_br_z));
+    float maxObbZ = fmax(fmax(corner_fl_z, corner_fr_z), fmax(corner_bl_z, corner_br_z));
+
+    BoundingBox carBox = { minObbX, cars[activeCarIndex].y, minObbZ, maxObbX, cars[activeCarIndex].y + carHeight, maxObbZ };
+
+
+
+    if (isInsideShowroom) {
+       
+        for (const auto& objBox : collidableObjects) {
+            if (objBox.maxY < FLOOR_H - 1.0f) continue;
+
+            if (carBox.maxX > objBox.minX && carBox.minX < objBox.maxX &&
+                carBox.maxY > objBox.minY && carBox.minY < objBox.maxY &&
+                carBox.maxZ > objBox.minZ && carBox.minZ < objBox.maxZ) {
+                return true; 
+            }
         }
-    }
 
-    // --- 7. التحقق من القيادة على الأسطح المسموحة (خارج المعرض) ---
-    if (nextZ > 200.0f || abs(nextX) > 150.0f) {
-        if (!isCarOnAllowedSurface(nextX, nextZ)) {
-            return true; // اصطدام مع العشب
+        for (int i = 0; i < cars.size(); i++) {
+            if (i == activeCarIndex) continue;
+            if (dist(nextX, nextZ, cars[i].x, cars[i].z) < 25.0f) {
+                return true;
+            }
         }
-    }
 
-    return false; // اسمح بالحركة
+        return false; 
+    }
+    else {
+
+        bool isCurrentlyInside = (cars[activeCarIndex].z < 200.0f);
+        if (isCurrentlyInside) { 
+            if (nextX < -22.5f || nextX > 22.5f) { 
+                return true;
+            }
+        }
+
+        for (const auto& objBox : collidableObjects) {
+            if (objBox.minY > FLOOR_H - 1.0f) continue;
+
+            if (carBox.maxX > objBox.minX && carBox.minX < objBox.maxX &&
+                carBox.maxY > objBox.minY && carBox.minY < objBox.maxY &&
+                carBox.maxZ > objBox.minZ && carBox.minZ < objBox.maxZ) {
+                return true; 
+            }
+        }
+
+        return false; 
+    }
 }
-// ==========================================================
-// ===== دالة جديدة للتحقق مما إذا كانت السيارة على طريق أو رصيف =====
-// ==========================================================
-
 
 void AbrarCode::driveActiveCar(float speed, float turn, const std::vector<BoundingBox>& collidableObjects) {
     if (activeCarIndex == -1) return;
 
     cars[activeCarIndex].rotY -= turn;
 
-    float steerLimit = 45.0f; // أقصى دوران للمقود
+    float steerLimit = 45.0f; 
     if (turn != 0) {
         cars[activeCarIndex].currentSteer += turn * 5.0f;
-        // تقييد الزاوية
         if (cars[activeCarIndex].currentSteer > steerLimit) cars[activeCarIndex].currentSteer = steerLimit;
         if (cars[activeCarIndex].currentSteer < -steerLimit) cars[activeCarIndex].currentSteer = -steerLimit;
     }
@@ -192,11 +163,20 @@ void AbrarCode::driveActiveCar(float speed, float turn, const std::vector<Boundi
     float nextX = cars[activeCarIndex].x + sin(r) * speed;
     float nextZ = cars[activeCarIndex].z + cos(r) * speed;
 
-    // *** التعديل هنا ***
-    // مرر قائمة العوائق إلى دالة الفحص
     if (!checkCarCollision(nextX, nextZ, collidableObjects)) {
         cars[activeCarIndex].x = nextX;
         cars[activeCarIndex].z = nextZ;
+    }
+    else {
+
+        long currentTime = glutGet(GLUT_ELAPSED_TIME);
+
+        if (currentTime - lastCollisionSoundTime > 1000) {
+            SoundManager::playNow("sounds/crash.wav");
+            SoundManager::playLoopWithDelay("sounds/car-reverse-.wav", 500);
+            lastCollisionSoundTime = currentTime;
+        }
+
     }
 }
 
@@ -237,7 +217,9 @@ if (key == 'g' || key == 'G') {
 
            // PlaySound(TEXT("sounds/car-reverse-1.wav"), NULL, SND_FILENAME | SND_ASYNC);
           
-        }        if (key == 'f' || key == 'F') {
+        }      
+
+if (key == 'f' || key == 'F') {
             int c = -1; float md = 40.0f;
             for (int i = 0; i < cars.size(); i++) { float d = dist(camX, camZ, cars[i].x, cars[i].z); if (d < md) { md = d; c = i; } }
             if (c != -1) {
@@ -245,13 +227,13 @@ if (key == 'g' || key == 'G') {
                 {
                     cars[c].targetDoors[1] = 60;
                     SoundManager::playNow("sounds/car-door-open.wav");
-                    SoundManager::playLoopWithDelay("sounds/gallery.wav", 500);
+                    updateAmbientSound1(); 
                 }
                 else {
                     cars[c].targetDoors[1] = 0;
                     SoundManager::playNow("sounds/car-door-close.wav");
-                    SoundManager::playLoopWithDelay("sounds/gallery.wav", 500);
-                } 
+                    updateAmbientSound1(); 
+                }
             }
         }
     }
@@ -279,7 +261,7 @@ if (key == 'g' || key == 'G') {
         case 'a': driveActiveCar(0, -t, collidableObjects); break;
         case 'd': driveActiveCar(0, t, collidableObjects); break;
         case 'g':
-            SoundManager::playLoop("sounds/gallery.wav");
+            updateAmbientSound(); 
             cars[activeCarIndex].targetDoors[1] = 0.0f;
             currentState = STATE_WALKING;
             activeCarIndex = -1;
@@ -382,6 +364,7 @@ void AbrarCode::update(float& camX, float& camY, float& camZ, float& yaw, float&
         camX = c.x + (0.4f * c.scale * cos(r) + 0.4f * c.scale * sin(r));
         camZ = c.z + (-0.4f * c.scale * sin(r) + 0.4f * c.scale * cos(r));
         camY = c.y + 1.1f * c.scale;
+
     }
 }
 

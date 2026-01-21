@@ -1,4 +1,3 @@
-#ifndef ABRARCODE_H
 #define ABRARCODE_H
 
 #include <GL/glut.h>
@@ -45,7 +44,8 @@ private:
     std::vector<CarData> cars;
     InteractionState currentState;
     int activeCarIndex;
-
+    long lastCollisionSoundTime; 
+    bool carWasInsideShowroom; // <--- أضف هذا السطر
     float animT;
     float startX, startY, startZ, startYaw, startPitch;
     float targetX, targetY, targetZ, targetYaw, targetPitch;
@@ -90,4 +90,3 @@ private:
     AccessoriesSection accessories;
 };
 
-#endif

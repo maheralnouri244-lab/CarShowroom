@@ -21,7 +21,7 @@
 #include "CameraSphere.h"
 #include "CityMasterPlan.h"
 #include "F1Car.h"
-#include "Lake.h"
+#include "Lake.h" 
 #include "include\\stb_image.h"
 #include <iostream>
 #include <windows.h>
@@ -33,19 +33,12 @@ using namespace std;
 #define M_PI 3.14159265358979323846
 #endif
 
-// ==========================================
-// تعريف المتغيرات والكائنات العالمية
-// ==========================================
-
 float camX = 500, camY = 300, camZ = 500.0f;
 float yaw = -90.0f, pitch = 0.0f;
 float lookX = -1.0f, lookY = -1.0f, lookZ = -1.0f;
 int lastMouseX, lastMouseY, weatherstatus = 0, currentCam = 0;
 bool firstMouse = true, ignoreWarp;
 int centerX, centerY, lastCam = 0;
-//const float F1Car::COL_BLACK[] = { 0.15f, 0.15f, 0.15f };
-//const float F1Car::COL_GREY[] = { 0.7f, 0.7f, 0.7f };
-//const float F1Car::COL_DARK[] = { 0.1f, 0.1f, 0.1f };
 
 float maxX = 150, maxz = 200, diff = 45;
 float minX = -maxX, minz = -maxz;
@@ -60,10 +53,8 @@ F1Car carRed(0.8f, 0.1f, 0.1f);
 F1Car carBlue(0.1f, 0.3f, 0.8f);
 F1Car carYellow(0.9f, 0.8f, 0.1f);
 
-// --- تعريف البحيرة العاكسة ---
 Lake myReflectionLake(-280.0f, 0.06f, 600.0f, 200.0f, 300.0f, 0.6f);
 
-// إعدادات الكاميرات الأمنية
 struct Camera {
     float posX, posY, posZ;
     float lookX, lookY, lookZ;
@@ -79,7 +70,6 @@ Camera cameras[4] = {
 GLuint cctvTexIDs[4] = { 0, 0, 0, 0 }, dayskyTex, nightskyTex, groundTex;
 bool hasSnapshot[4] = { false, false, false, false }, captureThisFrame;
 
-// ثوابت الأبعاد والتصادم
 const float SHOWROOM_HEIGHT = 60.0f;
 const float GATE_WIDTH = 45.0f;
 const float GATE_MIN_X = -GATE_WIDTH / 2.0f;
@@ -92,15 +82,18 @@ float freeCamYaw = -90.0f, freeCamPitch = 0.0f;
 
 std::vector<BoundingBox> collidableObjects;
 
-// البيئة
 const int CloudCount = 30;
 PersistentCloud myClouds[CloudCount];
 RainSystem myRain(3000);
 bool isLightOn = true;
 
-// ==========================================
-// دوال مساعدة (Texture, Sky)
-// ==========================================
+struct ParkingCar {
+    float x, y, z, rotation;
+    int seed; 
+};
+
+std::vector<ParkingCar> parkingLotCars;
+
 void updateAmbientSound();
 void addCityCollisions(std::vector<BoundingBox>& collidables); 
 
@@ -185,12 +178,11 @@ void drawSkyBody(bool isDay) {
     glPopMatrix();
 }
 
-// ==========================================
-// منطق الكاميرا والحركة والتصادم
-// ==========================================
+bool isStrictlyInside(float x, float y, float z) {
+    bool horizontalCheck = (x > minX && x < maxX && z > minz && z < maxz);
+    bool verticalCheck = (y >= 0.0f && y < 125.0f);
 
-bool isStrictlyInside(float x, float z) {
-    return (x > minX && x < maxX && z > minz && z < maxz);
+    return horizontalCheck && verticalCheck;
 }
 
 void updateLookVector() {
@@ -224,27 +216,48 @@ void switchCamera(int newCam) {
     glutPostRedisplay();
 }
 
-// =============================================================
-// ===== دالة جديدة لإضافة كل اصطدامات المدينة الخارجية =====
-// =============================================================
-// =============================================================
-// ===== دالة جديدة ومُحسّنة لإضافة كل اصطدامات المدينة الخارجية =====
-// =============================================================
+void initParkingLotCars() {
+    parkingLotCars.clear(); 
+
+    float pX = 350.0f;
+    float pZ = 600.0f;
+    float pW = 300.0f;
+    float pL = 400.0f;
+    int numRows = 3;
+    float rowHeight = pL / numRows;
+
+    for (int i = 0; i < numRows; i++) {
+        float cZ = (pZ - pL / 2) + rowHeight * i + rowHeight / 2;
+        int spots = 7;
+        float sW = (pW - 40) / spots;
+
+        for (int k = 0; k < spots; k++) {
+            int randSeed = (int)(i * 99 + k * 17);
+
+            if (randSeed % 3 != 0) {
+                float carX = (pX - (pW - 40) / 2) + k * sW + sW / 2;
+                float carZ_pos = cZ - (rowHeight - 20) / 2 + 15.0f;
+                parkingLotCars.push_back({ carX, 0.15f, carZ_pos, 90.0f, randSeed });
+            }
+
+            if ((randSeed + 1) % 3 != 0) {
+                float carX = (pX - (pW - 40) / 2) + k * sW + sW / 2;
+                float carZ_pos = cZ + (rowHeight - 20) / 2 - 15.0f;
+                parkingLotCars.push_back({ carX, 0.15f, carZ_pos, -90.0f, randSeed + 7 });
+            }
+        }
+    }
+}
+
 void addCityCollisions(std::vector<BoundingBox>& collidables) {
-    // ملاحظة: ارتفاع معظم العناصر هو y=0.0f للأرضية الخارجية
 
 #pragma region Showroom Plaza (الساحة أمام المعرض)
-    // الأشجار الأربعة حول المعرض
-    collidables.push_back({ 165.0f, 0.0f, 225.0f, 175.0f, 15.0f, 235.0f });
-    collidables.push_back({ -165.0f, 0.0f, 225.0f, -155.0f, 15.0f, 235.0f });
     collidables.push_back({ 165.0f, 0.0f, -225.0f, 175.0f, 15.0f, -215.0f });
     collidables.push_back({ -165.0f, 0.0f, -225.0f, -155.0f, 15.0f, -215.0f });
 
-    // أحواض الزهور
     collidables.push_back({ 55.0f, 0.0f, 235.0f, 65.0f, 2.0f, 245.0f });
     collidables.push_back({ -65.0f, 0.0f, 235.0f, -55.0f, 2.0f, 245.0f });
 
-    // لافتة المعرض الضخمة (عالية جداً، ربما لا تحتاج لاصطدام لكن نضعها للاحتياط)
     collidables.push_back({ -70.0f, 100.0f, 201.0f, 70.0f, 110.0f, 205.0f });
 #pragma endregion
 
@@ -252,125 +265,173 @@ void addCityCollisions(std::vector<BoundingBox>& collidables) {
     float startZ_boulevard = 280.0f;
     float entryLength_boulevard = 100.0f;
     float splitZ_boulevard = startZ_boulevard + entryLength_boulevard;
-    // الأشجار على جانبي مدخل الشارع
+    float roundaboutCenterZ = 600.0f;
+    float northStart = roundaboutCenterZ + 120.0f;
+    float medianWidth = 20.0f;
+    float laneWidth = 40.0f;
+    float lampX_boulevard = medianWidth / 2 + laneWidth + 10; 
+
+   
     for (int i = 0; i < 3; i++) {
-        collidables.push_back({ 55.0f, 0.0f, (startZ_boulevard + 20 + i * 40), 65.0f, 15.0f, (startZ_boulevard + 30 + i * 40) });
-        collidables.push_back({ -65.0f, 0.0f, (startZ_boulevard + 20 + i * 40), -55.0f, 15.0f, (startZ_boulevard + 30 + i * 40) });
+        float lampZ = splitZ_boulevard + 20 + i * 60.0f;
+        collidables.push_back({ lampX_boulevard - 1.0f, 0.0f, lampZ - 1.0f, lampX_boulevard + 1.0f, 22.0f, lampZ + 1.0f });
+        collidables.push_back({ -lampX_boulevard - 1.0f, 0.0f, lampZ - 1.0f, -lampX_boulevard + 1.0f, 22.0f, lampZ + 1.0f });
     }
-    // الأشجار في منتصف الشارع
-    for (int i = 0; i < 5; i++) {
-        collidables.push_back({ -5.0f, 0.0f, (splitZ_boulevard + 20 + i * 40), 5.0f, 15.0f, (splitZ_boulevard + 30 + i * 40) });
+    for (int i = 0; i < 18; i++) {
+        float lampZ = northStart + 40 + i * 80.0f;
+        collidables.push_back({ lampX_boulevard - 1.0f, 0.0f, lampZ - 1.0f, lampX_boulevard + 1.0f, 22.0f, lampZ + 1.0f });
+        collidables.push_back({ -lampX_boulevard - 1.0f, 0.0f, lampZ - 1.0f, -lampX_boulevard + 1.0f, 22.0f, lampZ + 1.0f });
     }
 #pragma endregion
 
 #pragma region Roundabout (الدوار)
-    // التمثال في منتصف الدوار
-    collidables.push_back({ -10.0f, 0.0f, 590.0f, 10.0f, 20.0f, 610.0f });
-    // أحواض الزهور حول الدوار
+    collidables.push_back({ -10.0f, 0.0f, 590.0f, 10.0f, 20.0f, 610.0f }); 
     collidables.push_back({ 10.0f, 0.0f, 595.0f, 20.0f, 2.0f, 605.0f });
-    collidables.push_back({ -20.0f, 0.0f, 595.0f, -10.0f, 2.0f, 605.0f });
-    collidables.push_back({ -5.0f, 0.0f, 610.0f, 5.0f, 2.0f, 620.0f });
-    collidables.push_back({ -5.0f, 0.0f, 580.0f, 5.0f, 2.0f, 590.0f });
+    collidables.push_back({ -20.0f, 0.0f, 595.0f, -10.0f, 2.0f, 605.0f }); 
+    collidables.push_back({ -5.0f, 0.0f, 610.0f, 5.0f, 2.0f, 620.0f }); 
+    collidables.push_back({ -5.0f, 0.0f, 580.0f, 5.0f, 2.0f, 590.0f }); 
 #pragma endregion
 
 #pragma region Lake Park (حديقة البحيرة)
-    float parkX = -280.0f; float parkZ = 600.0f;
-    float parkW = 350.0f; float parkL = 500.0f;
-    float lakeW = 200.0f; float lakeL = 300.0f;
+    float parkX = -280.0f, parkZ = 600.0f;
+    float parkW = 350.0f, parkL = 500.0f;
+    float lakeW = 200.0f, lakeL = 300.0f;
 
-    // الكوخ (Gazebo)
-    collidables.push_back({ (parkX + lakeW / 2 + 40) - 15, 0.0f, (parkZ - lakeL / 2 + 40) - 15, (parkX + lakeW / 2 + 40) + 15, 20.0f, (parkZ - lakeL / 2 + 40) + 15 });
-    // كشك العصير (Juice Stall)
-    collidables.push_back({ (parkX - parkW / 2 + 40) - 6, 0.0f, (parkZ - parkL / 2 + 40) - 6, (parkX - parkW / 2 + 40) + 6, 10.0f, (parkZ - parkL / 2 + 40) + 6 });
-    // المقاعد على جانبي الحديقة
+    collidables.push_back({ (parkX + lakeW / 2 + 40) - 15, 0.0f, (parkZ - lakeL / 2 + 40) - 15, (parkX + lakeW / 2 + 40) + 15, 20.0f, (parkZ - lakeL / 2 + 40) + 15 }); 
+    collidables.push_back({ (parkX - parkW / 2 + 40) - 6, 0.0f, (parkZ - parkL / 2 + 40) - 6, (parkX - parkW / 2 + 40) + 6, 10.0f, (parkZ - parkL / 2 + 40) + 6 }); 
     float benchStart = parkZ - 120;
     for (int i = 0; i < 5; i++) {
         float posZ = benchStart + i * 60;
-        collidables.push_back({ (parkX + lakeW / 2 + 20) - 3, 0.0f, posZ - 7, (parkX + lakeW / 2 + 20) + 3, 8.0f, posZ + 7 });
-        collidables.push_back({ (parkX - lakeW / 2 - 20) - 3, 0.0f, posZ - 7, (parkX - lakeW / 2 - 20) + 3, 8.0f, posZ + 7 });
+        collidables.push_back({ (parkX + lakeW / 2 + 20) - 3, 0.0f, posZ - 7, (parkX + lakeW / 2 + 20) + 3, 8.0f, posZ + 7 }); 
+        collidables.push_back({ (parkX + lakeW / 2 + 35) - 1, 0.0f, posZ - 1, (parkX + lakeW / 2 + 35) + 1, 22.0f, posZ + 1 }); 
+        collidables.push_back({ (parkX - lakeW / 2 - 35) - 1, 0.0f, posZ - 1, (parkX - lakeW / 2 - 35) + 1, 22.0f, posZ + 1 }); 
+        collidables.push_back({ (parkX - lakeW / 2 - 20) - 3, 0.0f, posZ - 7, (parkX - lakeW / 2 - 20) + 3, 8.0f, posZ + 7 }); 
     }
-    // الأشجار داخل الحديقة
-    for (int i = 0; i < 6; i++) {
-        float treeZ = parkZ - parkL / 2 + 30 + i * 80;
-        collidables.push_back({ (parkX - parkW / 2 + 30) - 5, 0.0f, treeZ - 5, (parkX - parkW / 2 + 30) + 5, 15.0f, treeZ + 5 });
-        collidables.push_back({ (parkX + parkW / 2 - 30) - 5, 0.0f, treeZ - 5, (parkX + parkW / 2 - 30) + 5, 15.0f, treeZ + 5 });
-    }
-    // البوابة الرئيسية للحديقة
-    collidables.push_back({ (parkX + parkW / 2) - 50, 0.0f, parkZ - 5, (parkX + parkW / 2) + 50, 25.0f, parkZ + 5 });
 
-    // --- إصلاح سياج الحديقة (أعمدة منفصلة) ---
-    float poleH = 8.0f; float gap = 15.0f;
-    // الأعمدة الأفقية (مع ترك فتحة للبوابة)
+    collidables.push_back({ (parkX + parkW / 2) - 50, 0.0f, parkZ - 5, (parkX + parkW / 2) + 50, 25.0f, parkZ + 5 }); // البوابة
+    float poleH = 8.0f, gap = 15.0f;
     for (float i = -parkW / 2; i <= parkW / 2; i += gap) {
         collidables.push_back({ parkX + i - 0.5f, 0.0f, parkZ - parkL / 2 - 0.5f, parkX + i + 0.5f, poleH, parkZ - parkL / 2 + 0.5f });
-        if (abs(parkX + i) > (parkX + parkW / 2 - 50) || abs(parkZ + parkL / 2) > (parkZ + 5)) { // شرط لتجنب بناء السياج مكان البوابة
+        if (abs(i) > 40) {
             collidables.push_back({ parkX + i - 0.5f, 0.0f, parkZ + parkL / 2 - 0.5f, parkX + i + 0.5f, poleH, parkZ + parkL / 2 + 0.5f });
         }
     }
-    // الأعمدة العامودية
     for (float i = -parkL / 2; i <= parkL / 2; i += gap) {
         collidables.push_back({ parkX + parkW / 2 - 0.5f, 0.0f, parkZ + i - 0.5f, parkX + parkW / 2 + 0.5f, poleH, parkZ + i + 0.5f });
         collidables.push_back({ parkX - parkW / 2 - 0.5f, 0.0f, parkZ + i - 0.5f, parkX - parkW / 2 + 0.5f, poleH, parkZ + i + 0.5f });
     }
 #pragma endregion
 
+    float carBoxWidth = 10.0f;  
+    float carBoxLength = 22.0f;
+    float carBoxHeight = 12.0f;
+
+    for (const auto& car : parkingLotCars) {
+        collidableObjects.push_back({
+            car.x - carBoxLength / 2, car.y, car.z - carBoxWidth / 2,
+            car.x + carBoxLength / 2, car.y + carBoxHeight, car.z + carBoxWidth / 2
+            });
+    }
 #pragma region Parking Zone (منطقة المواقف)
-    float pX = 350.0f; float pZ = 600.0f; float pW = 300.0f; float pL = 400.0f;
-    int numRows = 3; float rowHeight = pL / numRows;
-    for (int i = 0; i < numRows; i++) {
-        float cZ = (pZ - pL / 2) + rowHeight * i + rowHeight / 2;
-        if (i < numRows - 1) {
-            // الجزر الوسطية بين صفوف المواقف
-            collidables.push_back({ pX - (pW - 20) / 2, 0.0f, cZ + rowHeight / 2 - 4, pX + (pW - 20) / 2, 1.0f, cZ + rowHeight / 2 + 4 });
+    float pX = 350.0f, pZ = 600.0f, pW = 300.0f, pL = 400.0f;
+    float perimX = pW / 2 + 20.0f, perimZ = pL / 2 + 20.0f;
+
+    for (float z_coord = -perimZ; z_coord <= perimZ; z_coord += 60) {
+    
+       
+        collidables.push_back({ pX + perimX - 1, 0.0f, pZ + z_coord + 30 - 1, pX + perimX + 1, 22.0f, pZ + z_coord + 30 + 1 });
+      
+
+    }
+    for (float x_coord = -perimX; x_coord <= perimX; x_coord += 60) {
+        collidables.push_back({ pX + x_coord - 5, 0.0f, pZ - perimZ - 5, pX + x_coord + 5, 15.0f, pZ - perimZ + 5 });
+        collidables.push_back({ pX + x_coord - 5, 0.0f, pZ + perimZ - 5, pX + x_coord + 5, 15.0f, pZ + perimZ + 5 });
+    }
+
+    int numRows_park = 3; float rowHeight_park = pL / numRows_park;
+    for (int i = 0; i < numRows_park; i++) {
+        float cZ = (pZ - pL / 2) + rowHeight_park * i + rowHeight_park / 2;
+        if (i < numRows_park - 1) { 
+            collidables.push_back({ pX - (pW - 20) / 2, 0.0f, cZ + rowHeight_park / 2 - 4, pX + (pW - 20) / 2, 1.0f, cZ + rowHeight_park / 2 + 4 });
+            collidables.push_back({ pX - 1, 0.0f, cZ + rowHeight_park / 2 - 1, pX + 1, 22.0f, cZ + rowHeight_park / 2 + 1 });
         }
-        // مظلات المواقف
-        collidables.push_back({ pX - (pW - 40) / 2, 0.0f, cZ - (rowHeight - 20) / 2 + 1, pX + (pW - 40) / 2, 15.0f, cZ - (rowHeight - 20) / 2 + 3 });
+        collidables.push_back({ pX - (pW - 40) / 2, 0.0f, cZ - (rowHeight_park - 20) / 2 + 1, pX + (pW - 40) / 2, 15.0f, cZ - (rowHeight_park - 20) / 2 + 3 });
     }
 #pragma endregion
 
 #pragma region Commercial Zone (المنطقة التجارية)
-    float cX = -350.0f; float cZ = 200.0f;
-    // مجموعة طاولات المقاهي
+    float cX = -350.0f, cZ = 200.0f;
     for (int row = 0; row < 2; row++) {
         for (int col = 0; col < 2; col++) {
-            float tx = cX - 300.0f / 4 + col * (300.0f / 2);
-            float tz = cZ - 400.0f / 4 + row * (400.0f / 2);
+            float tx = cX - 150.0f + col * 300.0f;
+            float tz = cZ - 100.0f + row * 200.0f;
             collidables.push_back({ tx - 15, 0.0f, tz - 15, tx + 15, 15.0f, tz + 15 });
         }
     }
-    // الأكشاك الحديثة
-    collidables.push_back({ (cX - 150 + 30) - 8, 0.0f, (cZ + 200 - 30) - 6, (cX - 150 + 30) + 8, 13.0f, (cZ + 200 - 30) + 6 });
-    collidables.push_back({ (cX + 150 - 30) - 8, 0.0f, (cZ + 200 - 30) - 6, (cX + 150 - 30) + 8, 13.0f, (cZ + 200 - 30) + 6 });
-    // حوض الزهور في المنتصف
-    collidables.push_back({ cX - 5, 0.0f, cZ - 5, cX + 5, 2.0f, cZ + 5 });
+    collidables.push_back({ (cX - 75) - 8, 0.0f, (cZ + 100) - 6, (cX - 75) + 8, 13.0f, (cZ + 100) + 6 }); 
+    collidables.push_back({ (cX + 75) - 8, 0.0f, (cZ + 100) - 6, (cX + 75) + 8, 13.0f, (cZ + 100) + 6 }); 
+    collidables.push_back({ cX - 5, 0.0f, cZ - 5, cX + 5, 2.0f, cZ + 5 }); 
 #pragma endregion
-}
-// =============================================================
-// ===== دالة جديدة لإضافة اصطدامات كائنات AbrarCode =====
-// =============================================================
-void addAbrarCodeCollisions(std::vector<BoundingBox>& collidables) {
-    const float FLOOR_H = 60.0f; // ارتفاع الطابق الثاني
+    float trees[21][3] = {
+        // 1. أمام المعرض (Showroom) - دالة buildShowroomPlaza
+        { 165.0f, 0.0f, 215.0f },
+        { -165.0f, 0.0f, 215.0f },
 
-    // أبعاد تقريبية للشخصية
+        // 2. الشارع الرئيسي (Boulevard) - دالة buildMainBoulevard
+        // northStart = 720.0f، الأشجار تبدأ بعده بـ 50 وحدة وبتباعد 200
+        { 0.0f, 0.0f, 770.0f },  // 720 + 50
+        { 0.0f, 0.0f, 970.0f },  // 720 + 50 + 200
+        { 0.0f, 0.0f, 1170.0f },
+        { 0.0f, 0.0f, 1370.0f },
+        { 0.0f, 0.0f, 1570.0f },
+        { 0.0f, 0.0f, 1770.0f },
+        { 0.0f, 0.0f, 1970.0f },
+
+        // 3. منطقة المواقف (Parking) - دالة buildParkingZone
+        // pX=350, pZ=600, perimX=170
+        { 520.0f, 0.0f, 500.0f }, // pX + 170
+        { 520.0f, 0.0f, 600.0f },
+        { 520.0f, 0.0f, 700.0f },
+        { 180.0f, 0.0f, 500.0f }, // pX - 170
+        { 180.0f, 0.0f, 600.0f },
+        { 180.0f, 0.0f, 700.0f },
+        { 350.0f, 0.0f, 820.0f }, // خلف الكراج (pZ + 220)
+
+        // 4. الحديقة (Lake Park) - دالة drawLakePark
+        // parkX=-280, parkZ=600
+        { -425.0f, 0.0f, 450.0f }, // يسار خلف
+        { -425.0f, 0.0f, 750.0f }, // يسار أمام
+        { -135.0f, 0.0f, 450.0f }, // يمين خلف
+        { -135.0f, 0.0f, 750.0f }, // يمين أمام
+        { -280.0f, 0.0f, 380.0f }  // المنتصف خلف (parkZ - 220)
+    };    // تصادم الأشجار باستخدام المصفوفة
+    for (int i = 0; i < 21; i++) {
+        float tx = trees[i][0];
+        float tz = trees[i][2];
+
+        collidables.push_back({
+            tx - 6.0f, -10.0f, tz - 6.0f,  // minY جعلناه -10 لضمان الاصطدام تحت الأرض
+            tx + 6.0f,  40.0f, tz + 6.0f   // الارتفاع 40 لضمان اصطدام الكاميرا بالشجرة كاملة
+            });
+    }
+}
+
+void addAbrarCodeCollisions(std::vector<BoundingBox>& collidables) {
+    const float FLOOR_H = 60.0f; 
+
     float steveWidth = 2.0f;
     float steveDepth = 2.0f;
     float steveHeight = 5.0f;
 
 #pragma region AbrarCode Second Floor Steves
-    // 1. الاصطدام مع موظف السكرتارية
-    // الموقع: داخل drawSecretariatOffice(120, 0, 50) -> glTranslatef(15, 0, -30)
+
     float secretaryX = 120.0f + 15.0f;
     float secretaryZ = 50.0f - 30.0f;
     collidables.push_back({ secretaryX - steveWidth, FLOOR_H, secretaryZ - steveDepth, secretaryX + steveWidth, FLOOR_H + steveHeight, secretaryZ + steveDepth });
-
-    // 2. الاصطدام مع موظف الكاشير (داخل متجر الإكسسوارات)
-    // الموقع: drawMegaAccessoriesShop(-100,0,0) -> drawCheckoutCounter(50,0,-180) -> glTranslatef(0,0,-6)
     float cashierX = -100.0f + 50.0f;
     float cashierZ = 0.0f - 180.0f - 6.0f;
     collidables.push_back({ cashierX - steveWidth, FLOOR_H, cashierZ - steveDepth, cashierX + steveWidth, FLOOR_H + steveHeight, cashierZ + steveDepth });
 
-    // 3. الاصطدام مع طابور الزبائن (6 أشخاص)
-    // الموقع: drawMegaAccessoriesShop(-100,0,0) -> drawQueue(50, 0, -155)
     float queueBaseX = -100.0f + 50.0f;
     float queueBaseZ = -155.0f;
     for (int i = 0; i < 6; i++) {
@@ -378,8 +439,6 @@ void addAbrarCodeCollisions(std::vector<BoundingBox>& collidables) {
         collidables.push_back({ queueBaseX - steveWidth, FLOOR_H, personZ - steveDepth, queueBaseX + steveWidth, FLOOR_H + steveHeight, personZ + steveDepth });
     }
 
-    // 4. الاصطدام مع الناس المتجولين في الطابق
-    // ننسخ نفس مصفوفة الإحداثيات من drawPeopleOnFloor
     float peopleCoords[10][3] = {
         {80, 0.2f, -50},
         {-80, 0.2f, 50},
@@ -406,7 +465,6 @@ void createCollidables() {
     float wallBuffer = 5.0f;
     float floorThickness = 2.0f;
 
-    // --- الطابق الأرضي ---
     collidableObjects.push_back({ minX, 0.0f, maxz - wallBuffer, GATE_MIN_X, SHOWROOM_HEIGHT, maxz + wallBuffer });
     collidableObjects.push_back({ GATE_MAX_X, 0.0f, maxz - wallBuffer, maxX, SHOWROOM_HEIGHT, maxz + wallBuffer });
 
@@ -422,9 +480,6 @@ void createCollidables() {
     float center_x_C2 = minX + (maxX - minX - diff) / 4.0f;
     collidableObjects.push_back({ center_x_C1 - extentX, 0.0f, -extentZ, maxX, 30.0f, extentZ });
     collidableObjects.push_back({ minX, 0.0f, -extentZ, center_x_C2 + extentX, 30.0f, extentZ });
-
-    // 2. سيارات أبرار (Beetle) - جهة اليمين
-    // *** تم تصحيح هذا السطر من 90.0f إلى 120.0f ***
     float beetle_x = 120.0f;
     float beetle_z[] = { -40.0f, -75.0f, -110.0f, -145.0f };
     for (float z : beetle_z) {
@@ -447,7 +502,6 @@ void createCollidables() {
         collidableObjects.push_back({ jeep_x - (15.0f + jeep_safety_X), 0.0f, jZ - jeep_box_Z, jeep_x + (15.0f + jeep_safety_X), 25.0f, jZ + jeep_box_Z });
     }
 
-    // --- الطابق الثاني ---
     const float SECOND_FLOOR_Y_START = SHOWROOM_HEIGHT;
     const float SECOND_FLOOR_HEIGHT = 60.0f;
     const float SECOND_FLOOR_Y_END = SECOND_FLOOR_Y_START + SECOND_FLOOR_HEIGHT;
@@ -463,40 +517,28 @@ void createCollidables() {
     collidableObjects.push_back({ minX, SECOND_FLOOR_Y_START - floorThickness, minz, maxX, SECOND_FLOOR_Y_START, ELEV_MIN_Z });
     collidableObjects.push_back({ minX, SECOND_FLOOR_Y_START - floorThickness, ELEV_MIN_Z, ELEV_MIN_X, SECOND_FLOOR_Y_START, ELEV_MAX_Z });
     collidableObjects.push_back({ ELEV_MAX_X, SECOND_FLOOR_Y_START - floorThickness, ELEV_MIN_Z, maxX, SECOND_FLOOR_Y_START, ELEV_MAX_Z });
-    // =================================================================
-    const float FLOOR_H = 60.0f; // نفس قيمة SECOND_FLOOR_Y_START
+    const float FLOOR_H = 60.0f; 
 
-    // 1. متجر الإكسسوارات
-    collidableObjects.push_back({ 30.0f, FLOOR_H, -184.0f, 70.0f, FLOOR_H + 10.0f, -176.0f });   // منضدة الدفع
+    collidableObjects.push_back({ 30.0f, FLOOR_H, -184.0f, 70.0f, FLOOR_H + 10.0f, -176.0f });  
 
-    // 2. مكتب السكرتارية
     collidableObjects.push_back({ 90.0f, FLOOR_H, 0.0f, 150.0f, FLOOR_H + 40.0f, 100.0f });
 
-    // 3. الأريكة
     collidableObjects.push_back({ 90.0f, FLOOR_H, 110.0f, 110.0f, FLOOR_H + 10.0f, 130.0f });
 
-    // 4. النافورة
     collidableObjects.push_back({ 112.0f, FLOOR_H, 142.0f, 128.0f, FLOOR_H + 5.0f, 158.0f });
 
-    // 5. قاعدة الهولوغرام
     collidableObjects.push_back({ 92.5f, FLOOR_H, 142.5f, 107.5f, FLOOR_H + 2.0f, 157.5f });
-    // أضف هذه الأسطر داخل createCollidables()
-    // --> أضف هذا الكود الجديد بدلاً من السطر المحذوف
-
-// إنشاء صناديق اصطدام منفصلة لكل رف من الأرفف الخمسة
-// هذا يسمح للاعب بالمشي بينها
-    float shelfCenterX = -120.0f; // الإحداثي X لمركز الأرفف
-    float shelfWidth = 36.0f;     // عرض كل رف (6 أعمدة * 6 وحدات)
-    float shelfDepth = 4.0f;      // عمق كل رف
-    float shelfHeight = 30.0f;    // ارتفاع كل رف (5 صفوف * 6 وحدات)
-    float shelfSpacing = 50.0f;   // المسافة بين مركز كل رف والذي يليه
-    float startZ = -100.0f;       // الإحداثي Z لمركز أول رف
+    
+    float shelfCenterX = -120.0f; 
+    float shelfWidth = 36.0f;     
+    float shelfDepth = 4.0f;     
+    float shelfHeight = 30.0f;  
+    float shelfSpacing = 50.0f;   
+    float startZ = -100.0f;      
 
     for (int i = 0; i < 5; i++) {
-        // حساب مركز الـ Z لهذا الرف
         float currentCenterZ = startZ + (i * shelfSpacing);
 
-        // حساب إحداثيات الصندوق
         float min_x = shelfCenterX - shelfWidth / 2.0f;
         float max_x = shelfCenterX + shelfWidth / 2.0f;
         float min_y = FLOOR_H;
@@ -504,20 +546,15 @@ void createCollidables() {
         float min_z = currentCenterZ - shelfDepth / 2.0f;
         float max_z = currentCenterZ + shelfDepth / 2.0f;
 
-        // إضافة الصندوق المنفصل إلى قائمة الاصطدامات
         collidableObjects.push_back({ min_x, min_y, min_z, max_x, max_y, max_z });
     }
 
-// صندوق اصطدام للسيارة الحمراء F1
     collidableObjects.push_back({ -125.0f, 0.0f, -55.0f, -115.0f, 10.0f, -45.0f });
 
-    // صندوق اصطدام للسيارة الزرقاء F1
     collidableObjects.push_back({ -125.0f, 0.0f, -95.0f, -115.0f, 10.0f, -85.0f });
 
-    // صندوق اصطدام للسيارة الصفراء F1
     collidableObjects.push_back({ -125.0f, 0.0f, -135.0f, -115.0f, 10.0f, -125.0f });
 
-    // تعريفات منطقة المواقف (نسخ من CityMasterPlan)
     float pX = 350.0f;
     float pZ = 600.0f;
     float pW = 300.0f;
@@ -525,21 +562,16 @@ void createCollidables() {
     int numRows = 3;
     float rowHeight = pL / numRows;
 
-    // أبعاد تقريبية للسيارات (يمكنك تعديلها)
-    // ملاحظة: بما أن السيارات مرسومة بزاوية 90، نعكس العرض والطول
     float carBoxHeight = 7.0f;
 
-    // حلقة لمحاكاة إنشاء السيارات في كل صف
     for (int i = 0; i < numRows; i++) {
         float cZ = (pZ - pL / 2) + rowHeight * i + rowHeight / 2;
         int spots = 7;
         float sW = (pW - 40) / spots;
 
-        // حلقة لمحاكاة إنشاء السيارات في كل بقعة
         for (int k = 0; k < spots; k++) {
             int randSeed = (int)(i * 99 + k * 17);
 
-            // تحقق من وجود سيارة في النصف الأول من الصف
             if (randSeed % 3 != 0) {
                 float carX = (pX - (pW - 40) / 2) + k * sW + sW / 2;
                 float carZ = cZ - (rowHeight - 20) / 2 + 15.0f;
@@ -549,7 +581,6 @@ void createCollidables() {
                     });
             }
 
-            // تحقق من وجود سيارة في النصف الثاني من الصف
             if ((randSeed + 1) % 3 != 0) {
                 float carX = (pX - (pW - 40) / 2) + k * sW + sW / 2;
                 float carZ = cZ + (rowHeight - 20) / 2 - 15.0f;
@@ -560,11 +591,6 @@ void createCollidables() {
             }
         }
     }
-    // =============================================================
-// --- الاصطدام مع شخصيات ستيف (Steve) ---
-// =============================================================
-
-// مصفوفة بيانات مواقع ستيف (النسخة الكاملة والصحيحة)
     float steveData[41][15] = {
         { -40.0f, 230.0f, 180.0f, 0.70f, 0.47f, 0.35f, 0.25f, 0.15f, 0.10f, 0.00f, 0.65f, 0.65f, 0.25f, 0.25f, 0.60f },
         { 40.0f, 250.0f, 170.0f, 0.80f, 0.55f, 0.40f, 0.20f, 0.20f, 0.20f, 0.80f, 0.20f, 0.20f, 0.10f, 0.10f, 0.40f },
@@ -607,13 +633,10 @@ void createCollidables() {
         { 90.0f, 10.0f, 45.0f, 0.85f, 0.60f, 0.45f, 0.60f, 0.50f, 0.30f, 0.30f, 0.70f, 0.30f, 0.10f, 0.40f, 0.10f }
     };
 
-    // أبعاد تقريبية لشخصية ستيف
     float steveWidth = 2.0f;
     float steveDepth = 2.0f;
     float steveHeight = 5.0f;
 
-    // حلقة لإنشاء صندوق اصطدام لكل شخصية
-    // **ملاحظة مهمة:** الحلقة يجب أن تصل إلى 41 وليس 39
     for (int i = 0; i < 39; i++) {
         float steveX = steveData[i][0];
         float steveZ = steveData[i][1];
@@ -627,15 +650,61 @@ void createCollidables() {
             steveZ + steveDepth / 2
             });
     }
+    float length = 200, height = 800, depth = 200;
+    float lx = length / 2.0f;
+    float hy = height / 2.0f;
+    float dz = depth / 2.0f;
+
+    float blockXPos[6] = { -1560.0f, -1040.0f, -520.0f, 100.0f, 620.0f, 1140.0f };
+
+    for (int block = 0; block < 6; block++) {
+        float startX = blockXPos[block];
+
+        if (block == 1 || block == 4) continue;
+
+        for (int row = 0; row < 4; row++) {
+            float tx1 = startX + lx;
+            float tz1 = -600.0f - (row * 220.0f);
+
+            collidableObjects.push_back({
+                tx1 - lx, 0.0f, tz1 - dz,  
+                tx1 + lx, height, tz1 + dz 
+                });
+
+            float tx2 = startX + lx + 220.0f;
+            float tz2 = -600.0f - (row * 220.0f);
+
+            collidableObjects.push_back({
+                tx2 - lx, 0.0f, tz2 - dz,
+                tx2 + lx, height, tz2 + dz
+                });
+
+            if (block == 0 || block == 5) {
+                float tz3 = -600.0f - (row * 220.0f) + 1230.0f;
+
+                collidableObjects.push_back({
+                    tx1 - lx, 0.0f, tz3 - dz,
+                    tx1 + lx, height, tz3 + dz
+                    });
+
+                collidableObjects.push_back({
+                    tx2 - lx, 0.0f, tz3 - dz,
+                    tx2 + lx, height, tz3 + dz
+                    });
+            }
+        }
+    }
+  
     addAbrarCodeCollisions(collidableObjects);
         addCityCollisions(collidableObjects);
 
 }
+
 void handleKeypress(unsigned char key, int x, int y) {
     if (key == 'l' || key == 'L') {
         isLightOn = !isLightOn;
         glutPostRedisplay();
-        updateAmbientSound(); // استدعاء الدالة عند تغيير الوقت
+        updateAmbientSound(); 
         return;
     }
 
@@ -670,8 +739,8 @@ void handleKeypress(unsigned char key, int x, int y) {
             nextY = GLOBAL_GROUND_LEVEL + PLAYER_BUFFER_Y;
         }
 
-        bool isCurrentlyInside = isStrictlyInside(camX, camZ);
-        bool willBeInside = isStrictlyInside(nextX, nextZ);
+        bool isCurrentlyInside = isStrictlyInside(camX, camY, camZ);
+        bool willBeInside = isStrictlyInside(nextX, nextY, nextZ);
 
         // --- منطق البوابة الأصلي والذكي ---
         // يعمل فقط عند محاولة عبور حدود المعرض
@@ -719,7 +788,7 @@ void handleKeypress(unsigned char key, int x, int y) {
                 playerBox.maxY > objBox.minY && playerBox.minY < objBox.maxY &&
                 playerBox.maxZ > objBox.minZ && playerBox.minZ < objBox.maxZ) {
                 glutPostRedisplay();
-                return; // حدث اصطدام، لا تقم بتحديث الموقع
+                return; 
             }
         }
 
@@ -729,7 +798,7 @@ void handleKeypress(unsigned char key, int x, int y) {
         camZ = nextZ;
 
         // تحديث الصوت عند عبور الحدود
-        if (isCurrentlyInside != isStrictlyInside(camX, camZ)) {
+        if (isCurrentlyInside != isStrictlyInside(camX, camY, camZ)) {
             updateAmbientSound();
         }
     }
@@ -737,6 +806,7 @@ void handleKeypress(unsigned char key, int x, int y) {
         abrarCode.handleInput(key, camX, camY, camZ, collidableObjects);
         if (key == 27) exit(0);
     }
+
     glutPostRedisplay();
 }
 
@@ -758,10 +828,12 @@ void handlePassiveMouse(int x, int y) {
     glutWarpPointer(centerX, centerY);
     glutPostRedisplay();
 }
+
 void updateAmbientSound() {
-    bool isInside = isStrictlyInside(camX, camZ);
+    bool isInside = isStrictlyInside(camX, camY, camZ);
 
     if (isInside) {
+
         SoundManager::stopAll();
         SoundManager::playLoop("sounds/gallery.wav"); 
     }
@@ -775,7 +847,28 @@ void updateAmbientSound() {
             SoundManager::playLoop("sounds/morning.wav");
         }
         else {
-            SoundManager::playLoop("sounds/night.wav");
+            SoundManager::playLoop("sounds/night2.wav");
+        }
+    }
+}
+
+void updateAmbientSound1() {
+    bool isInside = isStrictlyInside(camX, camY, camZ);
+
+    if (isInside) {
+
+        SoundManager::playLoopWithDelay("sounds/gallery.wav",500);
+    }
+    else {
+        if (weatherstatus == 2) {
+
+            SoundManager::playLoopWithDelay("sounds/rain.wav",2000);
+        }
+        else if (isLightOn) {
+            SoundManager::playLoopWithDelay("sounds/morning.wav",2000);
+        }
+        else {
+            SoundManager::playLoopWithDelay("sounds/night2.wav",2000);
         }
     }
 }
@@ -815,7 +908,6 @@ void initRendering() {
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
-   
     glDisable(GL_LIGHT1);
     glEnable(GL_COLOR_MATERIAL);
     glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
@@ -1030,6 +1122,7 @@ int main(int argc, char** argv) {
     glutCreateWindow("Showroom Simulator");
 
     initRendering();
+    initParkingLotCars(); 
     createCollidables();
     initEnvironment();
     updateLookVector();
