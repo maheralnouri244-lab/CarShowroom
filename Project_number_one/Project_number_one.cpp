@@ -102,6 +102,7 @@ bool isLightOn = false;
 // دوال مساعدة (Texture, Sky)
 // ==========================================
 void updateAmbientSound();
+void addCityCollisions(std::vector<BoundingBox>& collidables); 
 
 
 unsigned int loadTextureFromFile(const char* path) {
@@ -223,6 +224,183 @@ void switchCamera(int newCam) {
     glutPostRedisplay();
 }
 
+// =============================================================
+// ===== دالة جديدة لإضافة كل اصطدامات المدينة الخارجية =====
+// =============================================================
+// =============================================================
+// ===== دالة جديدة ومُحسّنة لإضافة كل اصطدامات المدينة الخارجية =====
+// =============================================================
+void addCityCollisions(std::vector<BoundingBox>& collidables) {
+    // ملاحظة: ارتفاع معظم العناصر هو y=0.0f للأرضية الخارجية
+
+#pragma region Showroom Plaza (الساحة أمام المعرض)
+    // الأشجار الأربعة حول المعرض
+    collidables.push_back({ 165.0f, 0.0f, 225.0f, 175.0f, 15.0f, 235.0f });
+    collidables.push_back({ -165.0f, 0.0f, 225.0f, -155.0f, 15.0f, 235.0f });
+    collidables.push_back({ 165.0f, 0.0f, -225.0f, 175.0f, 15.0f, -215.0f });
+    collidables.push_back({ -165.0f, 0.0f, -225.0f, -155.0f, 15.0f, -215.0f });
+
+    // أحواض الزهور
+    collidables.push_back({ 55.0f, 0.0f, 235.0f, 65.0f, 2.0f, 245.0f });
+    collidables.push_back({ -65.0f, 0.0f, 235.0f, -55.0f, 2.0f, 245.0f });
+
+    // لافتة المعرض الضخمة (عالية جداً، ربما لا تحتاج لاصطدام لكن نضعها للاحتياط)
+    collidables.push_back({ -70.0f, 100.0f, 201.0f, 70.0f, 110.0f, 205.0f });
+#pragma endregion
+
+#pragma region Main Boulevard (الشارع الرئيسي)
+    float startZ_boulevard = 280.0f;
+    float entryLength_boulevard = 100.0f;
+    float splitZ_boulevard = startZ_boulevard + entryLength_boulevard;
+    // الأشجار على جانبي مدخل الشارع
+    for (int i = 0; i < 3; i++) {
+        collidables.push_back({ 55.0f, 0.0f, (startZ_boulevard + 20 + i * 40), 65.0f, 15.0f, (startZ_boulevard + 30 + i * 40) });
+        collidables.push_back({ -65.0f, 0.0f, (startZ_boulevard + 20 + i * 40), -55.0f, 15.0f, (startZ_boulevard + 30 + i * 40) });
+    }
+    // الأشجار في منتصف الشارع
+    for (int i = 0; i < 5; i++) {
+        collidables.push_back({ -5.0f, 0.0f, (splitZ_boulevard + 20 + i * 40), 5.0f, 15.0f, (splitZ_boulevard + 30 + i * 40) });
+    }
+#pragma endregion
+
+#pragma region Roundabout (الدوار)
+    // التمثال في منتصف الدوار
+    collidables.push_back({ -10.0f, 0.0f, 590.0f, 10.0f, 20.0f, 610.0f });
+    // أحواض الزهور حول الدوار
+    collidables.push_back({ 10.0f, 0.0f, 595.0f, 20.0f, 2.0f, 605.0f });
+    collidables.push_back({ -20.0f, 0.0f, 595.0f, -10.0f, 2.0f, 605.0f });
+    collidables.push_back({ -5.0f, 0.0f, 610.0f, 5.0f, 2.0f, 620.0f });
+    collidables.push_back({ -5.0f, 0.0f, 580.0f, 5.0f, 2.0f, 590.0f });
+#pragma endregion
+
+#pragma region Lake Park (حديقة البحيرة)
+    float parkX = -280.0f; float parkZ = 600.0f;
+    float parkW = 350.0f; float parkL = 500.0f;
+    float lakeW = 200.0f; float lakeL = 300.0f;
+
+    // الكوخ (Gazebo)
+    collidables.push_back({ (parkX + lakeW / 2 + 40) - 15, 0.0f, (parkZ - lakeL / 2 + 40) - 15, (parkX + lakeW / 2 + 40) + 15, 20.0f, (parkZ - lakeL / 2 + 40) + 15 });
+    // كشك العصير (Juice Stall)
+    collidables.push_back({ (parkX - parkW / 2 + 40) - 6, 0.0f, (parkZ - parkL / 2 + 40) - 6, (parkX - parkW / 2 + 40) + 6, 10.0f, (parkZ - parkL / 2 + 40) + 6 });
+    // المقاعد على جانبي الحديقة
+    float benchStart = parkZ - 120;
+    for (int i = 0; i < 5; i++) {
+        float posZ = benchStart + i * 60;
+        collidables.push_back({ (parkX + lakeW / 2 + 20) - 3, 0.0f, posZ - 7, (parkX + lakeW / 2 + 20) + 3, 8.0f, posZ + 7 });
+        collidables.push_back({ (parkX - lakeW / 2 - 20) - 3, 0.0f, posZ - 7, (parkX - lakeW / 2 - 20) + 3, 8.0f, posZ + 7 });
+    }
+    // الأشجار داخل الحديقة
+    for (int i = 0; i < 6; i++) {
+        float treeZ = parkZ - parkL / 2 + 30 + i * 80;
+        collidables.push_back({ (parkX - parkW / 2 + 30) - 5, 0.0f, treeZ - 5, (parkX - parkW / 2 + 30) + 5, 15.0f, treeZ + 5 });
+        collidables.push_back({ (parkX + parkW / 2 - 30) - 5, 0.0f, treeZ - 5, (parkX + parkW / 2 - 30) + 5, 15.0f, treeZ + 5 });
+    }
+    // البوابة الرئيسية للحديقة
+    collidables.push_back({ (parkX + parkW / 2) - 50, 0.0f, parkZ - 5, (parkX + parkW / 2) + 50, 25.0f, parkZ + 5 });
+
+    // --- إصلاح سياج الحديقة (أعمدة منفصلة) ---
+    float poleH = 8.0f; float gap = 15.0f;
+    // الأعمدة الأفقية (مع ترك فتحة للبوابة)
+    for (float i = -parkW / 2; i <= parkW / 2; i += gap) {
+        collidables.push_back({ parkX + i - 0.5f, 0.0f, parkZ - parkL / 2 - 0.5f, parkX + i + 0.5f, poleH, parkZ - parkL / 2 + 0.5f });
+        if (abs(parkX + i) > (parkX + parkW / 2 - 50) || abs(parkZ + parkL / 2) > (parkZ + 5)) { // شرط لتجنب بناء السياج مكان البوابة
+            collidables.push_back({ parkX + i - 0.5f, 0.0f, parkZ + parkL / 2 - 0.5f, parkX + i + 0.5f, poleH, parkZ + parkL / 2 + 0.5f });
+        }
+    }
+    // الأعمدة العامودية
+    for (float i = -parkL / 2; i <= parkL / 2; i += gap) {
+        collidables.push_back({ parkX + parkW / 2 - 0.5f, 0.0f, parkZ + i - 0.5f, parkX + parkW / 2 + 0.5f, poleH, parkZ + i + 0.5f });
+        collidables.push_back({ parkX - parkW / 2 - 0.5f, 0.0f, parkZ + i - 0.5f, parkX - parkW / 2 + 0.5f, poleH, parkZ + i + 0.5f });
+    }
+#pragma endregion
+
+#pragma region Parking Zone (منطقة المواقف)
+    float pX = 350.0f; float pZ = 600.0f; float pW = 300.0f; float pL = 400.0f;
+    int numRows = 3; float rowHeight = pL / numRows;
+    for (int i = 0; i < numRows; i++) {
+        float cZ = (pZ - pL / 2) + rowHeight * i + rowHeight / 2;
+        if (i < numRows - 1) {
+            // الجزر الوسطية بين صفوف المواقف
+            collidables.push_back({ pX - (pW - 20) / 2, 0.0f, cZ + rowHeight / 2 - 4, pX + (pW - 20) / 2, 1.0f, cZ + rowHeight / 2 + 4 });
+        }
+        // مظلات المواقف
+        collidables.push_back({ pX - (pW - 40) / 2, 0.0f, cZ - (rowHeight - 20) / 2 + 1, pX + (pW - 40) / 2, 15.0f, cZ - (rowHeight - 20) / 2 + 3 });
+    }
+#pragma endregion
+
+#pragma region Commercial Zone (المنطقة التجارية)
+    float cX = -350.0f; float cZ = 200.0f;
+    // مجموعة طاولات المقاهي
+    for (int row = 0; row < 2; row++) {
+        for (int col = 0; col < 2; col++) {
+            float tx = cX - 300.0f / 4 + col * (300.0f / 2);
+            float tz = cZ - 400.0f / 4 + row * (400.0f / 2);
+            collidables.push_back({ tx - 15, 0.0f, tz - 15, tx + 15, 15.0f, tz + 15 });
+        }
+    }
+    // الأكشاك الحديثة
+    collidables.push_back({ (cX - 150 + 30) - 8, 0.0f, (cZ + 200 - 30) - 6, (cX - 150 + 30) + 8, 13.0f, (cZ + 200 - 30) + 6 });
+    collidables.push_back({ (cX + 150 - 30) - 8, 0.0f, (cZ + 200 - 30) - 6, (cX + 150 - 30) + 8, 13.0f, (cZ + 200 - 30) + 6 });
+    // حوض الزهور في المنتصف
+    collidables.push_back({ cX - 5, 0.0f, cZ - 5, cX + 5, 2.0f, cZ + 5 });
+#pragma endregion
+}
+// =============================================================
+// ===== دالة جديدة لإضافة اصطدامات كائنات AbrarCode =====
+// =============================================================
+void addAbrarCodeCollisions(std::vector<BoundingBox>& collidables) {
+    const float FLOOR_H = 60.0f; // ارتفاع الطابق الثاني
+
+    // أبعاد تقريبية للشخصية
+    float steveWidth = 2.0f;
+    float steveDepth = 2.0f;
+    float steveHeight = 5.0f;
+
+#pragma region AbrarCode Second Floor Steves
+    // 1. الاصطدام مع موظف السكرتارية
+    // الموقع: داخل drawSecretariatOffice(120, 0, 50) -> glTranslatef(15, 0, -30)
+    float secretaryX = 120.0f + 15.0f;
+    float secretaryZ = 50.0f - 30.0f;
+    collidables.push_back({ secretaryX - steveWidth, FLOOR_H, secretaryZ - steveDepth, secretaryX + steveWidth, FLOOR_H + steveHeight, secretaryZ + steveDepth });
+
+    // 2. الاصطدام مع موظف الكاشير (داخل متجر الإكسسوارات)
+    // الموقع: drawMegaAccessoriesShop(-100,0,0) -> drawCheckoutCounter(50,0,-180) -> glTranslatef(0,0,-6)
+    float cashierX = -100.0f + 50.0f;
+    float cashierZ = 0.0f - 180.0f - 6.0f;
+    collidables.push_back({ cashierX - steveWidth, FLOOR_H, cashierZ - steveDepth, cashierX + steveWidth, FLOOR_H + steveHeight, cashierZ + steveDepth });
+
+    // 3. الاصطدام مع طابور الزبائن (6 أشخاص)
+    // الموقع: drawMegaAccessoriesShop(-100,0,0) -> drawQueue(50, 0, -155)
+    float queueBaseX = -100.0f + 50.0f;
+    float queueBaseZ = -155.0f;
+    for (int i = 0; i < 6; i++) {
+        float personZ = queueBaseZ + 20 + i * 15;
+        collidables.push_back({ queueBaseX - steveWidth, FLOOR_H, personZ - steveDepth, queueBaseX + steveWidth, FLOOR_H + steveHeight, personZ + steveDepth });
+    }
+
+    // 4. الاصطدام مع الناس المتجولين في الطابق
+    // ننسخ نفس مصفوفة الإحداثيات من drawPeopleOnFloor
+    float peopleCoords[10][3] = {
+        {80, 0.2f, -50},
+        {-80, 0.2f, 50},
+        {0, 0.2f, 100},
+        {50, 0.2f, 150},
+        {-50, 0.2f, -100},
+        {100, 0.2f, 0},
+        {-100, 0.2f, 0},
+        {20, 0.2f, 20},
+        {-20, 0.2f, -20},
+        {0, 0.2f, -150}
+    };
+    for (int i = 0; i < 10; i++) {
+        float personX = peopleCoords[i][0];
+        float personZ = peopleCoords[i][2];
+        collidables.push_back({ personX - steveWidth, FLOOR_H, personZ - steveDepth, personX + steveWidth, FLOOR_H + steveHeight, personZ + steveDepth });
+    }
+#pragma endregion
+}
+
+
 void createCollidables() {
     collidableObjects.clear();
     float wallBuffer = 5.0f;
@@ -339,6 +517,118 @@ void createCollidables() {
     // صندوق اصطدام للسيارة الصفراء F1
     collidableObjects.push_back({ -125.0f, 0.0f, -135.0f, -115.0f, 10.0f, -125.0f });
 
+    // تعريفات منطقة المواقف (نسخ من CityMasterPlan)
+    float pX = 350.0f;
+    float pZ = 600.0f;
+    float pW = 300.0f;
+    float pL = 400.0f;
+    int numRows = 3;
+    float rowHeight = pL / numRows;
+
+    // أبعاد تقريبية للسيارات (يمكنك تعديلها)
+    // ملاحظة: بما أن السيارات مرسومة بزاوية 90، نعكس العرض والطول
+    float carBoxHeight = 7.0f;
+
+    // حلقة لمحاكاة إنشاء السيارات في كل صف
+    for (int i = 0; i < numRows; i++) {
+        float cZ = (pZ - pL / 2) + rowHeight * i + rowHeight / 2;
+        int spots = 7;
+        float sW = (pW - 40) / spots;
+
+        // حلقة لمحاكاة إنشاء السيارات في كل بقعة
+        for (int k = 0; k < spots; k++) {
+            int randSeed = (int)(i * 99 + k * 17);
+
+            // تحقق من وجود سيارة في النصف الأول من الصف
+            if (randSeed % 3 != 0) {
+                float carX = (pX - (pW - 40) / 2) + k * sW + sW / 2;
+                float carZ = cZ - (rowHeight - 20) / 2 + 15.0f;
+                collidableObjects.push_back({
+                    carX - carBoxWidth / 2, 0.15f, carZ - carBoxLength / 2,
+                    carX + carBoxWidth / 2, 0.15f + carBoxHeight, carZ + carBoxLength / 2
+                    });
+            }
+
+            // تحقق من وجود سيارة في النصف الثاني من الصف
+            if ((randSeed + 1) % 3 != 0) {
+                float carX = (pX - (pW - 40) / 2) + k * sW + sW / 2;
+                float carZ = cZ + (rowHeight - 20) / 2 - 15.0f;
+                collidableObjects.push_back({
+                    carX - carBoxWidth / 2, 0.15f, carZ - carBoxLength / 2,
+                    carX + carBoxWidth / 2, 0.15f + carBoxHeight, carZ + carBoxLength / 2
+                    });
+            }
+        }
+    }
+    // =============================================================
+// --- الاصطدام مع شخصيات ستيف (Steve) ---
+// =============================================================
+
+// مصفوفة بيانات مواقع ستيف (النسخة الكاملة والصحيحة)
+    float steveData[41][15] = {
+        { -40.0f, 230.0f, 180.0f, 0.70f, 0.47f, 0.35f, 0.25f, 0.15f, 0.10f, 0.00f, 0.65f, 0.65f, 0.25f, 0.25f, 0.60f },
+        { 40.0f, 250.0f, 170.0f, 0.80f, 0.55f, 0.40f, 0.20f, 0.20f, 0.20f, 0.80f, 0.20f, 0.20f, 0.10f, 0.10f, 0.40f },
+        { 60.0f, 280.0f, 190.0f, 0.60f, 0.40f, 0.30f, 0.10f, 0.10f, 0.10f, 0.20f, 0.70f, 0.20f, 0.30f, 0.30f, 0.30f },
+        { -80.0f, 300.0f, 160.0f, 0.75f, 0.50f, 0.38f, 0.30f, 0.20f, 0.10f, 0.90f, 0.90f, 0.20f, 0.20f, 0.20f, 0.50f },
+        { 100.0f, 240.0f, 200.0f, 0.50f, 0.35f, 0.25f, 0.10f, 0.05f, 0.05f, 0.50f, 0.50f, 0.50f, 0.15f, 0.15f, 0.20f },
+        { -120.0f, 260.0f, 180.0f, 0.70f, 0.47f, 0.35f, 0.40f, 0.30f, 0.20f, 0.20f, 0.20f, 0.80f, 0.10f, 0.10f, 0.10f },
+        { 140.0f, 350.0f, 175.0f, 0.85f, 0.60f, 0.45f, 0.60f, 0.50f, 0.30f, 0.70f, 0.40f, 0.20f, 0.30f, 0.30f, 0.50f },
+        { 20.0f, -230.0f, 0.0f, 0.70f, 0.47f, 0.35f, 0.25f, 0.15f, 0.10f, 0.40f, 0.10f, 0.60f, 0.20f, 0.20f, 0.20f },
+        { -50.0f, -260.0f, 10.0f, 0.65f, 0.45f, 0.30f, 0.15f, 0.15f, 0.15f, 0.20f, 0.60f, 0.80f, 0.25f, 0.25f, 0.40f },
+        { 90.0f, -290.0f, 350.0f, 0.55f, 0.38f, 0.28f, 0.05f, 0.05f, 0.05f, 0.80f, 0.80f, 0.80f, 0.20f, 0.20f, 0.30f },
+        { -10.0f, -320.0f, 5.0f, 0.72f, 0.48f, 0.36f, 0.35f, 0.25f, 0.15f, 0.10f, 0.50f, 0.10f, 0.40f, 0.40f, 0.30f },
+        { -130.0f, -240.0f, 340.0f, 0.80f, 0.55f, 0.40f, 0.50f, 0.40f, 0.20f, 0.90f, 0.50f, 0.10f, 0.20f, 0.20f, 0.50f },
+        { 110.0f, -270.0f, 15.0f, 0.60f, 0.40f, 0.30f, 0.20f, 0.10f, 0.05f, 0.30f, 0.30f, 0.60f, 0.15f, 0.15f, 0.25f },
+        { -90.0f, -380.0f, 0.0f, 0.70f, 0.47f, 0.35f, 0.25f, 0.15f, 0.10f, 0.70f, 0.20f, 0.40f, 0.25f, 0.25f, 0.60f },
+        { 180.0f, 0.0f, 270.0f, 0.70f, 0.47f, 0.35f, 0.25f, 0.15f, 0.10f, 0.00f, 0.65f, 0.65f, 0.25f, 0.25f, 0.60f },
+        { 200.0f, 80.0f, 260.0f, 0.50f, 0.35f, 0.25f, 0.10f, 0.10f, 0.10f, 0.50f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f },
+        { 220.0f, -60.0f, 280.0f, 0.80f, 0.55f, 0.40f, 0.40f, 0.30f, 0.10f, 0.20f, 0.60f, 0.20f, 0.20f, 0.30f, 0.20f },
+        { 250.0f, 120.0f, 275.0f, 0.70f, 0.47f, 0.35f, 0.30f, 0.20f, 0.15f, 0.10f, 0.40f, 0.70f, 0.30f, 0.30f, 0.40f },
+        { 190.0f, -150.0f, 265.0f, 0.65f, 0.45f, 0.30f, 0.20f, 0.10f, 0.05f, 0.60f, 0.60f, 0.20f, 0.20f, 0.20f, 0.30f },
+        { 280.0f, 40.0f, 255.0f, 0.75f, 0.50f, 0.38f, 0.50f, 0.20f, 0.10f, 0.80f, 0.40f, 0.40f, 0.30f, 0.10f, 0.10f },
+        { 320.0f, -90.0f, 290.0f, 0.55f, 0.38f, 0.28f, 0.05f, 0.05f, 0.05f, 0.40f, 0.40f, 0.40f, 0.10f, 0.10f, 0.20f },
+        { 210.0f, 180.0f, 270.0f, 0.82f, 0.60f, 0.50f, 0.60f, 0.50f, 0.20f, 0.20f, 0.20f, 0.50f, 0.15f, 0.15f, 0.25f },
+        { -180.0f, 20.0f, 90.0f, 0.60f, 0.40f, 0.30f, 0.15f, 0.15f, 0.15f, 0.30f, 0.70f, 0.70f, 0.10f, 0.10f, 0.30f },
+        { -210.0f, -50.0f, 85.0f, 0.70f, 0.47f, 0.35f, 0.25f, 0.15f, 0.10f, 0.70f, 0.30f, 0.30f, 0.25f, 0.25f, 0.40f },
+        { -230.0f, 100.0f, 95.0f, 0.80f, 0.55f, 0.40f, 0.45f, 0.35f, 0.25f, 0.40f, 0.20f, 0.60f, 0.20f, 0.20f, 0.20f },
+        { -260.0f, -120.0f, 80.0f, 0.72f, 0.48f, 0.36f, 0.30f, 0.20f, 0.10f, 0.20f, 0.60f, 0.20f, 0.40f, 0.20f },
+        { -195.0f, 160.0f, 100.0f, 0.50f, 0.35f, 0.25f, 0.10f, 0.10f, 0.10f, 0.90f, 0.50f, 0.10f, 0.30f, 0.30f, 0.40f },
+        { -300.0f, -20.0f, 90.0f, 0.75f, 0.50f, 0.38f, 0.55f, 0.45f, 0.35f, 0.30f, 0.30f, 0.80f, 0.10f, 0.10f, 0.30f },
+        { -220.0f, 190.0f, 90.0f, 0.65f, 0.45f, 0.30f, 0.20f, 0.10f, 0.10f, 0.50f, 0.50f, 0.20f, 0.20f, 0.30f, 0.20f },
+        { -280.0f, -180.0f, 110.0f, 0.70f, 0.47f, 0.35f, 0.25f, 0.15f, 0.10f, 0.60f, 0.20f, 0.20f, 0.15f, 0.15f, 0.25f },
+        { -75.0f, 0.0f, 0.0f, 0.70f, 0.47f, 0.35f,  0.25f, 0.15f, 0.10f,  0.10f, 0.50f, 0.80f,  0.20f, 0.20f, 0.50f },
+        { -63.0f, 8.0f, 140.0f, 0.80f, 0.55f, 0.40f,  0.10f, 0.10f, 0.10f,  0.90f, 0.20f, 0.20f,  0.15f, 0.15f, 0.25f },
+        { -87.0f, 5.0f, 30.0f, 0.60f, 0.40f, 0.30f,  0.35f, 0.25f, 0.15f,  0.20f, 0.70f, 0.20f,  0.30f, 0.30f, 0.30f },
+        { -73.0f, -10.0f, 200.0f, 0.75f, 0.50f, 0.38f,  0.20f, 0.20f, 0.20f,  0.50f, 0.50f, 0.50f,  0.10f, 0.10f, 0.10f },
+        { 75.0f, 5.0f, 180.0f, 0.70f, 0.47f, 0.35f, 0.25f, 0.15f, 0.10f, 0.80f, 0.10f, 0.10f, 0.10f, 0.10f, 0.40f },
+        { 85.0f, -5.0f, 210.0f, 0.80f, 0.55f, 0.40f, 0.10f, 0.10f, 0.10f, 0.20f, 0.60f, 0.20f, 0.20f, 0.30f, 0.20f },
+        { 67.0f, 15.0f, 160.0f, 0.60f, 0.40f, 0.30f, 0.35f, 0.25f, 0.15f, 0.50f, 0.50f, 0.10f, 0.30f, 0.10f, 0.10f },
+        { 63.0f, -15.0f, 300.0f, 0.50f, 0.35f, 0.25f, 0.10f, 0.05f, 0.05f, 0.70f, 0.30f, 0.80f, 0.15f, 0.15f, 0.20f },
+        { 90.0f, 10.0f, 45.0f, 0.85f, 0.60f, 0.45f, 0.60f, 0.50f, 0.30f, 0.30f, 0.70f, 0.30f, 0.10f, 0.40f, 0.10f }
+    };
+
+    // أبعاد تقريبية لشخصية ستيف
+    float steveWidth = 2.0f;
+    float steveDepth = 2.0f;
+    float steveHeight = 5.0f;
+
+    // حلقة لإنشاء صندوق اصطدام لكل شخصية
+    // **ملاحظة مهمة:** الحلقة يجب أن تصل إلى 41 وليس 39
+    for (int i = 0; i < 39; i++) {
+        float steveX = steveData[i][0];
+        float steveZ = steveData[i][1];
+
+        collidableObjects.push_back({
+            steveX - steveWidth / 2,
+            0.0f,
+            steveZ - steveDepth / 2,
+            steveX + steveWidth / 2,
+            steveHeight,
+            steveZ + steveDepth / 2
+            });
+    }
+    addAbrarCodeCollisions(collidableObjects);
+        addCityCollisions(collidableObjects);
 
 }
 void handleKeypress(unsigned char key, int x, int y) {
@@ -422,15 +712,14 @@ void handleKeypress(unsigned char key, int x, int y) {
             if (camY >= SECOND_FLOOR_Y_END && nextY < SECOND_FLOOR_Y_END) {
                 nextY = SECOND_FLOOR_Y_END;
             }
-
-            // 2. الاصطدام مع كل العوائق الثابتة
-            BoundingBox playerBox = { nextX - 1.5f, nextY - PLAYER_BUFFER_Y, nextZ - 1.5f, nextX + 1.5f, nextY, nextZ + 1.5f };
-            for (const auto& objBox : collidableObjects) {
-                if (playerBox.maxX > objBox.minX && playerBox.minX < objBox.maxX &&
-                    playerBox.maxY > objBox.minY && playerBox.minY < objBox.maxY &&
-                    playerBox.maxZ > objBox.minZ && playerBox.minZ < objBox.maxZ) {
-                    glutPostRedisplay(); return;
-                }
+        }
+        BoundingBox playerBox = { nextX - 1.5f, nextY - PLAYER_BUFFER_Y, nextZ - 1.5f, nextX + 1.5f, nextY + PLAYER_BUFFER_Y, nextZ + 1.5f };
+        for (const auto& objBox : collidableObjects) {
+            if (playerBox.maxX > objBox.minX && playerBox.minX < objBox.maxX &&
+                playerBox.maxY > objBox.minY && playerBox.minY < objBox.maxY &&
+                playerBox.maxZ > objBox.minZ && playerBox.minZ < objBox.maxZ) {
+                glutPostRedisplay();
+                return; // حدث اصطدام، لا تقم بتحديث الموقع
             }
         }
 
@@ -438,6 +727,8 @@ void handleKeypress(unsigned char key, int x, int y) {
         camX = nextX;
         camY = nextY;
         camZ = nextZ;
+
+        // تحديث الصوت عند عبور الحدود
         if (isCurrentlyInside != isStrictlyInside(camX, camZ)) {
             updateAmbientSound();
         }
@@ -446,8 +737,6 @@ void handleKeypress(unsigned char key, int x, int y) {
         abrarCode.handleInput(key, camX, camY, camZ, collidableObjects);
         if (key == 27) exit(0);
     }
-
-
     glutPostRedisplay();
 }
 

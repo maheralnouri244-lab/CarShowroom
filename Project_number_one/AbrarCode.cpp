@@ -68,43 +68,56 @@ void AbrarCode::attemptEnterCar(float cx, float cz) {
     }
 
 }
-bool AbrarCode::checkCarCollision(float nextX, float nextZ, const std::vector<BoundingBox>& collidableObjects) {
+bool AbrarCode::isCarOnAllowedSurface(float x, float z) {
+    // قائمة بكل المناطق المسموح للسيارة بالقيادة عليها خارج المعرض
+    static const std::vector<BoundingBox> allowedDrivingZones = {
+        // --- الساحة حول المعرض (Showroom Plaza) ---
+        { -180.0f, 0, -230.0f, 180.0f, 1, 280.0f },
 
-    // --- 1. إنشاء الصندوق المحيط بالسيارة الحالية ---
+        // --- الشارع الرئيسي المؤدي للدوار ---
+        { -50.0f, 0, 280.0f, 50.0f, 1, 520.0f }, // الطريق الرئيسي العمودي
+
+        // --- الدوار نفسه ---
+        { -120.0f, 0, 480.0f, 120.0f, 1, 720.0f }, // منطقة الدوار الكبيرة
+
+        // --- الطرق الأفقية المتفرعة من الدوار ---
+        { -1120.0f, 0, 570.0f, 1120.0f, 1, 630.0f },
+
+        // --- منطقة مواقف السيارات Parking Zone ---
+        { 170.0f, 0, 360.0f, 530.0f, 1, 840.0f },
+
+        // --- المنطقة التجارية Commercial Zone ---
+        { -500.0f, 0, 0.0f, -200.0f, 1, 400.0f }
+    };
+
+    // تحقق مما إذا كانت إحداثيات السيارة داخل أي من هذه المناطق
+    for (const auto& zone : allowedDrivingZones) {
+        if (x > zone.minX && x < zone.maxX && z > zone.minZ && z < zone.maxZ) {
+            return true; // نعم، السيارة في منطقة مسموحة
+        }
+    }
+
+    return false; // لا، السيارة على العشب
+}
+
+bool AbrarCode::checkCarCollision(float nextX, float nextZ, const std::vector<BoundingBox>& collidableObjects) {
+    // --- 1. إنشاء الصندوق المحيط بالسيارة ---
     float carWidth = 15.0f;
     float carLength = 30.0f;
     float carHeight = 15.0f;
+    BoundingBox carBox = { nextX - carWidth / 2, cars[activeCarIndex].y, nextZ - carLength / 2, nextX + carWidth / 2, cars[activeCarIndex].y + carHeight, nextZ + carLength / 2 };
 
-    BoundingBox carBox = {
-        nextX - carWidth / 2, cars[activeCarIndex].y, nextZ - carLength / 2,
-        nextX + carWidth / 2, cars[activeCarIndex].y + carHeight, nextZ + carLength / 2
-    };
-
-    // --- 2. التحقق من التصادم مع العوائق الثابتة (الجدران، الجيب، الأعمدة) ---
+    // --- 2. التحقق من التصادم مع العوائق الثابتة ---
     for (const auto& objBox : collidableObjects) {
-
-        // --- فلتر ذكي ---
-        // هذا الجزء سيتعرف على صناديق التصادم الخاصة بالسيارات الأربع ويتجاهلها
-        // لأننا سنتحقق منها بشكل منفصل في الخطوة رقم 4
         const float BEETLE_BOX_MAX_Y = 15.0f;
         const float BEETLE_BOX_MIN_X = 120.0f - 18.0f;
         const float epsilon = 0.1f;
-
-        if (fabs(objBox.maxY - BEETLE_BOX_MAX_Y) < epsilon &&
-            fabs(objBox.minX - BEETLE_BOX_MIN_X) < epsilon) {
-            // هذا الصندوق يخص إحدى سيارات البيتل.
-            // كلمة "continue" تعني: "تجاهل هذا الصندوق وانتقل إلى الصندوق التالي في القائمة"
-            continue;
+        if (fabs(objBox.maxY - BEETLE_BOX_MAX_Y) < epsilon && fabs(objBox.minX - BEETLE_BOX_MIN_X) < epsilon) {
+            continue; // تجاهل سيارات البيتل الأخرى
         }
-
-        // --- التحقق من التصادم مع باقي العوائق (الجدران، الجيب، إلخ) ---
         if (objBox.minY < FLOOR_H) {
-            bool collisionX = carBox.maxX > objBox.minX && carBox.minX < objBox.maxX;
-            bool collisionY = carBox.maxY > objBox.minY && carBox.minY < objBox.maxY;
-            bool collisionZ = carBox.maxZ > objBox.minZ && carBox.minZ < objBox.maxZ;
-
-            if (collisionX && collisionY && collisionZ) {
-                return true; // حدث تصادم
+            if (carBox.maxX > objBox.minX && carBox.minX < objBox.maxX && carBox.maxY > objBox.minY && carBox.minY < objBox.maxY && carBox.maxZ > objBox.minZ && carBox.minZ < objBox.maxZ) {
+                return true; // تصادم
             }
         }
     }
@@ -113,78 +126,54 @@ bool AbrarCode::checkCarCollision(float nextX, float nextZ, const std::vector<Bo
     if (dist(nextX, nextZ, 120.0f, 150.0f) < (carWidth / 2 + 8.0f)) return true; // النافورة
     if (dist(nextX, nextZ, 100.0f, 150.0f) < (carWidth / 2 + 7.5f)) return true; // المجسم
 
-    // --- 4. التحقق من التصادم مع سيارات البيتل الثلاث الأخرى (باستخدام المسافة) ---
-    // هذا هو الجزء الذي يجعل السيارات الثلاث الأخرى صلبة أمامك وأنت تقود
+    // --- 4. التحقق من التصادم مع سيارات البيتل الأخرى ---
     for (int i = 0; i < cars.size(); i++) {
-        // تجاهل التحقق من السيارة مع نفسها
-        if (i == activeCarIndex) {
-            continue;
-        }
-        // إذا اقتربت السيارة من إحدى السيارات الأخرى، اعتبره تصادماً
+        if (i == activeCarIndex) continue;
         if (dist(nextX, nextZ, cars[i].x, cars[i].z) < 25.0f) {
             return true;
         }
     }
 
-
-    // --- 5. حدود الخروج من المعرض ---
-    if (nextZ > 195.0f) {
-        if (nextX < -15.0f || nextX > 15.0f) return true;
-    }
-
-    // داخل AbrarCode.cpp، في دالة checkCarCollision
-
-        // ... (بعد التحقق من التصادم مع سيارات البيتل الأخرى في الخطوة 4)
-
-        // ===================================================================================
-        // --- 5. التحقق الدقيق من الحدود الخارجية (مع مراعاة زاوية السيارة) ---
-        // هذا هو الحل لمشكلة اختراق الجدار
-
-        // نصف عرض وطول السيارة
+    // --- 5. التحقق الدقيق من حدود المعرض (الجدران) ---
     float halfWidth = carWidth / 2.0f;
     float halfLength = carLength / 2.0f;
-
-    // زاوية دوران السيارة بالراديان
     float angleRad = cars[activeCarIndex].rotY * M_PI / 180.0f;
     float cosAngle = cos(angleRad);
     float sinAngle = sin(angleRad);
-
-    // حساب إحداثيات النقاط الأمامية والخلفية للسيارة (الزوايا)
     float front_left_x = nextX + halfWidth * cosAngle - halfLength * sinAngle;
-    float front_right_x = nextX - halfWidth * cosAngle - halfLength * sinAngle;
     float back_left_x = nextX + halfWidth * cosAngle + halfLength * sinAngle;
+    float front_right_x = nextX - halfWidth * cosAngle - halfLength * sinAngle;
     float back_right_x = nextX - halfWidth * cosAngle + halfLength * sinAngle;
-
     float front_left_z = nextZ - halfWidth * sinAngle - halfLength * cosAngle;
-    float front_right_z = nextZ + halfWidth * sinAngle - halfLength * cosAngle;
     float back_left_z = nextZ - halfWidth * sinAngle + halfLength * cosAngle;
+    float front_right_z = nextZ + halfWidth * sinAngle - halfLength * cosAngle;
     float back_right_z = nextZ + halfWidth * sinAngle + halfLength * cosAngle;
 
-    // الآن، تحقق ما إذا كانت أي من الزوايا قد عبرت حدود الجدار
+    if (front_left_x > 150.0f || front_right_x > 150.0f || back_left_x > 150.0f || back_right_x > 150.0f) return true;
+    if (front_left_x < -150.0f || front_right_x < -150.0f || back_left_x < -150.0f || back_right_x < -150.0f) return true;
+    if (front_left_z < -200.0f || front_right_z < -200.0f || back_left_z < -200.0f || back_right_z < -200.0f) return true;
 
-    // الجدار الجانبي الأيمن (x > 150)
-    if (front_left_x > 150.0f || front_right_x > 150.0f || back_left_x > 150.0f || back_right_x > 150.0f) {
-        return true;
+    // --- 6. التحقق من عبور البوابة (فقط في لحظة الخروج) ---
+    bool isCurrentlyInside = (cars[activeCarIndex].z < 200.0f);
+    bool willBeOutside = (nextZ >= 200.0f);
+    if (isCurrentlyInside && willBeOutside) {
+        if (nextX < -22.5f || nextX > 22.5f) { // عرض البوابة
+            return true;
+        }
     }
 
-    // الجدار الجانبي الأيسر (x < -150)
-    if (front_left_x < -150.0f || front_right_x < -150.0f || back_left_x < -150.0f || back_right_x < -150.0f) {
-        return true;
+    // --- 7. التحقق من القيادة على الأسطح المسموحة (خارج المعرض) ---
+    if (nextZ > 200.0f || abs(nextX) > 150.0f) {
+        if (!isCarOnAllowedSurface(nextX, nextZ)) {
+            return true; // اصطدام مع العشب
+        }
     }
 
-    // الجدار الخلفي (z < -200)
-    if (front_left_z < -200.0f || front_right_z < -200.0f || back_left_z < -200.0f || back_right_z < -200.0f) {
-        return true;
-    }
-    // ===================================================================================
-
-    // --- 6. حدود البوابة الأمامية (عند الخروج) ---
-    if (nextZ > 195.0f) {
-        if (nextX < -15.0f || nextX > 15.0f) return true;
-    }
-
-    return false; // إذا لم يحدث أي تصادم، اسمح للسيارة بالحركة
+    return false; // اسمح بالحركة
 }
+// ==========================================================
+// ===== دالة جديدة للتحقق مما إذا كانت السيارة على طريق أو رصيف =====
+// ==========================================================
 
 
 void AbrarCode::driveActiveCar(float speed, float turn, const std::vector<BoundingBox>& collidableObjects) {

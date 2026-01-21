@@ -85,6 +85,7 @@ private:
     void drawTechStation(float x, float y, float z);
     void drawInfoKiosk(float x, float y, float z);
     bool checkCarCollision(float nextX, float nextZ, const std::vector<BoundingBox>& collidableObjects);
+    bool isCarOnAllowedSurface(float x, float z);
     Furniture furniture;
     AccessoriesSection accessories;
 };
