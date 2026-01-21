@@ -9,9 +9,9 @@ PersistentCloud::PersistentCloud() {
 void PersistentCloud::regenerate() {
     balls.clear();
 
-    posX = (rand() % 2000 - 1000);
-    posY = (rand() % 200 + 500);
-    posZ = (rand() % 2000 - 1000);
+    posX = (rand() % 3000 - 1500);
+    posY = (rand() % 400 + 1200);
+    posZ = (rand() % 3000 - 1500);
     cloudScale = (rand() % 10 + 10.0f);
 
     int numBalls = (rand() % 15 + 10);

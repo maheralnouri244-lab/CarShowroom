@@ -37,6 +37,7 @@ Maherheader::Maherheader() : showroomdoor(0, 15, 200) {
     roadTexID = 0;
     pavementTexID = 0;
     grassTexID = 0;
+    RockTexID = 0;
     parkingTexID = 0;
     waterTexID = 0;
     woodTex = 0;
@@ -106,8 +107,9 @@ void Maherheader::draw(float camX, float camY, float camZ, bool isday, GLuint cc
     if (parkingTexID == 0) parkingTexID = roadTexID;
     if (woodTex==0) woodTex= loadTextureFromFile("images\\\\wood.png");
 
-    if (sideTexId==0) sideTexId= loadTextureFromFile("images\\buildTex.jpg");
-    if (roofTexID==0) roofTexID= loadTextureFromFile("images\\buildTex.jpg");
+    if (sideTexId==0) sideTexId= loadTextureFromFile("images\\buildTex.jpg"); 
+    if (roofTexID==0) roofTexID= loadTextureFromFile("images\\roof.png");
+    if (RockTexID==0) RockTexID= loadTextureFromFile("images\\Rockground5.png");
 
     // =========================================================
     // رسم تخطيط المدينة (الشوارع، الحديقة، المواقف)
@@ -267,49 +269,6 @@ void Maherheader::draw(float camX, float camY, float camZ, bool isday, GLuint cc
         glPopMatrix();
     }
 
-    /*ProceduralHouse myHouse;
-    glPushMatrix(); glTranslatef(-400, 5, 400); glRotatef(120, 0, 1, 0); glScaled(10, 5, 10);
-    glEnable(GL_TEXTURE_2D); glBindTexture(GL_TEXTURE_2D, houseTexID[1]); myHouse.draw(houseTexID[1]); glPopMatrix();
-
-    glPushMatrix(); glTranslatef(-350, 5, 200); glRotatef(70, 0, 1, 0); glScaled(10, 5, 10);
-    glEnable(GL_TEXTURE_2D); glBindTexture(GL_TEXTURE_2D, houseTexID[2]); myHouse.draw(houseTexID[2]); glPopMatrix();
-
-    glPushMatrix(); glTranslatef(400, 5, 350); glRotatef(300, 0, 1, 0); glScaled(10, 5, 10);
-    glEnable(GL_TEXTURE_2D); glBindTexture(GL_TEXTURE_2D, houseTexID[3]); myHouse.draw(houseTexID[3]); glPopMatrix();
-
-    glPushMatrix(); glTranslatef(400, 5, -200); glRotatef(330, 0, 1, 0); glScaled(10, 5, 10);
-    glEnable(GL_TEXTURE_2D); glBindTexture(GL_TEXTURE_2D, houseTexID[4]); myHouse.draw(houseTexID[4]); glPopMatrix();*/
-
-    /*float offset = 30.0f;
-    float treesCoords[20][2];*/
-    /*for (int i = 0; i < 20; i++) {
-        if (i < 5) {
-            treesCoords[i][0] = maxX + offset + (i * 20);
-            treesCoords[i][1] = minz + (i * (maxz - minz) / 4.0f);
-        }
-        else if (i < 10) {
-            treesCoords[i][0] = minX - offset - ((i - 5) * 20);
-            treesCoords[i][1] = minz + ((i - 5) * (maxz - minz) / 4.0f);
-        }
-        else if (i < 15) {
-            treesCoords[i][0] = minX + ((i - 10) * (maxX - minX) / 4.0f);
-            treesCoords[i][1] = minz - offset - ((i - 10) * 20);
-        }
-        else {
-            treesCoords[i][0] = minX + ((i - 15) * (maxX - minX) / 4.0f);
-            treesCoords[i][1] = maxz + offset + ((i - 15) * 20);
-        }
-    }
-    for (int i = 0; i < 20; i++) {
-        if (i == 17) continue;
-        glPushMatrix();
-        glTranslatef(treesCoords[i][0], 0.0f, treesCoords[i][1]);
-        glScalef(10.0f, 10.0f, 10.0f);
-        Tree forest;
-        forest.draw(0.0f, 0.0f, 0.0f);
-        glPopMatrix();
-    }*/
-
     showroomdoor.draw();
     if (sqrt((pow(camX - 0, 2) + pow(camY - 0, 2) + pow(camZ - maxz, 2))) <= 100.0)
         showroomdoor.moveUp(1);
@@ -387,6 +346,21 @@ void Maherheader::draw(float camX, float camY, float camZ, bool isday, GLuint cc
     for (int block = 0; block < 6; block++) {
         float startX = blockXPos[block];
 
+        glPushMatrix();
+        glTranslatef(startX + 210, 0.2, -600 - 430+100);
+        glBindTexture(GL_TEXTURE_2D, pavementTexID);
+        glBegin(GL_QUADS);
+        glNormal3f(0, 1, 0);
+        glTexCoord2f(0, 0);        glVertex3f(210, 0, 530);
+        glTexCoord2f(50, 0);     glVertex3f(210, 0, -1070);
+        glTexCoord2f(50, 15);  glVertex3f(-210, 0, -1070);
+        glTexCoord2f(0, 15);     glVertex3f(-210, 0, 530);
+        glEnd();
+        glPopMatrix();
+
+
+        if (block == 1 || block == 4)
+            continue;
         for (int row = 0; row < 4; row++) {
             glPushMatrix();
             glTranslatef(startX + lx, 0, -600 - (row * 220));
@@ -422,9 +396,9 @@ void Maherheader::draw(float camX, float camY, float camZ, bool isday, GLuint cc
             glBegin(GL_QUADS);
             glNormal3f(0, 1, 0);
             glTexCoord2f(0, 0);       glVertex3f(-lx, hy, dz);
-            glTexCoord2f(repW, 0);    glVertex3f(lx, hy, dz);
-            glTexCoord2f(repW, repW); glVertex3f(lx, hy, -dz);
-            glTexCoord2f(0, repW);    glVertex3f(-lx, hy, -dz);
+            glTexCoord2f(1, 0);    glVertex3f(lx, hy, dz);
+            glTexCoord2f(1,1); glVertex3f(lx, hy, -dz);
+            glTexCoord2f(0, 1);    glVertex3f(-lx, hy, -dz);
             glEnd();
             glPopMatrix();
         }
@@ -464,13 +438,162 @@ void Maherheader::draw(float camX, float camY, float camZ, bool isday, GLuint cc
             glBegin(GL_QUADS);
             glNormal3f(0, 1, 0);
             glTexCoord2f(0, 0);       glVertex3f(-lx, hy, dz);
-            glTexCoord2f(repW, 0);    glVertex3f(lx, hy, dz);
-            glTexCoord2f(repW, repW); glVertex3f(lx, hy, -dz);
-            glTexCoord2f(0, repW);    glVertex3f(-lx, hy, -dz);
+            glTexCoord2f(1, 0);    glVertex3f(lx, hy, dz);
+            glTexCoord2f(1, 1); glVertex3f(lx, hy, -dz);
+            glTexCoord2f(0, 1);    glVertex3f(-lx, hy, -dz);
             glEnd();
             glPopMatrix();
         }
-    } glDisable(GL_TEXTURE_2D);
+
+        if (block == 0 || block == 5)
+        {
+            glPushMatrix();
+            glTranslatef(startX + 210, 0.2, -600 - 430 + 100+1230);
+            glBindTexture(GL_TEXTURE_2D, pavementTexID);
+            glBegin(GL_QUADS);
+            glNormal3f(0, 1, 0);
+            glTexCoord2f(0, 0);        glVertex3f(230, 0, 530);
+            glTexCoord2f(50, 0);     glVertex3f(230, 0, -530);
+            glTexCoord2f(50, 15);  glVertex3f(-230, 0, -530);
+            glTexCoord2f(0, 15);     glVertex3f(-230, 0, 530);
+            glEnd();
+            glPopMatrix();
+
+
+            for (int row = 0; row < 4; row++) {
+                glPushMatrix();
+                glTranslatef(startX + lx, 0, -600 - (row * 220) + 1230);
+                glBindTexture(GL_TEXTURE_2D, sideTexId);
+                glBegin(GL_QUADS);
+                glNormal3f(0, 0, 1);
+                glTexCoord2f(0, 0);       glVertex3f(-lx, -hy, dz);
+                glTexCoord2f(repW, 0);    glVertex3f(lx, -hy, dz);
+                glTexCoord2f(repW, repH); glVertex3f(lx, hy, dz);
+                glTexCoord2f(0, repH);    glVertex3f(-lx, hy, dz);
+                glNormal3f(0, 0, -1);
+                glTexCoord2f(0, 0);       glVertex3f(-lx, -hy, -dz);
+                glTexCoord2f(repW, 0);    glVertex3f(lx, -hy, -dz);
+                glTexCoord2f(repW, repH); glVertex3f(lx, hy, -dz);
+                glTexCoord2f(0, repH);    glVertex3f(-lx, hy, -dz);
+                glNormal3f(-1, 0, 0);
+                glTexCoord2f(0, 0);       glVertex3f(-lx, -hy, -dz);
+                glTexCoord2f(repW, 0);    glVertex3f(-lx, -hy, dz);
+                glTexCoord2f(repW, repH); glVertex3f(-lx, hy, dz);
+                glTexCoord2f(0, repH);    glVertex3f(-lx, hy, -dz);
+                glNormal3f(1, 0, 0);
+                glTexCoord2f(0, 0);       glVertex3f(lx, -hy, -dz);
+                glTexCoord2f(repW, 0);    glVertex3f(lx, -hy, dz);
+                glTexCoord2f(repW, repH); glVertex3f(lx, hy, dz);
+                glTexCoord2f(0, repH);    glVertex3f(lx, hy, -dz);
+                glNormal3f(0, -1, 0);
+                glTexCoord2f(0, 0);       glVertex3f(-lx, -hy, dz);
+                glTexCoord2f(repW, 0);    glVertex3f(lx, -hy, dz);
+                glTexCoord2f(repW, repW); glVertex3f(lx, -hy, -dz);
+                glTexCoord2f(0, repW);    glVertex3f(-lx, -hy, -dz);
+                glEnd();
+                glBindTexture(GL_TEXTURE_2D, roofTexID);
+                glBegin(GL_QUADS);
+                glNormal3f(0, 1, 0);
+                glTexCoord2f(0, 0);       glVertex3f(-lx, hy, dz);
+                glTexCoord2f(1, 0);    glVertex3f(lx, hy, dz);
+                glTexCoord2f(1, 1); glVertex3f(lx, hy, -dz);
+                glTexCoord2f(0, 1);    glVertex3f(-lx, hy, -dz);
+                glEnd();
+                glPopMatrix();
+            }
+
+            for (int row = 0; row < 4; row++) {
+                glPushMatrix();
+                glTranslatef(startX + lx + 220, 0, -600 - (row * 220) + 1230);
+                glBindTexture(GL_TEXTURE_2D, sideTexId);
+                glBegin(GL_QUADS);
+                glNormal3f(0, 0, 1);
+                glTexCoord2f(0, 0);       glVertex3f(-lx, -hy, dz);
+                glTexCoord2f(repW, 0);    glVertex3f(lx, -hy, dz);
+                glTexCoord2f(repW, repH); glVertex3f(lx, hy, dz);
+                glTexCoord2f(0, repH);    glVertex3f(-lx, hy, dz);
+                glNormal3f(0, 0, -1);
+                glTexCoord2f(0, 0);       glVertex3f(-lx, -hy, -dz);
+                glTexCoord2f(repW, 0);    glVertex3f(lx, -hy, -dz);
+                glTexCoord2f(repW, repH); glVertex3f(lx, hy, -dz);
+                glTexCoord2f(0, repH);    glVertex3f(-lx, hy, -dz);
+                glNormal3f(-1, 0, 0);
+                glTexCoord2f(0, 0);       glVertex3f(-lx, -hy, -dz);
+                glTexCoord2f(repW, 0);    glVertex3f(-lx, -hy, dz);
+                glTexCoord2f(repW, repH); glVertex3f(-lx, hy, dz);
+                glTexCoord2f(0, repH);    glVertex3f(-lx, hy, -dz);
+                glNormal3f(1, 0, 0);
+                glTexCoord2f(0, 0);       glVertex3f(lx, -hy, -dz);
+                glTexCoord2f(repW, 0);    glVertex3f(lx, -hy, dz);
+                glTexCoord2f(repW, repH); glVertex3f(lx, hy, dz);
+                glTexCoord2f(0, repH);    glVertex3f(lx, hy, -dz);
+                glNormal3f(0, -1, 0);
+                glTexCoord2f(0, 0);       glVertex3f(-lx, -hy, dz);
+                glTexCoord2f(repW, 0);    glVertex3f(lx, -hy, dz);
+                glTexCoord2f(repW, repW); glVertex3f(lx, -hy, -dz);
+                glTexCoord2f(0, repW);    glVertex3f(-lx, -hy, -dz);
+                glEnd();
+                glBindTexture(GL_TEXTURE_2D, roofTexID);
+                glBegin(GL_QUADS);
+                glNormal3f(0, 1, 0);
+                glTexCoord2f(0, 0);       glVertex3f(-lx, hy, dz);
+                glTexCoord2f(1, 0);    glVertex3f(lx, hy, dz);
+                glTexCoord2f(1, 1); glVertex3f(lx, hy, -dz);
+                glTexCoord2f(0, 1);    glVertex3f(-lx, hy, -dz);
+                glEnd();
+                glPopMatrix();
+            }
+        }
+    } 
+    
+    glPushMatrix();
+    glTranslatef(-1560-220, 0.2, -1200 + 1230);
+    glBindTexture(GL_TEXTURE_2D, pavementTexID);
+    glBegin(GL_QUADS);
+    glNormal3f(0, 1, 0);
+    glTexCoord2f(0, 0);        glVertex3f(220, 0, 800);
+    glTexCoord2f(50, 0);     glVertex3f(220, 0, -270);
+    glTexCoord2f(50, 15);  glVertex3f(-220, 0, -270);
+    glTexCoord2f(0, 15);     glVertex3f(-220, 0, 800);
+    glEnd();
+    glPopMatrix();
+    glPushMatrix();
+    glTranslatef(1560 + 220, 0.2, -1200+ 1230);
+    glBindTexture(GL_TEXTURE_2D, pavementTexID);
+    glBegin(GL_QUADS);
+    glNormal3f(0, 1, 0);
+    glTexCoord2f(0, 0);        glVertex3f(220, 0, 800);
+    glTexCoord2f(50, 0);     glVertex3f(220, 0, -270);
+    glTexCoord2f(50, 15);  glVertex3f(-220, 0, -270);
+    glTexCoord2f(0, 15);     glVertex3f(-220, 0, 800);
+    glEnd();
+    glPopMatrix();
+
+    glPushMatrix();
+    glTranslatef(-1560 - 230, 0.2, -1200);
+    glBindTexture(GL_TEXTURE_2D, pavementTexID);
+    glBegin(GL_QUADS);
+    glNormal3f(0, 1, 0);
+    glTexCoord2f(0, 0);        glVertex3f(210, 0, 800);
+    glTexCoord2f(50, 0);     glVertex3f(210, 0, -800);
+    glTexCoord2f(50, 15);  glVertex3f(-210, 0, -800);
+    glTexCoord2f(0, 15);     glVertex3f(-210, 0, 800);
+    glEnd();
+    glPopMatrix();
+    glPushMatrix();
+    glTranslatef(1560 + 230, 0.2, -1200);
+    glBindTexture(GL_TEXTURE_2D, pavementTexID);
+    glBegin(GL_QUADS);
+    glNormal3f(0, 1, 0);
+    glTexCoord2f(0, 0);        glVertex3f(210, 0, 800);
+    glTexCoord2f(50, 0);     glVertex3f(210, 0, -800);
+    glTexCoord2f(50, 15);  glVertex3f(-210, 0, -800);
+    glTexCoord2f(0, 15);     glVertex3f(-210, 0, 800);
+    glEnd();
+    glPopMatrix();
+
+
+    glDisable(GL_TEXTURE_2D);
     cityPlan.drawRoadSegment(0.0f, 0.05f, -2000.0f, 160.0f, 1600.0f, false);
     cityPlan.drawSidewalk(90.0f, -1200.0f, 20.0f, 1600.0f, 0.5f);
     cityPlan.drawSidewalk(-90.0f, -1200.0f, 20.0f, 1600.0f, 0.5f);
@@ -494,4 +617,9 @@ void Maherheader::draw(float camX, float camY, float camZ, bool isday, GLuint cc
     cityPlan.drawRoadSegment(roadX_45, 0.05f, -2000.0f, 70.0f, 1600.0f, false);
     cityPlan.drawSidewalk(roadX_45 + 42.5f, -1200.0f, 15.0f, 1600.0f, 0.5f);
     cityPlan.drawSidewalk(roadX_45 - 42.5f, -1200.0f, 15.0f, 1600.0f, 0.5f);
+
+    cityPlan.drawRoadSegment(-2000,0.1,-320,160,4000,true);
+    //cityPlan.drawSidewalk()
+    cityPlan.drawSidewalk(0 , -240.0f, 4000.0f, 20.0f, 2);
+
 }

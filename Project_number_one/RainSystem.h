@@ -3,7 +3,7 @@
 
 #include <GL/glut.h>
 #include <vector>
-#include <cstdlib> // ÖÑæÑí áÜ rand
+#include <cstdlib>
 
 struct RainDrop {
     float x, y, z;
@@ -14,25 +14,21 @@ struct RainDrop {
 class RainSystem {
 private:
     std::vector<RainDrop> drops;
-    // ÍĞİäÇ numDrops ßãÊÛíÑ ãäİÕá áäÚÊãÏ Úáì drops.size() ãÈÇÔÑÉ
 
 public:
     RainSystem(int count = 1000) {
-        // ÇáÍá ÇáÓÍÑí: resize ÊŞæã ÈÍÌÒ ÇáÃãÇßä İÚáíÇğ İí ÇáĞÇßÑÉ
         drops.resize(count);
 
         for (int i = 0; i < (int)drops.size(); i++) {
             resetDrop(i);
-            // ÊæÒíÚ ÚÔæÇÆí Ãæáí áßí áÇ íÓŞØ ÇáãØÑ ßÎØ æÇÍÏ
             drops[i].y = (float)(rand() % 500);
         }
     }
 
     void resetDrop(int i) {
-        // ÇáÂä ÇáæÕæá áÜ drops[i] Âãä áÃääÇ ÇÓÊÚãáäÇ resize
-        drops[i].x = (float)((rand() % 2000) - 1000); // æÓÚäÇ ÇáäØÇŞ áíÛØí ÎÑíØÊß
-        drops[i].y = 400.0f + (rand() % 100);
-        drops[i].z = (float)((rand() % 2000) - 1000);
+        drops[i].x = (float)((rand() % 4000) - 2000);
+        drops[i].y = 1400.0f + (rand() % 200);
+        drops[i].z = (float)((rand() % 4000) - 2000);
         drops[i].speed = 2.0f + (float)(rand() % 10 / 5.0f);
         drops[i].length = 2.0f + (float)(rand() % 5);
     }

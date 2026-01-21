@@ -263,7 +263,7 @@ void CityMasterPlan::drawInfiniteGround() {
 
     glColor3f(1.0f, 1.0f, 1.0f);
 
-    float size = 6000.0f;
+    float size = 2000.0f;
     float y = -0.5f;
 
     float scaleFactor = 0.1f;

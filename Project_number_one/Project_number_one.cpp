@@ -93,9 +93,9 @@ float freeCamYaw = -90.0f, freeCamPitch = 0.0f;
 std::vector<BoundingBox> collidableObjects;
 
 // البيئة
-const int CloudCount = 20;
+const int CloudCount = 30;
 PersistentCloud myClouds[CloudCount];
-RainSystem myRain(1000);
+RainSystem myRain(3000);
 bool isLightOn = true;
 
 // ==========================================
@@ -640,16 +640,16 @@ void handleKeypress(unsigned char key, int x, int y) {
     }
 
     if (abrarCode.getState() == STATE_WALKING) {
-        float speed = 3.0f;
+        float speed = 10.0f;
         float nextX = camX, nextY = camY, nextZ = camZ;
 
         switch (key) {
-        case 'w': nextX += lookX * speed; nextZ += lookZ * speed; break;
-        case 's': nextX -= lookX * speed; nextZ -= lookZ * speed; break;
+        case 'w': nextX += lookX * speed; nextZ += lookZ * speed; nextY += lookY * speed; break;
+        case 's': nextX -= lookX * speed; nextZ -= lookZ * speed; nextY -= lookY * speed; break;
         case 'a': nextX -= (lookZ * -1.0f) * speed; nextZ -= lookX * speed; break;
         case 'd': nextX += (lookZ * -1.0f) * speed; nextZ += lookX * speed; break;
-        case 'q': nextY -= 10.0f; break;
-        case 'e': nextY += 10.0f; break;
+        //case 'q': nextY -= 10.0f; break;
+        //case 'e': nextY += 10.0f; break;
         case 'g': case 'f': case 'n': case 'N': case 'm': case 'M':
             abrarCode.handleInput(key, camX, camY, camZ, collidableObjects);
             break;
