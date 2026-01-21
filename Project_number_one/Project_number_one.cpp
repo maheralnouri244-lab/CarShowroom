@@ -648,8 +648,8 @@ void handleKeypress(unsigned char key, int x, int y) {
         case 's': nextX -= lookX * speed; nextZ -= lookZ * speed; nextY -= lookY * speed; break;
         case 'a': nextX -= (lookZ * -1.0f) * speed; nextZ -= lookX * speed; break;
         case 'd': nextX += (lookZ * -1.0f) * speed; nextZ += lookX * speed; break;
-        //case 'q': nextY -= 10.0f; break;
-        //case 'e': nextY += 10.0f; break;
+        case 'q': nextY -= 10.0f; break;
+        case 'e': nextY += 10.0f; break;
         case 'g': case 'f': case 'n': case 'N': case 'm': case 'M':
             abrarCode.handleInput(key, camX, camY, camZ, collidableObjects);
             break;
