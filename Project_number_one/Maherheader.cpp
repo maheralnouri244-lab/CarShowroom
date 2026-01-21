@@ -6,8 +6,7 @@
 #include <string>
 #include <cstdlib>
 #include <ctime>
-
-// تضمين ملفات المشروع
+#include "WoodBuilding.h"
 #include "Pillar.h"
 #include "Hpillar.h"
 #include "Showroomside.h"
@@ -35,12 +34,16 @@ using namespace std;
 Maherheader::Maherheader() : showroomdoor(0, 15, 200) {
     for (int i = 0; i < 5; i++) houseTexID[i] = 0;
     groundTex = 0;
-
     roadTexID = 0;
     pavementTexID = 0;
     grassTexID = 0;
     parkingTexID = 0;
     waterTexID = 0;
+    woodTex = 0;
+    roofTexID = 0;
+    sideTexId = 0;
+    for (int i=0;i<30;i++)
+    build[i].generate();
 }
 
 void Maherheader::drawLightBeam(float x, float y, float z) {
@@ -58,6 +61,10 @@ void Maherheader::drawLightBeam(float x, float y, float z) {
 }
 
 unsigned int Maherheader::loadTextureFromFile(const char* path) {
+    /*static int x = 6;
+    x--;
+    if (x)
+    return 0;*/
     int w, h, n;
     stbi_set_flip_vertically_on_load(true);
     unsigned char* data = stbi_load(path, &w, &h, &n, 4);
@@ -97,6 +104,10 @@ void Maherheader::draw(float camX, float camY, float camZ, bool isday, GLuint cc
 
     if (grassTexID == 0) grassTexID = groundTex;
     if (parkingTexID == 0) parkingTexID = roadTexID;
+    if (woodTex==0) woodTex= loadTextureFromFile("images\\\\wood.png");
+
+    if (sideTexId==0) sideTexId= loadTextureFromFile("images\\buildTex.jpg");
+    if (roofTexID==0) roofTexID= loadTextureFromFile("images\\buildTex.jpg");
 
     // =========================================================
     // رسم تخطيط المدينة (الشوارع، الحديقة، المواقف)
@@ -331,4 +342,156 @@ void Maherheader::draw(float camX, float camY, float camZ, bool isday, GLuint cc
     glRotatef(90, 0, 1, 0);
     mydisk.draw();
     glPopMatrix();
+
+
+    float housepos[30][3] = {
+     {-412.3f, 0.0f, -512.7f},
+    {-125.8f, 0.0f, -745.2f},
+    {-689.4f, 0.0f, -328.1f},
+    {-233.6f, 0.0f, -902.4f},
+    {-842.1f, 0.0f, -456.9f},
+    {-321.7f, 0.0f, -612.5f},
+    {-578.2f, 0.0f, -733.8f},
+    {-95.4f,  0.0f, -845.6f},
+    {-710.9f, 0.0f, -389.2f},
+    {-268.5f, 0.0f, -654.7f},
+    {-490.6f, 0.0f, -812.3f},
+    {-152.7f, 0.0f, -905.1f},
+    {-623.8f, 0.0f, -478.2f},
+    {-341.9f, 0.0f, -701.4f},
+    {-812.5f, 0.0f, -529.6f},
+    {-210.4f, 0.0f, -832.7f},
+    {-455.2f, 0.0f, -623.9f},
+    {-134.8f, 0.0f, -764.2f},
+    {-689.7f, 0.0f, -905.3f},
+    {-278.1f, 0.0f, -512.6f},
+    {-512.9f, 0.0f, -689.4f},
+    {-189.3f, 0.0f, -845.7f},
+    {-623.4f, 0.0f, -398.2f},
+    {-341.7f, 0.0f, -732.9f},
+    {-812.8f, 0.0f, -612.4f},
+    {-210.6f, 0.0f, -823.5f},
+    {-455.6f, 0.0f, -701.8f},
+    {-134.5f, 0.0f, -764.9f},
+    {-689.9f, 0.0f, -905.7f},
+    {-278.4f, 0.0f, -523.1f},
+    };
+
+    
+    float length = 200, height = 800, depth = 200; float lx = length / 2.0f; float hy = height / 2.0f; float dz = depth / 2.0f; float repW = 2.0f; float repH = 4.0f;
+    float fullBlockWidth = 420;
+    float blockXPos[6]; blockXPos[3] = 100.0f; blockXPos[4] = 620.0f; blockXPos[5] = 1140.0f; blockXPos[2] = -520.0f; blockXPos[1] = -1040.0f; blockXPos[0] = -1560.0f;
+
+    glEnable(GL_TEXTURE_2D); glColor3f(1.0f, 1.0f, 1.0f);
+
+    for (int block = 0; block < 6; block++) {
+        float startX = blockXPos[block];
+
+        for (int row = 0; row < 4; row++) {
+            glPushMatrix();
+            glTranslatef(startX + lx, 0, -600 - (row * 220));
+            glBindTexture(GL_TEXTURE_2D, sideTexId);
+            glBegin(GL_QUADS);
+            glNormal3f(0, 0, 1);
+            glTexCoord2f(0, 0);       glVertex3f(-lx, -hy, dz);
+            glTexCoord2f(repW, 0);    glVertex3f(lx, -hy, dz);
+            glTexCoord2f(repW, repH); glVertex3f(lx, hy, dz);
+            glTexCoord2f(0, repH);    glVertex3f(-lx, hy, dz);
+            glNormal3f(0, 0, -1);
+            glTexCoord2f(0, 0);       glVertex3f(-lx, -hy, -dz);
+            glTexCoord2f(repW, 0);    glVertex3f(lx, -hy, -dz);
+            glTexCoord2f(repW, repH); glVertex3f(lx, hy, -dz);
+            glTexCoord2f(0, repH);    glVertex3f(-lx, hy, -dz);
+            glNormal3f(-1, 0, 0);
+            glTexCoord2f(0, 0);       glVertex3f(-lx, -hy, -dz);
+            glTexCoord2f(repW, 0);    glVertex3f(-lx, -hy, dz);
+            glTexCoord2f(repW, repH); glVertex3f(-lx, hy, dz);
+            glTexCoord2f(0, repH);    glVertex3f(-lx, hy, -dz);
+            glNormal3f(1, 0, 0);
+            glTexCoord2f(0, 0);       glVertex3f(lx, -hy, -dz);
+            glTexCoord2f(repW, 0);    glVertex3f(lx, -hy, dz);
+            glTexCoord2f(repW, repH); glVertex3f(lx, hy, dz);
+            glTexCoord2f(0, repH);    glVertex3f(lx, hy, -dz);
+            glNormal3f(0, -1, 0);
+            glTexCoord2f(0, 0);       glVertex3f(-lx, -hy, dz);
+            glTexCoord2f(repW, 0);    glVertex3f(lx, -hy, dz);
+            glTexCoord2f(repW, repW); glVertex3f(lx, -hy, -dz);
+            glTexCoord2f(0, repW);    glVertex3f(-lx, -hy, -dz);
+            glEnd();
+            glBindTexture(GL_TEXTURE_2D, roofTexID);
+            glBegin(GL_QUADS);
+            glNormal3f(0, 1, 0);
+            glTexCoord2f(0, 0);       glVertex3f(-lx, hy, dz);
+            glTexCoord2f(repW, 0);    glVertex3f(lx, hy, dz);
+            glTexCoord2f(repW, repW); glVertex3f(lx, hy, -dz);
+            glTexCoord2f(0, repW);    glVertex3f(-lx, hy, -dz);
+            glEnd();
+            glPopMatrix();
+        }
+
+        for (int row = 0; row < 4; row++) {
+            glPushMatrix();
+            glTranslatef(startX + lx + 220, 0, -600 - (row * 220));
+            glBindTexture(GL_TEXTURE_2D, sideTexId);
+            glBegin(GL_QUADS);
+            glNormal3f(0, 0, 1);
+            glTexCoord2f(0, 0);       glVertex3f(-lx, -hy, dz);
+            glTexCoord2f(repW, 0);    glVertex3f(lx, -hy, dz);
+            glTexCoord2f(repW, repH); glVertex3f(lx, hy, dz);
+            glTexCoord2f(0, repH);    glVertex3f(-lx, hy, dz);
+            glNormal3f(0, 0, -1);
+            glTexCoord2f(0, 0);       glVertex3f(-lx, -hy, -dz);
+            glTexCoord2f(repW, 0);    glVertex3f(lx, -hy, -dz);
+            glTexCoord2f(repW, repH); glVertex3f(lx, hy, -dz);
+            glTexCoord2f(0, repH);    glVertex3f(-lx, hy, -dz);
+            glNormal3f(-1, 0, 0);
+            glTexCoord2f(0, 0);       glVertex3f(-lx, -hy, -dz);
+            glTexCoord2f(repW, 0);    glVertex3f(-lx, -hy, dz);
+            glTexCoord2f(repW, repH); glVertex3f(-lx, hy, dz);
+            glTexCoord2f(0, repH);    glVertex3f(-lx, hy, -dz);
+            glNormal3f(1, 0, 0);
+            glTexCoord2f(0, 0);       glVertex3f(lx, -hy, -dz);
+            glTexCoord2f(repW, 0);    glVertex3f(lx, -hy, dz);
+            glTexCoord2f(repW, repH); glVertex3f(lx, hy, dz);
+            glTexCoord2f(0, repH);    glVertex3f(lx, hy, -dz);
+            glNormal3f(0, -1, 0);
+            glTexCoord2f(0, 0);       glVertex3f(-lx, -hy, dz);
+            glTexCoord2f(repW, 0);    glVertex3f(lx, -hy, dz);
+            glTexCoord2f(repW, repW); glVertex3f(lx, -hy, -dz);
+            glTexCoord2f(0, repW);    glVertex3f(-lx, -hy, -dz);
+            glEnd();
+            glBindTexture(GL_TEXTURE_2D, roofTexID);
+            glBegin(GL_QUADS);
+            glNormal3f(0, 1, 0);
+            glTexCoord2f(0, 0);       glVertex3f(-lx, hy, dz);
+            glTexCoord2f(repW, 0);    glVertex3f(lx, hy, dz);
+            glTexCoord2f(repW, repW); glVertex3f(lx, hy, -dz);
+            glTexCoord2f(0, repW);    glVertex3f(-lx, hy, -dz);
+            glEnd();
+            glPopMatrix();
+        }
+    } glDisable(GL_TEXTURE_2D);
+    cityPlan.drawRoadSegment(0.0f, 0.05f, -2000.0f, 160.0f, 1600.0f, false);
+    cityPlan.drawSidewalk(90.0f, -1200.0f, 20.0f, 1600.0f, 0.5f);
+    cityPlan.drawSidewalk(-90.0f, -1200.0f, 20.0f, 1600.0f, 0.5f);
+
+    float roadX_01 = blockXPos[0] + fullBlockWidth + 50.0f;
+    cityPlan.drawRoadSegment(roadX_01, 0.05f, -2000.0f, 70.0f, 1600.0f, false);
+    cityPlan.drawSidewalk(roadX_01 + 42.5f, -1200.0f, 15.0f, 1600.0f, 0.5f);
+    cityPlan.drawSidewalk(roadX_01 - 42.5f, -1200.0f, 15.0f, 1600.0f, 0.5f);
+
+    float roadX_12 = blockXPos[1] + fullBlockWidth + 50.0f;
+    cityPlan.drawRoadSegment(roadX_12, 0.05f, -2000.0f, 70.0f, 1600.0f, false);
+    cityPlan.drawSidewalk(roadX_12 + 42.5f, -1200.0f, 15.0f, 1600.0f, 0.5f);
+    cityPlan.drawSidewalk(roadX_12 - 42.5f, -1200.0f, 15.0f, 1600.0f, 0.5f);
+
+    float roadX_34 = blockXPos[3] + fullBlockWidth + 50.0f;
+    cityPlan.drawRoadSegment(roadX_34, 0.05f, -2000.0f, 70.0f, 1600.0f, false);
+    cityPlan.drawSidewalk(roadX_34 + 42.5f, -1200.0f, 15.0f, 1600.0f, 0.5f);
+    cityPlan.drawSidewalk(roadX_34 - 42.5f, -1200.0f, 15.0f, 1600.0f, 0.5f);
+
+    float roadX_45 = blockXPos[4] + fullBlockWidth + 50.0f;
+    cityPlan.drawRoadSegment(roadX_45, 0.05f, -2000.0f, 70.0f, 1600.0f, false);
+    cityPlan.drawSidewalk(roadX_45 + 42.5f, -1200.0f, 15.0f, 1600.0f, 0.5f);
+    cityPlan.drawSidewalk(roadX_45 - 42.5f, -1200.0f, 15.0f, 1600.0f, 0.5f);
 }

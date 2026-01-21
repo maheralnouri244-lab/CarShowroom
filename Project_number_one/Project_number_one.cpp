@@ -96,7 +96,7 @@ std::vector<BoundingBox> collidableObjects;
 const int CloudCount = 20;
 PersistentCloud myClouds[CloudCount];
 RainSystem myRain(1000);
-bool isLightOn = false;
+bool isLightOn = true;
 
 // ==========================================
 // دوال مساعدة (Texture, Sky)

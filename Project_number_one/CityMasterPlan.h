@@ -20,8 +20,7 @@ public:
 
     void drawText3D(const char* text, float x, float y, float z, float scale, float r, float g, float b);
     void drawShowroomSign(bool isNight); // اللافتة الرئيسية
-
-private:
+    void drawRoadSegment(float x, float y, float z, float width, float length, bool isHorizontal);
     Garden myGarden;
     // كائن عمود إنارة نستخدمه للرسم المتكرر (توفير للذاكرة)
     StreetLamp streetLightObj;
@@ -32,7 +31,6 @@ private:
     void drawStreetLightRow(float x, float startZ, float spacing, int count, bool isRightSide, bool isNight);
 
     // ... (باقي دوال البنية التحتية والتجميل كما هي) ...
-    void drawRoadSegment(float x, float y, float z, float width, float length, bool isHorizontal);
     void drawRoadMarkings(float x, float y, float z, float width, float length, bool isHorizontal);
     void drawSidewalk(float x, float z, float width, float length, float height);
     void drawCurvedSidewalk(float x, float y, float z, float radius, float startAngle, float endAngle, float width);
@@ -69,6 +67,8 @@ private:
     void drawJuiceStall(float x, float y, float z);
     void buildCommercialZone();
     void buildParkingZone();
+private:
+
 };
 
 #endif
