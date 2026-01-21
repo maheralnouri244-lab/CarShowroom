@@ -6,6 +6,11 @@
 #include "Hpillar.h"
 #include "Showroomside.h"
 #include "NeonTube.h"
+#include"sound.h"
+#include <windows.h>
+#include <mmsystem.h>
+#pragma comment(lib, "winmm.lib")
+
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -61,27 +66,153 @@ void AbrarCode::attemptEnterCar(float cx, float cz) {
         currentState = STATE_ENTERING;
         animT = 0;cars[activeCarIndex].targetDoors[1] = 60;
     }
+
+}
+bool AbrarCode::checkCarCollision(float nextX, float nextZ, const std::vector<BoundingBox>& collidableObjects) {
+
+    // --- 1. إنشاء الصندوق المحيط بالسيارة الحالية ---
+    float carWidth = 15.0f;
+    float carLength = 30.0f;
+    float carHeight = 15.0f;
+
+    BoundingBox carBox = {
+        nextX - carWidth / 2, cars[activeCarIndex].y, nextZ - carLength / 2,
+        nextX + carWidth / 2, cars[activeCarIndex].y + carHeight, nextZ + carLength / 2
+    };
+
+    // --- 2. التحقق من التصادم مع العوائق الثابتة (الجدران، الجيب، الأعمدة) ---
+    for (const auto& objBox : collidableObjects) {
+
+        // --- فلتر ذكي ---
+        // هذا الجزء سيتعرف على صناديق التصادم الخاصة بالسيارات الأربع ويتجاهلها
+        // لأننا سنتحقق منها بشكل منفصل في الخطوة رقم 4
+        const float BEETLE_BOX_MAX_Y = 15.0f;
+        const float BEETLE_BOX_MIN_X = 120.0f - 18.0f;
+        const float epsilon = 0.1f;
+
+        if (fabs(objBox.maxY - BEETLE_BOX_MAX_Y) < epsilon &&
+            fabs(objBox.minX - BEETLE_BOX_MIN_X) < epsilon) {
+            // هذا الصندوق يخص إحدى سيارات البيتل.
+            // كلمة "continue" تعني: "تجاهل هذا الصندوق وانتقل إلى الصندوق التالي في القائمة"
+            continue;
+        }
+
+        // --- التحقق من التصادم مع باقي العوائق (الجدران، الجيب، إلخ) ---
+        if (objBox.minY < FLOOR_H) {
+            bool collisionX = carBox.maxX > objBox.minX && carBox.minX < objBox.maxX;
+            bool collisionY = carBox.maxY > objBox.minY && carBox.minY < objBox.maxY;
+            bool collisionZ = carBox.maxZ > objBox.minZ && carBox.minZ < objBox.maxZ;
+
+            if (collisionX && collisionY && collisionZ) {
+                return true; // حدث تصادم
+            }
+        }
+    }
+
+    // --- 3. التحقق من التصادم مع الأشكال الدائرية ---
+    if (dist(nextX, nextZ, 120.0f, 150.0f) < (carWidth / 2 + 8.0f)) return true; // النافورة
+    if (dist(nextX, nextZ, 100.0f, 150.0f) < (carWidth / 2 + 7.5f)) return true; // المجسم
+
+    // --- 4. التحقق من التصادم مع سيارات البيتل الثلاث الأخرى (باستخدام المسافة) ---
+    // هذا هو الجزء الذي يجعل السيارات الثلاث الأخرى صلبة أمامك وأنت تقود
+    for (int i = 0; i < cars.size(); i++) {
+        // تجاهل التحقق من السيارة مع نفسها
+        if (i == activeCarIndex) {
+            continue;
+        }
+        // إذا اقتربت السيارة من إحدى السيارات الأخرى، اعتبره تصادماً
+        if (dist(nextX, nextZ, cars[i].x, cars[i].z) < 25.0f) {
+            return true;
+        }
+    }
+
+
+    // --- 5. حدود الخروج من المعرض ---
+    if (nextZ > 195.0f) {
+        if (nextX < -15.0f || nextX > 15.0f) return true;
+    }
+
+    // داخل AbrarCode.cpp، في دالة checkCarCollision
+
+        // ... (بعد التحقق من التصادم مع سيارات البيتل الأخرى في الخطوة 4)
+
+        // ===================================================================================
+        // --- 5. التحقق الدقيق من الحدود الخارجية (مع مراعاة زاوية السيارة) ---
+        // هذا هو الحل لمشكلة اختراق الجدار
+
+        // نصف عرض وطول السيارة
+    float halfWidth = carWidth / 2.0f;
+    float halfLength = carLength / 2.0f;
+
+    // زاوية دوران السيارة بالراديان
+    float angleRad = cars[activeCarIndex].rotY * M_PI / 180.0f;
+    float cosAngle = cos(angleRad);
+    float sinAngle = sin(angleRad);
+
+    // حساب إحداثيات النقاط الأمامية والخلفية للسيارة (الزوايا)
+    float front_left_x = nextX + halfWidth * cosAngle - halfLength * sinAngle;
+    float front_right_x = nextX - halfWidth * cosAngle - halfLength * sinAngle;
+    float back_left_x = nextX + halfWidth * cosAngle + halfLength * sinAngle;
+    float back_right_x = nextX - halfWidth * cosAngle + halfLength * sinAngle;
+
+    float front_left_z = nextZ - halfWidth * sinAngle - halfLength * cosAngle;
+    float front_right_z = nextZ + halfWidth * sinAngle - halfLength * cosAngle;
+    float back_left_z = nextZ - halfWidth * sinAngle + halfLength * cosAngle;
+    float back_right_z = nextZ + halfWidth * sinAngle + halfLength * cosAngle;
+
+    // الآن، تحقق ما إذا كانت أي من الزوايا قد عبرت حدود الجدار
+
+    // الجدار الجانبي الأيمن (x > 150)
+    if (front_left_x > 150.0f || front_right_x > 150.0f || back_left_x > 150.0f || back_right_x > 150.0f) {
+        return true;
+    }
+
+    // الجدار الجانبي الأيسر (x < -150)
+    if (front_left_x < -150.0f || front_right_x < -150.0f || back_left_x < -150.0f || back_right_x < -150.0f) {
+        return true;
+    }
+
+    // الجدار الخلفي (z < -200)
+    if (front_left_z < -200.0f || front_right_z < -200.0f || back_left_z < -200.0f || back_right_z < -200.0f) {
+        return true;
+    }
+    // ===================================================================================
+
+    // --- 6. حدود البوابة الأمامية (عند الخروج) ---
+    if (nextZ > 195.0f) {
+        if (nextX < -15.0f || nextX > 15.0f) return true;
+    }
+
+    return false; // إذا لم يحدث أي تصادم، اسمح للسيارة بالحركة
 }
 
-void AbrarCode::driveActiveCar(float speed, float turn) {
-    if (activeCarIndex == -1)
-        return;
+
+void AbrarCode::driveActiveCar(float speed, float turn, const std::vector<BoundingBox>& collidableObjects) {
+    if (activeCarIndex == -1) return;
+
     cars[activeCarIndex].rotY -= turn;
-    float steerLimit = 45.0f;
+
+    float steerLimit = 45.0f; // أقصى دوران للمقود
     if (turn != 0) {
         cars[activeCarIndex].currentSteer += turn * 5.0f;
-
+        // تقييد الزاوية
         if (cars[activeCarIndex].currentSteer > steerLimit) cars[activeCarIndex].currentSteer = steerLimit;
         if (cars[activeCarIndex].currentSteer < -steerLimit) cars[activeCarIndex].currentSteer = -steerLimit;
     }
+    float r = cars[activeCarIndex].rotY * M_PI / 180.0f;
+    float nextX = cars[activeCarIndex].x + sin(r) * speed;
+    float nextZ = cars[activeCarIndex].z + cos(r) * speed;
 
-    float r = cars[activeCarIndex].rotY * M_PI / 180;
-    cars[activeCarIndex].x += sin(r) * speed;
-    cars[activeCarIndex].z += cos(r) * speed;
+    // *** التعديل هنا ***
+    // مرر قائمة العوائق إلى دالة الفحص
+    if (!checkCarCollision(nextX, nextZ, collidableObjects)) {
+        cars[activeCarIndex].x = nextX;
+        cars[activeCarIndex].z = nextZ;
+    }
 }
 
 // --- INPUT LOGIC ---
-void AbrarCode::handleInput(unsigned char key, float& camX, float& camY, float& camZ) {
+void AbrarCode::handleInput(unsigned char key, float& camX, float& camY, float& camZ, const std::vector<BoundingBox>& collidableObjects) {
     if (currentState == STATE_WALKING) {
         if (key == 'n' || key == 'N') {
             float d = dist(camX, camZ, ELEV_X, ELEV_Z);
@@ -110,11 +241,29 @@ void AbrarCode::handleInput(unsigned char key, float& camX, float& camY, float& 
             }
         }
 
-        if (key == 'g' || key == 'G') attemptEnterCar(camX, camZ);
-        if (key == 'f' || key == 'F') {
+if (key == 'g' || key == 'G') {
+            attemptEnterCar(camX, camZ);
+            SoundManager::playNow("sounds/marsh.wav");
+            SoundManager::playLoopWithDelay("sounds/car-reverse-.wav", 2000);
+
+           // PlaySound(TEXT("sounds/car-reverse-1.wav"), NULL, SND_FILENAME | SND_ASYNC);
+          
+        }        if (key == 'f' || key == 'F') {
             int c = -1; float md = 40.0f;
             for (int i = 0; i < cars.size(); i++) { float d = dist(camX, camZ, cars[i].x, cars[i].z); if (d < md) { md = d; c = i; } }
-            if (c != -1) { if (cars[c].targetDoors[1] < 1) cars[c].targetDoors[1] = 60; else cars[c].targetDoors[1] = 0; }
+            if (c != -1) {
+                if (cars[c].targetDoors[1] < 1)
+                {
+                    cars[c].targetDoors[1] = 60;
+                    SoundManager::playNow("sounds/car-door-open.wav");
+                    SoundManager::playLoopWithDelay("sounds/gallery.wav", 500);
+                }
+                else {
+                    cars[c].targetDoors[1] = 0;
+                    SoundManager::playNow("sounds/car-door-close.wav");
+                    SoundManager::playLoopWithDelay("sounds/gallery.wav", 500);
+                } 
+            }
         }
     }
     else if (currentState == STATE_ELEVATOR) {
@@ -136,19 +285,28 @@ void AbrarCode::handleInput(unsigned char key, float& camX, float& camY, float& 
     else if (currentState == STATE_DRIVING) {
         float s = 2.0f, t = 3.0f;
         switch (key) {
-        case 'w': driveActiveCar(s, 0); break;
-        case 's': driveActiveCar(-s, 0); break;
-        case 'a': driveActiveCar(0, -t); break;
-        case 'd': driveActiveCar(0, t); break;
+        case 'w': driveActiveCar(s, 0, collidableObjects); break;
+        case 's': driveActiveCar(-s, 0, collidableObjects); break;
+        case 'a': driveActiveCar(0, -t, collidableObjects); break;
+        case 'd': driveActiveCar(0, t, collidableObjects); break;
         case 'g':
+            SoundManager::playLoop("sounds/gallery.wav");
             cars[activeCarIndex].targetDoors[1] = 0.0f;
             currentState = STATE_WALKING;
             activeCarIndex = -1;
             camY = 20.0f;
             break;
         case 'f':
-            if (cars[activeCarIndex].targetDoors[1] < 1) cars[activeCarIndex].targetDoors[1] = 60; else cars[activeCarIndex].targetDoors[1] = 0;
-            break;
+           if (cars[activeCarIndex].targetDoors[1] < 1) {
+                cars[activeCarIndex].targetDoors[1] = 60;
+                SoundManager::playNow("sounds/car-door-open.wav");
+                SoundManager::playLoopWithDelay("sounds/car-reverse-.wav", 500);
+            }
+            else {
+                cars[activeCarIndex].targetDoors[1] = 0;
+                SoundManager::playNow("sounds/car-door-close.wav");
+                SoundManager::playLoopWithDelay("sounds/car-reverse-.wav", 500);
+            }            break;
         }
     }
 }

@@ -23,6 +23,11 @@ struct CarData {
     float currentSteer;
 };
 
+struct BoundingBox {
+    float minX, minY, minZ;
+    float maxX, maxY, maxZ;
+};
+
 class AbrarCode {
 public:
     AbrarCode();
@@ -32,7 +37,7 @@ public:
     void drawGroundFloorElevator();
 
     void update(float& camX, float& camY, float& camZ, float& yaw, float& pitch);
-    void handleInput(unsigned char key, float& camX, float& camY, float& camZ);
+    void handleInput(unsigned char key, float& camX, float& camY, float& camZ, const std::vector<BoundingBox>& collidableObjects);
     InteractionState getState() { return currentState; }
 
 private:
@@ -56,7 +61,7 @@ private:
     float elevatorDoorOffset;
 
     void attemptEnterCar(float camX, float camZ);
-    void driveActiveCar(float speed, float turn);
+    void driveActiveCar(float speed, float turn, const std::vector<BoundingBox>& collidableObjects);
     float dist(float x1, float z1, float x2, float z2);
 
     void drawElevatorShaft(float x, float z, float h);
@@ -79,6 +84,7 @@ private:
     void drawTV(float x, float y, float z, float r);
     void drawTechStation(float x, float y, float z);
     void drawInfoKiosk(float x, float y, float z);
+    bool checkCarCollision(float nextX, float nextZ, const std::vector<BoundingBox>& collidableObjects);
     Furniture furniture;
     AccessoriesSection accessories;
 };

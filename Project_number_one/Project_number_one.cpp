@@ -23,7 +23,10 @@
 #include "F1Car.h"
 #include "Lake.h" // كلاس البحيرة الجديد
 #include "include\\stb_image.h"
-
+#include <iostream>
+#include <windows.h>
+#include <mmsystem.h>
+#include "sound.h"
 using namespace std;
 
 #ifndef M_PI
@@ -87,10 +90,6 @@ const float GLOBAL_GROUND_LEVEL = 2.0f;
 float lastlookx = lookX, lastlooky = lookY, lastlookz = lookZ;
 float freeCamYaw = -90.0f, freeCamPitch = 0.0f;
 
-struct BoundingBox {
-    float minX, minY, minZ;
-    float maxX, maxY, maxZ;
-};
 std::vector<BoundingBox> collidableObjects;
 
 // البيئة
@@ -102,6 +101,8 @@ bool isLightOn = false;
 // ==========================================
 // دوال مساعدة (Texture, Sky)
 // ==========================================
+void updateAmbientSound();
+
 
 unsigned int loadTextureFromFile(const char* path) {
     int w, h, n;
@@ -224,26 +225,29 @@ void switchCamera(int newCam) {
 
 void createCollidables() {
     collidableObjects.clear();
-    float wall_1_x = minX + (maxX - minX - diff) / 2.0f;
-    float wall_2_x = maxX - (maxX - minX - diff) / 2.0f;
-    float wall_z_range = (maxz - minz - 2 * diff) / 2.0f;
     float wallBuffer = 5.0f;
+    float floorThickness = 2.0f;
 
-    collidableObjects.push_back({ wall_1_x - wallBuffer, 0.0f, -wall_z_range, wall_1_x + wallBuffer, SHOWROOM_HEIGHT, wall_z_range });
-    collidableObjects.push_back({ wall_2_x - wallBuffer, 0.0f, -wall_z_range, wall_2_x + wallBuffer, SHOWROOM_HEIGHT, wall_z_range });
-    collidableObjects.push_back({ minX, 0.0f, minz - wallBuffer, maxX, SHOWROOM_HEIGHT, minz + wallBuffer });
+    // --- الطابق الأرضي ---
     collidableObjects.push_back({ minX, 0.0f, maxz - wallBuffer, GATE_MIN_X, SHOWROOM_HEIGHT, maxz + wallBuffer });
     collidableObjects.push_back({ GATE_MAX_X, 0.0f, maxz - wallBuffer, maxX, SHOWROOM_HEIGHT, maxz + wallBuffer });
 
+    float wall_1_x = minX + (maxX - minX - diff) / 2.0f;
+    float wall_2_x = maxX - (maxX - minX - diff) / 2.0f;
+    float wall_z_range = (maxz - minz - 2 * diff) / 2.0f;
+    collidableObjects.push_back({ wall_1_x - wallBuffer, 0.0f, -wall_z_range, wall_1_x + wallBuffer, SHOWROOM_HEIGHT, wall_z_range });
+    collidableObjects.push_back({ wall_2_x - wallBuffer, 0.0f, -wall_z_range, wall_2_x + wallBuffer, SHOWROOM_HEIGHT, wall_z_range });
+    collidableObjects.push_back({ minX, 0.0f, minz - wallBuffer, maxX, SHOWROOM_HEIGHT, minz + wallBuffer });
     float extentX = (40.0f / 2.0f) * 3.0f;
     float extentZ = (40.0f / 2.0f) * 1.0f;
     float center_x_C1 = -minX - (maxX - minX - diff) / 4.0f;
     float center_x_C2 = minX + (maxX - minX - diff) / 4.0f;
-
     collidableObjects.push_back({ center_x_C1 - extentX, 0.0f, -extentZ, maxX, 30.0f, extentZ });
     collidableObjects.push_back({ minX, 0.0f, -extentZ, center_x_C2 + extentX, 30.0f, extentZ });
 
-    float beetle_x = 90.0f;
+    // 2. سيارات أبرار (Beetle) - جهة اليمين
+    // *** تم تصحيح هذا السطر من 90.0f إلى 120.0f ***
+    float beetle_x = 120.0f;
     float beetle_z[] = { -40.0f, -75.0f, -110.0f, -145.0f };
     for (float z : beetle_z) {
         collidableObjects.push_back({ beetle_x - 18.0f, 0.0f, z - 10.0f, beetle_x + 18.0f, 15.0f, z + 10.0f });
@@ -255,33 +259,100 @@ void createCollidables() {
     float carBoxLength = 10.0f;
     float sideSafety = 3.0f;
     for (float zPos : myCarZ) {
-        collidableObjects.push_back({
-            myCarX - (carBoxWidth + sideSafety), 0.0f, zPos - carBoxLength,
-            myCarX + (carBoxWidth + sideSafety), 20.0f, zPos + carBoxLength
-            });
+        collidableObjects.push_back({ myCarX - (carBoxWidth + sideSafety), 0.0f, zPos - carBoxLength, myCarX + (carBoxWidth + sideSafety), 20.0f, zPos + carBoxLength });
     }
-
     float jeep_x = 120.0f;
     float jeep_safety_X = 5.0f;
     float jeep_box_Z = 12.0f;
     for (int i = 1; i <= 3; i++) {
         float jZ = 50.0f * i;
-        collidableObjects.push_back({
-            jeep_x - (15.0f + jeep_safety_X), 0.0f, jZ - jeep_box_Z,
-            jeep_x + (15.0f + jeep_safety_X), 25.0f, jZ + jeep_box_Z
-            });
+        collidableObjects.push_back({ jeep_x - (15.0f + jeep_safety_X), 0.0f, jZ - jeep_box_Z, jeep_x + (15.0f + jeep_safety_X), 25.0f, jZ + jeep_box_Z });
     }
-}
 
+    // --- الطابق الثاني ---
+    const float SECOND_FLOOR_Y_START = SHOWROOM_HEIGHT;
+    const float SECOND_FLOOR_HEIGHT = 60.0f;
+    const float SECOND_FLOOR_Y_END = SECOND_FLOOR_Y_START + SECOND_FLOOR_HEIGHT;
+    const float ELEV_X = -120.0f, ELEV_Z = -170.0f, ELEV_WIDTH = 30.0f;
+    const float ELEV_MIN_X = ELEV_X - ELEV_WIDTH / 2.0f, ELEV_MAX_X = ELEV_X + ELEV_WIDTH / 2.0f;
+    const float ELEV_MIN_Z = ELEV_Z - ELEV_WIDTH / 2.0f, ELEV_MAX_Z = ELEV_Z + ELEV_WIDTH / 2.0f;
+    collidableObjects.push_back({ minX, SECOND_FLOOR_Y_START, minz - wallBuffer, maxX, SECOND_FLOOR_Y_END, minz + wallBuffer });
+    collidableObjects.push_back({ minX, SECOND_FLOOR_Y_START, maxz - wallBuffer, maxX, SECOND_FLOOR_Y_END, maxz + wallBuffer });
+    collidableObjects.push_back({ minX - wallBuffer, SECOND_FLOOR_Y_START, minz, minX + wallBuffer, SECOND_FLOOR_Y_END, maxz });
+    collidableObjects.push_back({ maxX - wallBuffer, SECOND_FLOOR_Y_START, minz, maxX + wallBuffer, SECOND_FLOOR_Y_END, maxz });
+    collidableObjects.push_back({ minX, SECOND_FLOOR_Y_END - floorThickness, minz, maxX, SECOND_FLOOR_Y_END, maxz });
+    collidableObjects.push_back({ minX, SECOND_FLOOR_Y_START - floorThickness, ELEV_MAX_Z, maxX, SECOND_FLOOR_Y_START, maxz });
+    collidableObjects.push_back({ minX, SECOND_FLOOR_Y_START - floorThickness, minz, maxX, SECOND_FLOOR_Y_START, ELEV_MIN_Z });
+    collidableObjects.push_back({ minX, SECOND_FLOOR_Y_START - floorThickness, ELEV_MIN_Z, ELEV_MIN_X, SECOND_FLOOR_Y_START, ELEV_MAX_Z });
+    collidableObjects.push_back({ ELEV_MAX_X, SECOND_FLOOR_Y_START - floorThickness, ELEV_MIN_Z, maxX, SECOND_FLOOR_Y_START, ELEV_MAX_Z });
+    // =================================================================
+    const float FLOOR_H = 60.0f; // نفس قيمة SECOND_FLOOR_Y_START
+
+    // 1. متجر الإكسسوارات
+    collidableObjects.push_back({ 30.0f, FLOOR_H, -184.0f, 70.0f, FLOOR_H + 10.0f, -176.0f });   // منضدة الدفع
+
+    // 2. مكتب السكرتارية
+    collidableObjects.push_back({ 90.0f, FLOOR_H, 0.0f, 150.0f, FLOOR_H + 40.0f, 100.0f });
+
+    // 3. الأريكة
+    collidableObjects.push_back({ 90.0f, FLOOR_H, 110.0f, 110.0f, FLOOR_H + 10.0f, 130.0f });
+
+    // 4. النافورة
+    collidableObjects.push_back({ 112.0f, FLOOR_H, 142.0f, 128.0f, FLOOR_H + 5.0f, 158.0f });
+
+    // 5. قاعدة الهولوغرام
+    collidableObjects.push_back({ 92.5f, FLOOR_H, 142.5f, 107.5f, FLOOR_H + 2.0f, 157.5f });
+    // أضف هذه الأسطر داخل createCollidables()
+    // --> أضف هذا الكود الجديد بدلاً من السطر المحذوف
+
+// إنشاء صناديق اصطدام منفصلة لكل رف من الأرفف الخمسة
+// هذا يسمح للاعب بالمشي بينها
+    float shelfCenterX = -120.0f; // الإحداثي X لمركز الأرفف
+    float shelfWidth = 36.0f;     // عرض كل رف (6 أعمدة * 6 وحدات)
+    float shelfDepth = 4.0f;      // عمق كل رف
+    float shelfHeight = 30.0f;    // ارتفاع كل رف (5 صفوف * 6 وحدات)
+    float shelfSpacing = 50.0f;   // المسافة بين مركز كل رف والذي يليه
+    float startZ = -100.0f;       // الإحداثي Z لمركز أول رف
+
+    for (int i = 0; i < 5; i++) {
+        // حساب مركز الـ Z لهذا الرف
+        float currentCenterZ = startZ + (i * shelfSpacing);
+
+        // حساب إحداثيات الصندوق
+        float min_x = shelfCenterX - shelfWidth / 2.0f;
+        float max_x = shelfCenterX + shelfWidth / 2.0f;
+        float min_y = FLOOR_H;
+        float max_y = FLOOR_H + shelfHeight;
+        float min_z = currentCenterZ - shelfDepth / 2.0f;
+        float max_z = currentCenterZ + shelfDepth / 2.0f;
+
+        // إضافة الصندوق المنفصل إلى قائمة الاصطدامات
+        collidableObjects.push_back({ min_x, min_y, min_z, max_x, max_y, max_z });
+    }
+
+// صندوق اصطدام للسيارة الحمراء F1
+    collidableObjects.push_back({ -125.0f, 0.0f, -55.0f, -115.0f, 10.0f, -45.0f });
+
+    // صندوق اصطدام للسيارة الزرقاء F1
+    collidableObjects.push_back({ -125.0f, 0.0f, -95.0f, -115.0f, 10.0f, -85.0f });
+
+    // صندوق اصطدام للسيارة الصفراء F1
+    collidableObjects.push_back({ -125.0f, 0.0f, -135.0f, -115.0f, 10.0f, -125.0f });
+
+
+}
 void handleKeypress(unsigned char key, int x, int y) {
     if (key == 'l' || key == 'L') {
         isLightOn = !isLightOn;
         glutPostRedisplay();
+        updateAmbientSound(); // استدعاء الدالة عند تغيير الوقت
         return;
     }
+
     if (abrarCode.getState() == STATE_WALKING) {
         float speed = 3.0f;
         float nextX = camX, nextY = camY, nextZ = camZ;
+
         switch (key) {
         case 'w': nextX += lookX * speed; nextZ += lookZ * speed; break;
         case 's': nextX -= lookX * speed; nextZ -= lookZ * speed; break;
@@ -290,9 +361,10 @@ void handleKeypress(unsigned char key, int x, int y) {
         case 'q': nextY -= 10.0f; break;
         case 'e': nextY += 10.0f; break;
         case 'g': case 'f': case 'n': case 'N': case 'm': case 'M':
-            abrarCode.handleInput(key, camX, camY, camZ);
+            abrarCode.handleInput(key, camX, camY, camZ, collidableObjects);
             break;
-        case 'r':   weatherstatus = (weatherstatus + 1) % 3; break;
+        case 'r':   weatherstatus = (weatherstatus + 1) % 3;        updateAmbientSound(); // استدعاء الدالة عند تغيير الوقت
+            break;
         case 'i':  cout << camX << " " << camY << " " << camZ << " " << lookX << " " << lookY << " " << lookZ << "\n"; break;
         case '1': switchCamera(0); break;
         case '2': switchCamera(1); break;
@@ -302,56 +374,83 @@ void handleKeypress(unsigned char key, int x, int y) {
         case 27: exit(0); return;
         }
 
-        if (nextY < GLOBAL_GROUND_LEVEL) nextY = GLOBAL_GROUND_LEVEL;
-
         saraCode.handleInput(key);
-        bool isOverShowroom = isStrictlyInside(nextX, nextZ);
-        if (isOverShowroom) {
-            float roofMargin = 2.0f;
-            if (camY >= SHOWROOM_HEIGHT && nextY < (SHOWROOM_HEIGHT + roofMargin)) {
-                nextY = SHOWROOM_HEIGHT + roofMargin;
-            }
-            else if (camY < SHOWROOM_HEIGHT && nextY >(SHOWROOM_HEIGHT - roofMargin)) {
-                nextY = SHOWROOM_HEIGHT - roofMargin;
-            }
-            if (nextY < PLAYER_BUFFER_Y) nextY = PLAYER_BUFFER_Y;
+
+        if (nextY < GLOBAL_GROUND_LEVEL + PLAYER_BUFFER_Y) {
+            nextY = GLOBAL_GROUND_LEVEL + PLAYER_BUFFER_Y;
         }
 
-        camY = nextY;
         bool isCurrentlyInside = isStrictlyInside(camX, camZ);
         bool willBeInside = isStrictlyInside(nextX, nextZ);
 
-        if (camY < SHOWROOM_HEIGHT) {
-            if ((!isCurrentlyInside && willBeInside) || (isCurrentlyInside && !willBeInside)) {
+        // --- منطق البوابة الأصلي والذكي ---
+        // يعمل فقط عند محاولة عبور حدود المعرض
+        if ((!isCurrentlyInside && willBeInside) || (isCurrentlyInside && !willBeInside)) {
+            //  PlaySound(TEXT("sounds/gallery.wav"), NULL, SND_ASYNC | SND_LOOP);
+
+              // التحقق فقط إذا كان العبور يحدث على مستوى الطابق الأرضي
+            if (camY < SHOWROOM_HEIGHT) {
                 bool inGateWidth = (nextX > GATE_MIN_X && nextX < GATE_MAX_X);
-                bool isLowEnough = (camY < 30.0f);
+                bool isLowEnough = (camY < 30.0f); // القوس الثابت للبوابة يبدأ عند ارتفاع 30
                 if (!inGateWidth || !isLowEnough) {
-                    glutPostRedisplay();
+                    glutPostRedisplay(); // اصطدام بجدار البوابة
                     return;
                 }
             }
         }
 
-        if (willBeInside && camY < SHOWROOM_HEIGHT) {
-            BoundingBox playerBox = { nextX - 1.5f, camY - PLAYER_BUFFER_Y, nextZ - 1.5f, nextX + 1.5f, camY, nextZ + 1.5f };
+
+        // --- نظام الاصطدام الشامل (لكل شيء آخر) ---
+        if (willBeInside) {
+            // 1. الحارس الذكي للأسقف والطوابق
+            const float SECOND_FLOOR_Y_START = SHOWROOM_HEIGHT;
+            const float SECOND_FLOOR_Y_END = SHOWROOM_HEIGHT + 60.0f;
+            const float ELEV_X = -120.0f, ELEV_Z = -170.0f, ELEV_WIDTH = 30.0f;
+            const float ELEV_MIN_X = ELEV_X - ELEV_WIDTH / 2.0f, ELEV_MAX_X = ELEV_X + ELEV_WIDTH / 2.0f;
+            const float ELEV_MIN_Z = ELEV_Z - ELEV_WIDTH / 2.0f, ELEV_MAX_Z = ELEV_Z + ELEV_WIDTH / 2.0f;
+            bool inElevatorShaft = (nextX > ELEV_MIN_X && nextX < ELEV_MAX_X && nextZ > ELEV_MIN_Z && nextZ < ELEV_MAX_Z);
+
+            if (camY < SECOND_FLOOR_Y_START && nextY >= SECOND_FLOOR_Y_START) {
+                if (!inElevatorShaft) { nextY = SECOND_FLOOR_Y_START - 0.1f; }
+            }
+            if (camY > SECOND_FLOOR_Y_START && nextY < SECOND_FLOOR_Y_START) {
+                if (!inElevatorShaft) { nextY = SECOND_FLOOR_Y_START; }
+            }
+            if (camY < SECOND_FLOOR_Y_END && nextY >= SECOND_FLOOR_Y_END) {
+                nextY = SECOND_FLOOR_Y_END - 0.1f;
+            }
+            if (camY >= SECOND_FLOOR_Y_END && nextY < SECOND_FLOOR_Y_END) {
+                nextY = SECOND_FLOOR_Y_END;
+            }
+
+            // 2. الاصطدام مع كل العوائق الثابتة
+            BoundingBox playerBox = { nextX - 1.5f, nextY - PLAYER_BUFFER_Y, nextZ - 1.5f, nextX + 1.5f, nextY, nextZ + 1.5f };
             for (const auto& objBox : collidableObjects) {
                 if (playerBox.maxX > objBox.minX && playerBox.minX < objBox.maxX &&
                     playerBox.maxY > objBox.minY && playerBox.minY < objBox.maxY &&
-                    playerBox.maxZ > objBox.minZ && playerBox.minZ < objBox.maxZ)
-                {
+                    playerBox.maxZ > objBox.minZ && playerBox.minZ < objBox.maxZ) {
                     glutPostRedisplay(); return;
                 }
             }
         }
+
+        // إذا نجحت كل الفحوصات، قم بتحديث الإحداثيات
         camX = nextX;
+        camY = nextY;
         camZ = nextZ;
+        if (isCurrentlyInside != isStrictlyInside(camX, camZ)) {
+            updateAmbientSound();
+        }
     }
     else {
-        abrarCode.handleInput(key, camX, camY, camZ);
+        abrarCode.handleInput(key, camX, camY, camZ, collidableObjects);
         if (key == 27) exit(0);
     }
+
+
     glutPostRedisplay();
 }
+
 
 void handlePassiveMouse(int x, int y) {
     if (abrarCode.getState() == STATE_ENTERING) return;
@@ -369,6 +468,27 @@ void handlePassiveMouse(int x, int y) {
     ignoreWarp = true;
     glutWarpPointer(centerX, centerY);
     glutPostRedisplay();
+}
+void updateAmbientSound() {
+    bool isInside = isStrictlyInside(camX, camZ);
+
+    if (isInside) {
+        SoundManager::stopAll();
+        SoundManager::playLoop("sounds/gallery.wav"); 
+    }
+    else {
+        SoundManager::stopAll(); 
+        if (weatherstatus == 2) {
+         
+            SoundManager::playLoop("sounds/rain.wav");
+        }
+        else if (isLightOn) {
+            SoundManager::playLoop("sounds/morning.wav");
+        }
+        else {
+            SoundManager::playLoop("sounds/night.wav");
+        }
+    }
 }
 
 void update(int value) {
@@ -623,6 +743,7 @@ int main(int argc, char** argv) {
     createCollidables();
     initEnvironment();
     updateLookVector();
+    updateAmbientSound();
 
     glutDisplayFunc(display);
     glutReshapeFunc(handleResize);
