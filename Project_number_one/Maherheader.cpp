@@ -110,11 +110,13 @@ void Maherheader::draw(float camX, float camY, float camZ, bool isday, GLuint cc
     if (sideTexId==0) sideTexId= loadTextureFromFile("images\\buildTex.jpg"); 
     if (roofTexID==0) roofTexID= loadTextureFromFile("images\\roof.png");
     if (RockTexID==0) RockTexID= loadTextureFromFile("images\\Rockground5.png");
+    if (treeLeafTexID == 0) treeLeafTexID = loadTextureFromFile("images\\Leaves.png");
+    if (treeBarkTexID == 0) treeBarkTexID = loadTextureFromFile("images\\wood.png");
 
     // =========================================================
     // رسم تخطيط المدينة (الشوارع، الحديقة، المواقف)
     // =========================================================
-    cityPlan.setTextures(roadTexID, pavementTexID, grassTexID, parkingTexID, waterTexID, pavementTexID);
+    cityPlan.setTextures(roadTexID, pavementTexID, grassTexID, parkingTexID, waterTexID, pavementTexID, treeLeafTexID, treeBarkTexID);
     cityPlan.drawCityLayout(!isday);
 
     PlusRing3D symbol;

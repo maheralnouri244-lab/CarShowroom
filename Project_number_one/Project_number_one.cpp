@@ -21,7 +21,7 @@
 #include "CameraSphere.h"
 #include "CityMasterPlan.h"
 #include "F1Car.h"
-#include "Lake.h" // كلاس البحيرة الجديد
+#include "Lake.h"
 #include "include\\stb_image.h"
 #include <iostream>
 #include <windows.h>
@@ -815,6 +815,7 @@ void initRendering() {
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
+   
     glDisable(GL_LIGHT1);
     glEnable(GL_COLOR_MATERIAL);
     glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);

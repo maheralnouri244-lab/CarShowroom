@@ -5,13 +5,34 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-CityMasterPlan::CityMasterPlan() : streetLightObj(22.0f, 0.7f) { // ارتفاع 22، نصف قطر 0.7
+CityMasterPlan::CityMasterPlan() : streetLightObj(22.0f, 0.7f) {
     roadTex = 0; pavementTex = 0; grassTex = 0; parkingTex = 0; waterTex = 0; wallTex = 0;
+
+    treeModel.load("MapleTree.obj");
 }
 
-void CityMasterPlan::setTextures(unsigned int road, unsigned int pavement, unsigned int grass, unsigned int parkingAsphalt, unsigned int water, unsigned int wall) {
-    roadTex = road; pavementTex = pavement; grassTex = grass; parkingTex = parkingAsphalt; waterTex = water; wallTex = wall;
+
+// تحديث دالة استقبال الصور
+void CityMasterPlan::setTextures(unsigned int road, unsigned int pavement, unsigned int grass,
+    unsigned int parkingAsphalt, unsigned int water, unsigned int wall,
+    unsigned int treeBark, unsigned int treeLeaf) {
+    roadTex = road;
+    pavementTex = pavement;
+    grassTex = grass;
+    parkingTex = parkingAsphalt;
+    waterTex = water;
+    wallTex = wall;
+
+    treeModel.assignTexture("None.001", treeBark);
+    treeModel.assignTexture("None", treeBark);
+
+    treeModel.assignTexture("None_maple_leaf.png.001", treeLeaf);
+
+    treeModel.assignColor("None_maple_leaf.png.001", 0.4f, 0.85f, 0.4f);
+
+    treeModel.assignColor("None.001", 0.6f, 0.3f, 0.1f);
 }
+
 
 void setupRepeatedTexture() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -24,14 +45,33 @@ void setupRepeatedTexture() {
 // العناصر التجميلية
 // ==========================================
 
+// استبدل دالة drawSimpleTree القديمة بهذه:
 void CityMasterPlan::drawSimpleTree(float x, float y, float z) {
-    glPushMatrix(); glTranslatef(x, y, z); glDisable(GL_TEXTURE_2D);
-    glColor3f(0.4f, 0.26f, 0.13f); glPushMatrix(); glRotatef(-90, 1, 0, 0); glutSolidCone(2, 15, 10, 5); glPopMatrix();
-    glColor3f(0.0f, 0.5f, 0.0f); glPushMatrix(); glTranslatef(0, 8, 0); glRotatef(-90, 1, 0, 0); glutSolidCone(7, 12, 10, 5); glPopMatrix();
-    glColor3f(0.0f, 0.6f, 0.0f); glPushMatrix(); glTranslatef(0, 12, 0); glRotatef(-90, 1, 0, 0); glutSolidCone(6, 10, 10, 5); glPopMatrix();
-    glColor3f(0.1f, 0.8f, 0.1f); glPushMatrix(); glTranslatef(0, 16, 0); glRotatef(-90, 1, 0, 0); glutSolidCone(4, 8, 10, 5); glPopMatrix();
+    glPushMatrix();
+    glTranslatef(x, y, z);
+
+    // ضبط الحجم ليكون مناسباً (موديل الشجرة عادة يحتاج تكبير أو تصغير حسب مصدره)
+    // جرب 1.5f، إذا كانت صغيرة جداً جرب 10.0f
+    glScalef(1.5f, 1.5f, 1.5f);
+
+    // تدوير عشوائي لتبدو طبيعية
+    int seed = (int)(x * z);
+    glRotatef(seed % 360, 0, 1, 0);
+
+    // تفعيل الشفافية للأوراق
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_ALPHA_TEST);
+    glAlphaFunc(GL_GREATER, 0.5f);
+
+    // الكود الجديد للموديل (تأكد من وجود treeModel في الكلاس):
+    treeModel.draw(); // فك التعليق عن هذا السطر
+
+    glDisable(GL_ALPHA_TEST);
+    glDisable(GL_BLEND);
     glPopMatrix();
 }
+
 
 void CityMasterPlan::drawFlowerBed(float x, float y, float z) {
     glPushMatrix(); glTranslatef(x, y, z); glDisable(GL_TEXTURE_2D);
@@ -225,10 +265,6 @@ void CityMasterPlan::drawGrandOpeningDecor() {
     }
 }
 
-void CityMasterPlan::drawRock(float x, float y, float z, float size) {}
-
-void CityMasterPlan::drawReed(float x, float y, float z) {}
-
 // ==========================================
 // البنية التحتية الأساسية
 // ==========================================
@@ -381,10 +417,11 @@ void CityMasterPlan::drawLakePark(bool isNight) {
         drawGardenLamp(parkX - lakeW / 2 - 35, 0.1f, posZ, isNight);
     }
 
-    for (int i = 0; i < 6; i++) {
-        drawSimpleTree(parkX - parkW / 2 + 30, 0.1f, parkZ - parkL / 2 + 30 + i * 80);
-        drawSimpleTree(parkX + parkW / 2 - 30, 0.1f, parkZ - parkL / 2 + 30 + i * 80);
-    }
+    drawSimpleTree(parkX - parkW / 2 + 30, 0.1f, parkZ - 150);
+    drawSimpleTree(parkX - parkW / 2 + 30, 0.1f, parkZ + 150);
+    drawSimpleTree(parkX + parkW / 2 - 30, 0.1f, parkZ - 150);
+    drawSimpleTree(parkX + parkW / 2 - 30, 0.1f, parkZ + 150);
+    drawSimpleTree(parkX, 0.1f, parkZ - parkL / 2 + 30);
 
     drawJuiceStall(parkX - parkW / 2 + 40, 0.1f, parkZ - parkL / 2 + 40);
 }
@@ -421,8 +458,8 @@ void CityMasterPlan::buildShowroomPlaza() {
     drawGrandOpeningDecor(); 
 
     drawFlowerBed(60.0f, 0.02f, srMaxZ + 40.0f); drawFlowerBed(-60.0f, 0.02f, srMaxZ + 40.0f);
-    drawSimpleTree(srMaxX + 15, 0.02f, srMaxZ + 15); drawSimpleTree(srMinX - 15, 0.02f, srMaxZ + 15);
-    drawSimpleTree(srMaxX + 15, 0.02f, srMinZ - 15); drawSimpleTree(srMinX - 15, 0.02f, srMinZ - 15);
+    drawSimpleTree(srMaxX + 15, 0.02f, srMaxZ + 15);
+    drawSimpleTree(srMinX - 15, 0.02f, srMaxZ + 15);
 }
 
 void CityMasterPlan::buildMainBoulevard(bool isNight) {
@@ -433,11 +470,6 @@ void CityMasterPlan::buildMainBoulevard(bool isNight) {
     drawSidewalk(entryWidth / 2 + 15, startZ + entryLength / 2, 30, entryLength, 0.5f);
     drawSidewalk(-(entryWidth / 2 + 15), startZ + entryLength / 2, 30, entryLength, 0.5f);
 
-    for (int i = 0; i < 3; i++) {
-        drawSimpleTree(entryWidth / 2 + 10, 0.5f, startZ + 20 + i * 40);
-        drawSimpleTree(-(entryWidth / 2 + 10), 0.5f, startZ + 20 + i * 40);
-    }
-
     float roundaboutCenterZ = 600.0f; float roadLen = roundaboutCenterZ - splitZ;
     float laneWidth = 40.0f; float medianWidth = 20.0f;
 
@@ -445,7 +477,6 @@ void CityMasterPlan::buildMainBoulevard(bool isNight) {
     drawRoadSegment(-(medianWidth / 2 + laneWidth / 2), 0.05f, splitZ, laneWidth, roadLen - 80, false);
 
     drawSidewalk(0, splitZ + (roadLen - 80) / 2, medianWidth, roadLen - 80, 0.5f);
-    for (int i = 0; i < 5; i++) drawSimpleTree(0, 0.5f, splitZ + 20 + i * 40);
     drawSidewalk(medianWidth / 2 + laneWidth + 10, splitZ + (roadLen - 80) / 2, 20, roadLen - 80, 0.5f);
     drawSidewalk(-(medianWidth / 2 + laneWidth + 10), splitZ + (roadLen - 80) / 2, 20, roadLen - 80, 0.5f);
 
@@ -458,7 +489,10 @@ void CityMasterPlan::buildMainBoulevard(bool isNight) {
 
     float northStart = roundaboutCenterZ + (80 + 40);
     float northLength = 1500.0f;
-
+    
+    for (int i = 0; i < 7; i++) {
+        drawSimpleTree(0, 0.5f, northStart + 50 + i * 200); 
+    }
     drawRoadSegment(medianWidth / 2 + laneWidth / 2, 0.05f, northStart, laneWidth, northLength, false);
     drawRoadSegment(-(medianWidth / 2 + laneWidth / 2), 0.05f, northStart, laneWidth, northLength, false);
 
@@ -467,10 +501,6 @@ void CityMasterPlan::buildMainBoulevard(bool isNight) {
     drawSidewalk(medianWidth / 2 + laneWidth + 10, northStart + northLength / 2, 20, northLength, 0.5f);
     drawSidewalk(-(medianWidth / 2 + laneWidth + 10), northStart + northLength / 2, 20, northLength, 0.5f);
 
-    for (int i = 0; i < 20; i++) {
-        drawSimpleTree(0, 0.5f, northStart + 50 + i * 80);
-    }
-
     drawStreetLightRow(lampX, northStart + 40, 80.0f, 18, true, isNight);
     drawStreetLightRow(-lampX, northStart + 40, 80.0f, 18, false, isNight);
 
@@ -478,6 +508,7 @@ void CityMasterPlan::buildMainBoulevard(bool isNight) {
     drawCrosswalk(-(medianWidth / 2 + laneWidth / 2), 0.05f, startZ + 10, laneWidth, 15.0f, false);
     drawCrosswalk(medianWidth / 2 + laneWidth / 2, 0.05f, 550.0f, laneWidth, 15.0f, false);
     drawCrosswalk(-(medianWidth / 2 + laneWidth / 2), 0.05f, 550.0f, laneWidth, 15.0f, false);
+    
 }
 
 void CityMasterPlan::drawRoundabout(float x, float y, float z, float radius, float roadWidth) {
@@ -515,8 +546,6 @@ void CityMasterPlan::buildParkingZone() {
         float cZ = (pZ - pL / 2) + rowHeight * i + rowHeight / 2;
         if (i < numRows - 1) {
             drawSidewalk(pX, cZ + rowHeight / 2, pW - 20, 8.0f, 0.20f);
-            drawSimpleTree(pX - 80, 0.20f, cZ + rowHeight / 2);
-            drawSimpleTree(pX + 80, 0.20f, cZ + rowHeight / 2);
             drawGardenLamp(pX, 0.20f, cZ + rowHeight / 2, false);
         }
 
@@ -540,9 +569,17 @@ void CityMasterPlan::buildParkingZone() {
             }
         }
     }
-    float perimX = pW / 2 + border / 2; float perimZ = pL / 2 + border / 2;
-    for (float z = -perimZ; z <= perimZ; z += 60) { drawSimpleTree(pX + perimX, 0.02f, pZ + z); drawGardenLamp(pX + perimX, 0.02f, pZ + z + 30, false); if (abs(z) > 50) drawSimpleTree(pX - perimX, 0.02f, pZ + z); }
-    for (float x = -perimX; x <= perimX; x += 60) { drawSimpleTree(pX + x, 0.02f, pZ - perimZ); drawSimpleTree(pX + x, 0.02f, pZ + perimZ); }
+    // 7 أشجار فقط حول الكراج
+    float perimX = pW / 2 + border / 2;
+    float perimZ = pL / 2 + border / 2;
+
+    // 3 يمين
+    for (int i = 0; i < 3; i++) drawSimpleTree(pX + perimX, 0.02f, pZ - 100 + i * 100);
+    // 3 يسار
+    for (int i = 0; i < 3; i++) drawSimpleTree(pX - perimX, 0.02f, pZ - 100 + i * 100);
+    // 1 خلف
+    drawSimpleTree(pX, 0.02f, pZ + perimZ);
+
 }
 
 void CityMasterPlan::createAndDrawRandomCar(float x, float y, float z, float rotation, int seed) {
@@ -664,10 +701,17 @@ void CityMasterPlan::drawShowroomSign(bool isNight) {
 void CityMasterPlan::drawCityLayout(bool isNight) {
     glPushAttrib(GL_CURRENT_BIT | GL_ENABLE_BIT | GL_TEXTURE_BIT);
 
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+
     drawInfiniteGround();
+
     buildShowroomPlaza();
 
+    glDisable(GL_CULL_FACE);
     drawShowroomSign(isNight);
+    glEnable(GL_CULL_FACE);
+
     buildMainBoulevard(isNight);
 
     float roundR = 80.0f; float roadW = 40.0f;
@@ -679,7 +723,11 @@ void CityMasterPlan::drawCityLayout(bool isNight) {
 
     buildParkingZone();
     buildCommercialZone();
+
     drawLakePark(isNight);
 
     glPopAttrib();
+
+    glDisable(GL_TEXTURE_2D);
+    glColor3f(1, 1, 1);
 }
