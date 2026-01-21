@@ -111,6 +111,9 @@
     <ClCompile Include="Garden.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="F1Car.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Pillar.h">
@@ -201,6 +204,9 @@
       <Filter>Header Files\Cars</Filter>
     </ClInclude>
     <ClInclude Include="Garden.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="F1Car.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -5,7 +5,6 @@
 #include <cstdlib>
 #include <ctime>
 
-// --- تضمين ملفات المشروع ---
 #include "Pillar.h"
 #include "Hpillar.h"
 #include "Showroomside.h"
@@ -21,6 +20,7 @@
 #include "GlassManager.h"
 #include "CameraSphere.h"
 #include "CityMasterPlan.h"
+#include "F1Car.h"
 #include "Lake.h" // كلاس البحيرة الجديد
 #include "include\\stb_image.h"
 
@@ -34,30 +34,30 @@ using namespace std;
 // تعريف المتغيرات والكائنات العالمية
 // ==========================================
 
-// متغيرات الكاميرا والتحكم
 float camX = 500, camY = 300, camZ = 500.0f;
 float yaw = -90.0f, pitch = 0.0f;
 float lookX = -1.0f, lookY = -1.0f, lookZ = -1.0f;
 int lastMouseX, lastMouseY, weatherstatus = 0, currentCam = 0;
 bool firstMouse = true, ignoreWarp;
 int centerX, centerY, lastCam = 0;
+//const float F1Car::COL_BLACK[] = { 0.15f, 0.15f, 0.15f };
+//const float F1Car::COL_GREY[] = { 0.7f, 0.7f, 0.7f };
+//const float F1Car::COL_DARK[] = { 0.1f, 0.1f, 0.1f };
 
-// حدود المعرض القديمة (ما زالت تستخدم في التصادمات)
 float maxX = 150, maxz = 200, diff = 45;
 float minX = -maxX, minz = -maxz;
 
-// كائنات المشروع المختلفة
 Maherheader maher;
 AbrarCode abrarCode;
 Jeep_Builder_Final myJeep;
 SaraCode saraCode;
 GlassManager glassMgr;
 CameraSphere cam;
+F1Car carRed(0.8f, 0.1f, 0.1f);
+F1Car carBlue(0.1f, 0.3f, 0.8f);
+F1Car carYellow(0.9f, 0.8f, 0.1f);
 
 // --- تعريف البحيرة العاكسة ---
-// الإحداثيات مطابقة لما تم تحديده في CityMasterPlan::drawLakePark
-// X = -280, Z = 600, Width = 200, Length = 300
-// الارتفاع 0.06 ليكون أعلى بقليل من عشب الحديقة (0.05) لتجنب التداخل
 Lake myReflectionLake(-280.0f, 0.06f, 600.0f, 200.0f, 300.0f, 0.6f);
 
 // إعدادات الكاميرات الأمنية
@@ -224,7 +224,6 @@ void switchCamera(int newCam) {
 
 void createCollidables() {
     collidableObjects.clear();
-    // حدود المعرض والجدران
     float wall_1_x = minX + (maxX - minX - diff) / 2.0f;
     float wall_2_x = maxX - (maxX - minX - diff) / 2.0f;
     float wall_z_range = (maxz - minz - 2 * diff) / 2.0f;
@@ -244,7 +243,6 @@ void createCollidables() {
     collidableObjects.push_back({ center_x_C1 - extentX, 0.0f, -extentZ, maxX, 30.0f, extentZ });
     collidableObjects.push_back({ minX, 0.0f, -extentZ, center_x_C2 + extentX, 30.0f, extentZ });
 
-    // السيارات المعروضة
     float beetle_x = 90.0f;
     float beetle_z[] = { -40.0f, -75.0f, -110.0f, -145.0f };
     for (float z : beetle_z) {
@@ -404,10 +402,6 @@ void setCamera(int camIndex) {
     }
 }
 
-// ==========================================
-// منطق الرسم المتقدم (Refactored for Reflection)
-// ==========================================
-
 void initRendering() {
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_LIGHTING);
@@ -439,21 +433,14 @@ void initRendering() {
 
 void initEnvironment() {}
 
-// --- دالة رسم محتوى العالم (Solid Objects) ---
-// هذه الدالة ترسم كل شيء ما عدا الانعكاس والسماء والكاميرات
-// يتم استدعاؤها مرتين: مرة للعالم الحقيقي ومرة داخل الـ Stencil للعكس
 void renderWorldContent() {
-    // 1. سيارات المعرض والمصعد (Abrar)
     abrarCode.drawCars();
     abrarCode.drawGroundFloorElevator();
     abrarCode.drawSecondFloor();
     saraCode.drawAll();
 
-    // 2. المدينة والمعرض (Maher)
-    // نمرر 0 للكاميرات هنا لعدم رسم شاشات المراقبة داخل الانعكاس (توفير أداء)
     maher.draw(camX, camY, camZ, isLightOn, cctvTexIDs);
 
-    // 3. سيارات الجيب (مع حماية إعدادات الإضاءة)
     glPushAttrib(GL_LIGHTING_BIT | GL_CURRENT_BIT | GL_ENABLE_BIT | GL_TRANSFORM_BIT);
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
@@ -475,7 +462,6 @@ void renderWorldContent() {
 }
 
 void drawSceneForReflection() {
-    // 1. رسم السماء أولاً (لتكون في الخلفية)
     GLuint skyTex = isLightOn ? dayskyTex : nightskyTex;
     drawSkyBody(isLightOn);
     drawSkyDome(2000, 64, 64, skyTex);
@@ -483,15 +469,11 @@ void drawSceneForReflection() {
     if (weatherstatus != 0)
         for (int i = 0; i < CloudCount; i++) myClouds[i].draw(weatherstatus);
 
-    // 3. العالم الصلب
     renderWorldContent();
 }
 
-
-// الدالة الرئيسية لرسم المشهد
 void drawscene(bool drawcam = 1)
 {
-    // 1. السماء
     drawSkyBody(isLightOn);
     GLuint skyTex;
     if (isLightOn) {
@@ -507,18 +489,14 @@ void drawscene(bool drawcam = 1)
         skyTex = nightskyTex;
     }
 
-    // 2. المطر
     if (weatherstatus == 2) myRain.draw();
 
-    // 3. رسم الكائنات الصلبة
     renderWorldContent();
 
-    // 4. السحب
     for (int i = 0; weatherstatus > 0 && i < CloudCount; i++) {
         myClouds[i].draw(weatherstatus);
     }
 
-    // 5. رسم كاميرات المراقبة
     if (drawcam && currentCam != 1) {
         glPushMatrix(); glTranslatef(minX, 60, maxz); glRotatef(270, 0, 1, 0);
         cam.setLookDirection(cameras[0].lookZ, cameras[0].lookY, -cameras[0].lookX); cam.draw(); glPopMatrix();
@@ -536,7 +514,6 @@ void drawscene(bool drawcam = 1)
         cam.setLookDirection(cameras[3].lookZ, -cameras[3].lookX, -cameras[3].lookY); cam.draw(); glPopMatrix();
     }
 
-    // 6. قبة السماء
     drawSkyDome(2000, 64, 64, skyTex);
 }
 
@@ -577,7 +554,6 @@ void display() {
     glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
     glDepthMask(GL_FALSE);
 
-    //myReflectionLake.drawSurface();
     maher.drawGardenWater();
 
     glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
@@ -586,16 +562,38 @@ void display() {
     glStencilFunc(GL_EQUAL, 1, 0xFF);
     glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 
-    //myReflectionLake.drawReflection(drawSceneForReflection);
     maher.drawGardenReflection(drawSceneForReflection);
 
     glDisable(GL_STENCIL_TEST);
 
     drawscene();
 
+    // Red Car
+    glPushMatrix();
+    glTranslatef(-120.0f, 0.0f, -50.0f);
+    glRotatef(90.0f, 0, 1, 0);
+    glScalef(8.5f, 8.5f, 8.5f);
+    carRed.draw();
+    glPopMatrix();
+
+    // Blue Car
+    glPushMatrix();
+    glTranslatef(-120.0f, 0.0f, -90.0f);
+    glRotatef(90.0f, 0, 1, 0);
+    glScalef(8.5f, 8.5f, 8.5f);
+    carBlue.draw();
+    glPopMatrix();
+
+    // Yellow Car
+    glPushMatrix();
+    glTranslatef(-120.0f, 0.0f, -130.0f);
+    glRotatef(90.0f, 0, 1, 0);
+    glScalef(8.5f, 8.5f, 8.5f);
+    carYellow.draw();
+    glPopMatrix();
+
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    //myReflectionLake.drawSurface();
     maher.drawGardenWater();
 
     glDisable(GL_BLEND);

@@ -7,14 +7,10 @@
 
 Garden::Garden() {
     pavementTex = 0; grassTex = 0; wallTex = 0; metalTex = 0;
-    // تهيئة البحيرة: الإحداثيات (0,0,0) لأننا سنحركها مع الحديقة
-    // الحجم: 200 عرض، 300 طول
     gardenLake = new Lake(0, 0.06f, 0, 200.0f, 300.0f, 0.5f);
 }
 
-// دوال التحكم بالماء (جديدة)
 void Garden::drawWaterSurface(float x, float y, float z) {
-    // نقوم بتحديث موقع البحيرة ليطابق موقع الحديقة العالمي
     gardenLake->x = x;
     gardenLake->z = z;
     gardenLake->drawSurface();
@@ -37,7 +33,6 @@ void setupGardenTexture() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 }
 
-// --- دوال التجميل (نفس الكود السابق) ---
 void Garden::drawSimpleTree(float x, float y, float z) {
     glPushMatrix(); glTranslatef(x, y, z); glDisable(GL_TEXTURE_2D);
     glColor3f(0.4f, 0.26f, 0.13f); glPushMatrix(); glRotatef(-90, 1, 0, 0); glutSolidCone(2, 15, 10, 5); glPopMatrix();
@@ -46,6 +41,7 @@ void Garden::drawSimpleTree(float x, float y, float z) {
     glColor3f(0.1f, 0.8f, 0.1f); glPushMatrix(); glTranslatef(0, 16, 0); glRotatef(-90, 1, 0, 0); glutSolidCone(4, 8, 10, 5); glPopMatrix();
     glPopMatrix();
 }
+
 void Garden::drawFlowerBed(float x, float y, float z) {
     glPushMatrix(); glTranslatef(x, y, z); glDisable(GL_TEXTURE_2D);
     glColor3f(0.6f, 0.6f, 0.6f); glPushMatrix(); glScalef(10, 2, 10); glutSolidCube(1); glPopMatrix();
@@ -53,6 +49,7 @@ void Garden::drawFlowerBed(float x, float y, float z) {
     for (int i = 0; i < 5; i++) { glPushMatrix(); float fx = (rand() % 8) - 4; float fz = (rand() % 8) - 4; glTranslatef(fx, 2.0f, fz); if (i % 2 == 0) glColor3f(1, 0, 0); else glColor3f(1, 1, 0); glutSolidSphere(0.5, 5, 5); glPopMatrix(); }
     glPopMatrix();
 }
+
 void Garden::drawGazebo(float x, float y, float z) {
     glPushMatrix(); glTranslatef(x, y, z); glDisable(GL_TEXTURE_2D);
     glColor3f(0.5f, 0.35f, 0.2f); glPushMatrix(); glScalef(30, 1, 30); glutSolidCube(1); glPopMatrix();
@@ -61,6 +58,7 @@ void Garden::drawGazebo(float x, float y, float z) {
     glColor3f(0.3f, 0.1f, 0.0f); glPushMatrix(); glTranslatef(0, 20, 0); glRotatef(-45, 0, 1, 0); glRotatef(-90, 1, 0, 0); glutSolidCone(22, 10, 4, 1); glPopMatrix();
     glPopMatrix();
 }
+
 void Garden::drawWoodenBridge(float x, float y, float z, float length, float width) {
     glPushMatrix(); glTranslatef(x, y, z); glDisable(GL_TEXTURE_2D);
     glColor3f(0.55f, 0.4f, 0.25f); int numPlanks = 30; float plankW = length / numPlanks;
@@ -73,6 +71,7 @@ void Garden::drawWoodenBridge(float x, float y, float z, float length, float wid
         glColor3f(0.55f, 0.4f, 0.25f);
     } glPopMatrix();
 }
+
 void Garden::drawModernBench(float x, float y, float z, float rotation) {
     glPushMatrix(); glTranslatef(x, y, z); glRotatef(rotation, 0, 1, 0); glDisable(GL_TEXTURE_2D);
     glColor3f(0.2f, 0.2f, 0.2f);
@@ -85,6 +84,7 @@ void Garden::drawModernBench(float x, float y, float z, float rotation) {
     glPushMatrix(); glTranslatef(-5, 6, -2.5f); glScalef(0.5, 4, 0.5); glutSolidCube(1); glPopMatrix();
     glPopMatrix();
 }
+
 void Garden::drawGardenLamp(float x, float y, float z, bool isOn) {
     glPushMatrix(); glTranslatef(x, y, z); glDisable(GL_TEXTURE_2D);
     glColor3f(0.1f, 0.1f, 0.1f); glPushMatrix(); glScalef(1, 15, 1); glutSolidCube(1); glPopMatrix();
@@ -98,10 +98,12 @@ void Garden::drawGardenLamp(float x, float y, float z, bool isOn) {
     else { glColor3f(0.4f, 0.4f, 0.4f); glutSolidSphere(1.6, 10, 10); }
     glPopMatrix();
 }
+
 void Garden::drawRock(float x, float y, float z, float size) {
     glPushMatrix(); glTranslatef(x, y, z); glDisable(GL_TEXTURE_2D);
     glColor3f(0.5f, 0.5f, 0.55f); glScalef(size, size * 0.7, size); glRotatef(rand() % 360, 0, 1, 0); glRotatef(rand() % 90, 1, 0, 0); glutSolidDodecahedron(); glPopMatrix();
 }
+
 void Garden::drawReed(float x, float y, float z) {
     glPushMatrix(); glTranslatef(x, y, z); glDisable(GL_TEXTURE_2D); glColor3f(0.2f, 0.4f, 0.1f);
     for (int i = 0; i < 5; i++) { glPushMatrix(); glTranslatef((rand() % 10) / 10.0f, 0, (rand() % 10) / 10.0f); glScalef(0.05f, 1.5f + (rand() % 10) / 10.0f, 0.05f); glutSolidCube(1); glPopMatrix(); }
@@ -125,7 +127,7 @@ void Garden::drawFence(float w, float l) {
     }
     for (float i = -l / 2; i <= l / 2; i += gap) {
         glPushMatrix(); glTranslatef(-w / 2, poleH / 2, i); glScalef(1, poleH, 1); glutSolidCube(1); glPopMatrix();
-        if (abs(i) > 20) { // فتحة البوابة
+        if (abs(i) > 20) {
             glPushMatrix(); glTranslatef(w / 2, poleH / 2, i); glScalef(1, poleH, 1); glutSolidCube(1); glPopMatrix();
         }
     }
@@ -141,12 +143,11 @@ void Garden::drawMainGate() {
 
 void Garden::draw(float x, float y, float z, bool isNight) {
     glPushMatrix();
-    glTranslatef(x, y, z); // المركز
+    glTranslatef(x, y, z); 
 
     float gardenW = 350.0f; float gardenL = 500.0f;
     float lakeW = 200.0f; float lakeL = 300.0f;
 
-    // 1. الرصيف الجامع (مع تفريغ البحيرة)
     glEnable(GL_TEXTURE_2D); glBindTexture(GL_TEXTURE_2D, pavementTex); setupGardenTexture();
     glColor3f(0.9f, 0.9f, 0.9f); float tS = 0.02f;
     glBegin(GL_QUADS); glNormal3f(0, 1, 0);
@@ -163,11 +164,9 @@ void Garden::draw(float x, float y, float z, bool isNight) {
     glTexCoord2f(1, 1); glVertex3f(lakeW / 2 + sideW, 0.05f, lakeL / 2); glTexCoord2f(0, 1); glVertex3f(lakeW / 2, 0.05f, lakeL / 2);
     glEnd(); glDisable(GL_TEXTURE_2D);
 
-    // 2. السور والبوابة
     drawFence(gardenW, gardenL);
     glPushMatrix(); glTranslatef(gardenW / 2, 0, 0); glRotatef(90, 0, 1, 0); drawMainGate(); glPopMatrix();
 
-    // 3. الطبيعة حول البحيرة
     for (int i = 0; i < 40; i++) {
         drawRock(-lakeW / 2 + (rand() % (int)lakeW), 0.05f, -lakeL / 2 + (rand() % 8) - 4, 2.5f);
         drawRock(-lakeW / 2 + (rand() % (int)lakeW), 0.05f, lakeL / 2 + (rand() % 8) - 4, 2.5f);
@@ -179,17 +178,14 @@ void Garden::draw(float x, float y, float z, bool isNight) {
         drawReed(lakeW / 2 - 5, 0.0f, -lakeL / 2 + i * 10);
     }
 
-    // 4. الجزيرة
     glEnable(GL_TEXTURE_2D); glBindTexture(GL_TEXTURE_2D, grassTex);
     glPushMatrix(); glTranslatef(0, -1.0f, 0); glScalef(30, 5, 30); glutSolidSphere(1, 20, 20); glPopMatrix();
     glDisable(GL_TEXTURE_2D); drawSimpleTree(0, 1.5f, 0);
 
-    // 5. الديكورات
     drawWoodenBridge(0, 0.1f, 50, 120.0f, 20.0f);
     drawGazebo(lakeW / 2 + 40, 0.1f, -lakeL / 2 + 40);
     drawJuiceStall(-gardenW / 2 + 40, 0.1f, gardenL / 2 - 40);
 
-    // 6. المقاعد والإضاءة
     float benchStart = -120;
     for (int i = 0; i < 5; i++) {
         float posZ = benchStart + i * 60;

@@ -147,6 +147,7 @@
     <ClCompile Include="CameraSphere.cpp" />
     <ClCompile Include="Car.cpp" />
     <ClCompile Include="CityMasterPlan.cpp" />
+    <ClCompile Include="F1Car.cpp" />
     <ClCompile Include="Furniture.cpp" />
     <ClCompile Include="Garden.cpp" />
     <ClCompile Include="GlassManager.cpp" />
@@ -179,6 +180,7 @@
     <ClInclude Include="CameraSphere.h" />
     <ClInclude Include="Car.h" />
     <ClInclude Include="CityMasterPlan.h" />
+    <ClInclude Include="F1Car.h" />
     <ClInclude Include="Furniture.h" />
     <ClInclude Include="Garden.h" />
     <ClInclude Include="GlassManager.h" />
