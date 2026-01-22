@@ -16,7 +16,6 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-// إحداثيات المصعد
 const float ELEV_X = -120.0f;
 const float ELEV_Z = -170.0f;
 const float FLOOR_H = 60.0f;
@@ -29,7 +28,7 @@ AbrarCode::AbrarCode() {
     activeCarIndex = -1;
     animT = 0.0f;
     lastCollisionSoundTime = 0;
-    carWasInsideShowroom = true; 
+    carWasInsideShowroom = true;
     elevatorY = 0.0f;
     targetElevatorY = 0.0f;
     elevState = ELEV_IDLE;
@@ -38,7 +37,7 @@ AbrarCode::AbrarCode() {
     doorGapCabin = 0.0f;
     playerInElevator = false;
     elevatorDoorsOpen = true;
-    elevatorDoorOffset = 10.0f; 
+    elevatorDoorOffset = 10.0f;
 
     float pX = 120.0f, s = 8.0f, r = -90.0f;
     cars.push_back({ pX, 2.0f, -40.0f, s, r, 0, {0,0,0,0}, {0,0,0,0} });
@@ -76,9 +75,9 @@ void AbrarCode::attemptEnterCar(float cx, float cz) {
 bool AbrarCode::checkCarCollision(float nextX, float nextZ, const std::vector<BoundingBox>& collidableObjects) {
     bool isInsideShowroom = (nextZ < 200.0f && abs(nextX) < 150.0f);
 
-    float carWidth = 10.0f;  
-    float carLength = 22.0f; 
-    float carHeight = 12.0f; 
+    float carWidth = 10.0f;
+    float carLength = 22.0f;
+    float carHeight = 12.0f;
     float angleRad = cars[activeCarIndex].rotY * M_PI / 180.0f;
     float cosAngle = cos(angleRad);
     float sinAngle = sin(angleRad);
@@ -105,14 +104,14 @@ bool AbrarCode::checkCarCollision(float nextX, float nextZ, const std::vector<Bo
 
 
     if (isInsideShowroom) {
-       
+
         for (const auto& objBox : collidableObjects) {
             if (objBox.maxY < FLOOR_H - 1.0f) continue;
 
             if (carBox.maxX > objBox.minX && carBox.minX < objBox.maxX &&
                 carBox.maxY > objBox.minY && carBox.minY < objBox.maxY &&
                 carBox.maxZ > objBox.minZ && carBox.minZ < objBox.maxZ) {
-                return true; 
+                return true;
             }
         }
 
@@ -123,13 +122,13 @@ bool AbrarCode::checkCarCollision(float nextX, float nextZ, const std::vector<Bo
             }
         }
 
-        return false; 
+        return false;
     }
     else {
 
         bool isCurrentlyInside = (cars[activeCarIndex].z < 200.0f);
-        if (isCurrentlyInside) { 
-            if (nextX < -22.5f || nextX > 22.5f) { 
+        if (isCurrentlyInside) {
+            if (nextX < -22.5f || nextX > 22.5f) {
                 return true;
             }
         }
@@ -140,11 +139,11 @@ bool AbrarCode::checkCarCollision(float nextX, float nextZ, const std::vector<Bo
             if (carBox.maxX > objBox.minX && carBox.minX < objBox.maxX &&
                 carBox.maxY > objBox.minY && carBox.minY < objBox.maxY &&
                 carBox.maxZ > objBox.minZ && carBox.minZ < objBox.maxZ) {
-                return true; 
+                return true;
             }
         }
 
-        return false; 
+        return false;
     }
 }
 
@@ -153,7 +152,7 @@ void AbrarCode::driveActiveCar(float speed, float turn, const std::vector<Boundi
 
     cars[activeCarIndex].rotY -= turn;
 
-    float steerLimit = 45.0f; 
+    float steerLimit = 45.0f;
     if (turn != 0) {
         cars[activeCarIndex].currentSteer += turn * 5.0f;
         if (cars[activeCarIndex].currentSteer > steerLimit) cars[activeCarIndex].currentSteer = steerLimit;
@@ -180,7 +179,6 @@ void AbrarCode::driveActiveCar(float speed, float turn, const std::vector<Boundi
     }
 }
 
-// --- INPUT LOGIC ---
 void AbrarCode::handleInput(unsigned char key, float& camX, float& camY, float& camZ, const std::vector<BoundingBox>& collidableObjects) {
     if (currentState == STATE_WALKING) {
         if (key == 'n' || key == 'N') {
@@ -210,16 +208,16 @@ void AbrarCode::handleInput(unsigned char key, float& camX, float& camY, float& 
             }
         }
 
-if (key == 'g' || key == 'G') {
+        if (key == 'g' || key == 'G') {
             attemptEnterCar(camX, camZ);
             SoundManager::playNow("sounds/marsh.wav");
             SoundManager::playLoopWithDelay("sounds/car-reverse-.wav", 2000);
 
-           // PlaySound(TEXT("sounds/car-reverse-1.wav"), NULL, SND_FILENAME | SND_ASYNC);
-          
-        }      
+            // PlaySound(TEXT("sounds/car-reverse-1.wav"), NULL, SND_FILENAME | SND_ASYNC);
 
-if (key == 'f' || key == 'F') {
+        }
+
+        if (key == 'f' || key == 'F') {
             int c = -1; float md = 40.0f;
             for (int i = 0; i < cars.size(); i++) { float d = dist(camX, camZ, cars[i].x, cars[i].z); if (d < md) { md = d; c = i; } }
             if (c != -1) {
@@ -227,12 +225,12 @@ if (key == 'f' || key == 'F') {
                 {
                     cars[c].targetDoors[1] = 60;
                     SoundManager::playNow("sounds/car-door-open.wav");
-                    updateAmbientSound1(); 
+                    updateAmbientSound1();
                 }
                 else {
                     cars[c].targetDoors[1] = 0;
                     SoundManager::playNow("sounds/car-door-close.wav");
-                    updateAmbientSound1(); 
+                    updateAmbientSound1();
                 }
             }
         }
@@ -261,14 +259,14 @@ if (key == 'f' || key == 'F') {
         case 'a': driveActiveCar(0, -t, collidableObjects); break;
         case 'd': driveActiveCar(0, t, collidableObjects); break;
         case 'g':
-            updateAmbientSound(); 
+            updateAmbientSound();
             cars[activeCarIndex].targetDoors[1] = 0.0f;
             currentState = STATE_WALKING;
             activeCarIndex = -1;
             camY = 20.0f;
             break;
         case 'f':
-           if (cars[activeCarIndex].targetDoors[1] < 1) {
+            if (cars[activeCarIndex].targetDoors[1] < 1) {
                 cars[activeCarIndex].targetDoors[1] = 60;
                 SoundManager::playNow("sounds/car-door-open.wav");
                 SoundManager::playLoopWithDelay("sounds/car-reverse-.wav", 500);
@@ -367,8 +365,6 @@ void AbrarCode::update(float& camX, float& camY, float& camZ, float& yaw, float&
 
     }
 }
-
-// --- DRAWING ---
 
 void AbrarCode::drawElevatorShaft(float x, float z, float h) {
     float w = 30.0f;
@@ -579,9 +575,6 @@ void AbrarCode::drawVideoWall(float x, float y, float z, float w, float h) {
 
 void AbrarCode::drawSecretariatOffice(float x, float y, float z) {
     glPushMatrix(); glTranslatef(x, y, z);
-    glEnable(GL_BLEND); glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glColor4f(0.7, 0.8, 1, 0.3); glPushMatrix(); glTranslatef(-30, 20, 0); glScalef(2, 40, 100); glutSolidCube(1); glPopMatrix();
-    glDisable(GL_BLEND);
     glColor3f(0.4, 0.2, 0.1); glPushMatrix(); glTranslatef(10, 5, -20); glScalef(40, 10, 10); glutSolidCube(1); glPopMatrix();
     glPushMatrix(); glTranslatef(25, 5, 0); glScalef(10, 10, 50); glutSolidCube(1); glPopMatrix();
     SteveModel s(0.3f); SteveModel::setShirtColor(0.9, 0.6, 0.6); glPushMatrix(); glTranslatef(15, 0, -30); glRotatef(150, 0, 1, 0); s.draw(); glPopMatrix();

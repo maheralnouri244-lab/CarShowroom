@@ -37,7 +37,9 @@ public:
 
     void update(float& camX, float& camY, float& camZ, float& yaw, float& pitch);
     void handleInput(unsigned char key, float& camX, float& camY, float& camZ, const std::vector<BoundingBox>& collidableObjects);
-    InteractionState getState() { return currentState; }
+    InteractionState getState() {
+        return currentState;
+    }
 
 private:
     BeetleCar myCar;
@@ -45,7 +47,7 @@ private:
     InteractionState currentState;
     int activeCarIndex;
     long lastCollisionSoundTime; 
-    bool carWasInsideShowroom; // <--- أضف هذا السطر
+    bool carWasInsideShowroom;
     float animT;
     float startX, startY, startZ, startYaw, startPitch;
     float targetX, targetY, targetZ, targetYaw, targetPitch;

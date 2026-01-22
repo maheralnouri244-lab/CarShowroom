@@ -21,6 +21,8 @@ public:
 
 private:
     CityMasterPlan cityPlan;
+    Roadway roadway;
+   // CityMasterPlan cityPlan;
     WoodBuilding build[30];
     unsigned int roadTexID;
     unsigned int pavementTexID;

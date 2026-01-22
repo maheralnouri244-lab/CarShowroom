@@ -15,7 +15,6 @@ Model::~Model() {
     }
 }
 
-// --- دالة التحميل (السريعة) ---
 void Model::load(const char* filename) {
     std::cout << "\n[Model] Loading: " << filename << "..." << std::endl;
 
@@ -92,14 +91,12 @@ void Model::load(const char* filename) {
     fclose(file);
 }
 
-// --- دالة تعيين التيكستشر ---
 void Model::assignTexture(std::string materialName, unsigned int texID) {
     if (meshes.find(materialName) != meshes.end()) {
         meshes[materialName].textureID = texID;
     }
 }
 
-// --- دالة تعيين اللون ---
 void Model::assignColor(std::string materialName, float r, float g, float b) {
     if (meshes.find(materialName) != meshes.end()) {
         meshes[materialName].r = r;
@@ -108,7 +105,6 @@ void Model::assignColor(std::string materialName, float r, float g, float b) {
     }
 }
 
-// --- دالة تجميع القائمة (للتسريع) ---
 void Model::compileDisplayList() {
     displayListID = glGenLists(1);
     glNewList(displayListID, GL_COMPILE);
@@ -142,7 +138,6 @@ void Model::compileDisplayList() {
     isCompiled = true;
 }
 
-// --- دالة الرسم ---
 void Model::draw() {
     if (!isCompiled) {
         compileDisplayList();

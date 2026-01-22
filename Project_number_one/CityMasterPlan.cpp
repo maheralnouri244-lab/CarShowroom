@@ -1,38 +1,14 @@
 ﻿#include "CityMasterPlan.h"
+#include "Sedan.h"
+#include "SUV.h"
+#include "Taxi.h"
+#include "SportsCar.h"
+#include "Ambulance.h"
 #include <iostream>
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
-
-CityMasterPlan::CityMasterPlan() : streetLightObj(22.0f, 0.7f) {
-    roadTex = 0; pavementTex = 0; grassTex = 0; parkingTex = 0; waterTex = 0; wallTex = 0;
-
-    treeModel.load("MapleTree.obj");
-}
-
-
-// تحديث دالة استقبال الصور
-void CityMasterPlan::setTextures(unsigned int road, unsigned int pavement, unsigned int grass,
-    unsigned int parkingAsphalt, unsigned int water, unsigned int wall,
-    unsigned int treeBark, unsigned int treeLeaf) {
-    roadTex = road;
-    pavementTex = pavement;
-    grassTex = grass;
-    parkingTex = parkingAsphalt;
-    waterTex = water;
-    wallTex = wall;
-
-    treeModel.assignTexture("None.001", treeBark);
-    treeModel.assignTexture("None", treeBark);
-
-    treeModel.assignTexture("None_maple_leaf.png.001", treeLeaf);
-
-    treeModel.assignColor("None_maple_leaf.png.001", 0.4f, 0.85f, 0.4f);
-
-    treeModel.assignColor("None.001", 0.6f, 0.3f, 0.1f);
-}
-
 
 void setupRepeatedTexture() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -41,693 +17,372 @@ void setupRepeatedTexture() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 }
 
-// ==========================================
-// العناصر التجميلية
-// ==========================================
-
-// استبدل دالة drawSimpleTree القديمة بهذه:
-void CityMasterPlan::drawSimpleTree(float x, float y, float z) {
-    glPushMatrix();
-    glTranslatef(x, y, z);
-
-    // ضبط الحجم ليكون مناسباً (موديل الشجرة عادة يحتاج تكبير أو تصغير حسب مصدره)
-    // جرب 1.5f، إذا كانت صغيرة جداً جرب 10.0f
-    glScalef(1.5f, 1.5f, 1.5f);
-
-    // تدوير عشوائي لتبدو طبيعية
-    int seed = (int)(x * z);
-    glRotatef(seed % 360, 0, 1, 0);
-
-    // تفعيل الشفافية للأوراق
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glEnable(GL_ALPHA_TEST);
-    glAlphaFunc(GL_GREATER, 0.5f);
-
-    // الكود الجديد للموديل (تأكد من وجود treeModel في الكلاس):
-    treeModel.draw(); // فك التعليق عن هذا السطر
-
-    glDisable(GL_ALPHA_TEST);
-    glDisable(GL_BLEND);
-    glPopMatrix();
+CityMasterPlan::CityMasterPlan() : streetLightObj(22.0f, 0.7f) {
+    roadTex = 0; 
+    pavementTex = 0; 
+    grassTex = 0; 
+    parkingTex = 0; 
+    waterTex = 0; 
+    wallTex = 0;
 }
 
+void CityMasterPlan::setTextures(unsigned int road, unsigned int pavement, unsigned int grass, unsigned int parkingAsphalt, unsigned int water, unsigned int wall, unsigned int treeBark, unsigned int treeLeaf) {
+    roadTex = road; 
+    pavementTex = pavement; 
+    grassTex = grass; 
+    parkingTex = parkingAsphalt; 
+    waterTex = water; 
+    wallTex = wall;
 
-void CityMasterPlan::drawFlowerBed(float x, float y, float z) {
-    glPushMatrix(); glTranslatef(x, y, z); glDisable(GL_TEXTURE_2D);
-    glColor3f(0.6f, 0.6f, 0.6f); glPushMatrix(); glScalef(10, 2, 10); glutSolidCube(1); glPopMatrix();
-    glColor3f(0.3f, 0.2f, 0.1f); glPushMatrix(); glTranslatef(0, 1.1f, 0); glScalef(9, 0.5, 9); glutSolidCube(1); glPopMatrix();
-    for (int i = 0; i < 5; i++) {
-        glPushMatrix(); float fx = (rand() % 8) - 4; float fz = (rand() % 8) - 4;
-        glTranslatef(fx, 2.0f, fz); if (i % 2 == 0) glColor3f(1, 0, 0); else glColor3f(1, 1, 0);
-        glutSolidSphere(0.5, 5, 5); glPopMatrix();
-    }
-    glPopMatrix();
-}
+    roadSys.setTextures(road, pavement, parkingAsphalt, grass);
+    vegetation.setTextures(treeBark, treeLeaf);
+    myGarden.setTextures(pavement, grass, wall, parkingAsphalt);
 
-void CityMasterPlan::drawGazebo(float x, float y, float z) {
-    glPushMatrix(); glTranslatef(x, y, z); glDisable(GL_TEXTURE_2D);
-    glColor3f(0.5f, 0.35f, 0.2f); glPushMatrix(); glScalef(30, 1, 30); glutSolidCube(1); glPopMatrix();
-    glColor3f(0.4f, 0.2f, 0.1f); float pOff = 13.0f;
-    for (int i = 0; i < 4; i++) {
-        glPushMatrix(); float px = (i < 2) ? pOff : -pOff; float pz = (i % 2 == 0) ? pOff : -pOff;
-        glTranslatef(px, 10, pz); glScalef(1, 20, 1); glutSolidCube(1); glPopMatrix();
-    }
-    glColor3f(0.3f, 0.1f, 0.0f);
-    glPushMatrix(); glTranslatef(0, 20, 0); glRotatef(-45, 0, 1, 0); glRotatef(-90, 1, 0, 0); glutSolidCone(22, 10, 4, 1); glPopMatrix();
-    glPopMatrix();
-}
-
-void CityMasterPlan::drawWoodenBridge(float x, float y, float z, float length, float width) {
-    glPushMatrix(); glTranslatef(x, y, z); glDisable(GL_TEXTURE_2D);
-    glColor3f(0.55f, 0.4f, 0.25f); int numPlanks = 40; float plankW = length / numPlanks;
-    for (int i = 0; i < numPlanks; i++) {
-        float progress = (float)i / numPlanks; float arcH = sin(progress * M_PI) * 8.0f;
-        glPushMatrix(); glTranslatef(-length / 2 + i * plankW, arcH, 0); glScalef(plankW * 0.9, 0.5, width); glutSolidCube(1); glPopMatrix();
-        glColor3f(0.3f, 0.2f, 0.1f);
-        glPushMatrix(); glTranslatef(-length / 2 + i * plankW, arcH + 3, width / 2 - 0.5); glScalef(0.5, 6, 0.5); glutSolidCube(1); glPopMatrix();
-        glPushMatrix(); glTranslatef(-length / 2 + i * plankW, arcH + 3, -width / 2 + 0.5); glScalef(0.5, 6, 0.5); glutSolidCube(1); glPopMatrix();
-        glColor3f(0.55f, 0.4f, 0.25f);
-    }
-    glPopMatrix();
-}
-
-void CityMasterPlan::drawParkingCanopy(float x, float y, float z, float width, float length) {
-    glPushMatrix(); glTranslatef(x, y, z); glDisable(GL_TEXTURE_2D);
-    glColor3f(0.3f, 0.3f, 0.35f); float poleH = 15.0f;
-    glPushMatrix(); glTranslatef(-width / 2 + 1, poleH / 2, -length / 2 + 1); glScalef(1, poleH, 1); glutSolidCube(1); glPopMatrix();
-    glPushMatrix(); glTranslatef(width / 2 - 1, poleH / 2, -length / 2 + 1); glScalef(1, poleH, 1); glutSolidCube(1); glPopMatrix();
-    glColor3f(0.9f, 0.9f, 0.95f);
-    glBegin(GL_QUADS); glVertex3f(-width / 2, poleH, -length / 2); glVertex3f(width / 2, poleH, -length / 2); glVertex3f(width / 2, poleH - 3, length / 2); glVertex3f(-width / 2, poleH - 3, length / 2); glEnd();
-    glPopMatrix();
-}
-
-void CityMasterPlan::drawModernBench(float x, float y, float z, float rotation) {
-    glPushMatrix(); glTranslatef(x, y, z); glRotatef(rotation, 0, 1, 0); glDisable(GL_TEXTURE_2D);
-    glColor3f(0.2f, 0.2f, 0.2f);
-    glPushMatrix(); glTranslatef(6, 2, 0); glScalef(1, 4, 6); glutSolidCube(1); glPopMatrix();
-    glPushMatrix(); glTranslatef(-6, 2, 0); glScalef(1, 4, 6); glutSolidCube(1); glPopMatrix();
-    glColor3f(0.6f, 0.3f, 0.1f); glPushMatrix(); glTranslatef(0, 4.5f, 0); glScalef(14, 1, 6); glutSolidCube(1); glPopMatrix();
-    glPushMatrix(); glTranslatef(0, 7.5f, -2.5f); glScalef(14, 4, 1); glutSolidCube(1); glPopMatrix();
-    glColor3f(0.2f, 0.2f, 0.2f);
-    glPushMatrix(); glTranslatef(5, 6, -2.5f); glScalef(0.5, 4, 0.5); glutSolidCube(1); glPopMatrix();
-    glPushMatrix(); glTranslatef(-5, 6, -2.5f); glScalef(0.5, 4, 0.5); glutSolidCube(1); glPopMatrix();
-    glPopMatrix();
-}
-
-void CityMasterPlan::drawGardenLamp(float x, float y, float z, bool isOn) {
-    glPushMatrix(); glTranslatef(x, y, z); glDisable(GL_TEXTURE_2D);
-    glColor3f(0.1f, 0.1f, 0.1f); glPushMatrix(); glScalef(1, 15, 1); glutSolidCube(1); glPopMatrix();
-    glTranslatef(0, 8, 0); glColor3f(0.2f, 0.2f, 0.2f); glutSolidSphere(1.5, 10, 10);
-    if (isOn) {
-        glDisable(GL_LIGHTING); glColor3f(1.0f, 1.0f, 0.8f); glutSolidSphere(1.6, 10, 10);
-        glEnable(GL_BLEND); glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); glDepthMask(GL_FALSE);
-        glPushMatrix(); glRotatef(90, 1, 0, 0); glColor4f(1.0f, 0.9f, 0.5f, 0.2f); glutSolidCone(10.0, 20.0, 20, 10); glPopMatrix();
-        glDepthMask(GL_TRUE); glDisable(GL_BLEND); glEnable(GL_LIGHTING);
-    }
-    else { glColor3f(0.4f, 0.4f, 0.4f); glutSolidSphere(1.6, 10, 10); }
-    glPopMatrix();
-}
-
-void CityMasterPlan::drawCafeSet(float x, float y, float z) {
-    glPushMatrix();
-    glTranslatef(x, y, z);
-
-    glScalef(3.0f, 3.0f, 3.0f);
-
-    glDisable(GL_TEXTURE_2D);
-
-    glColor3f(0.9f, 0.9f, 0.9f);
-    glPushMatrix(); glTranslatef(0, 3, 0); glRotatef(-90, 1, 0, 0); glutSolidCone(4, 1, 10, 1); glPopMatrix();
-    glColor3f(0.2f, 0.2f, 0.2f);
-    glPushMatrix(); glTranslatef(0, 1.5, 0); glScalef(0.5, 3, 0.5); glutSolidCube(1); glPopMatrix();
-
-    glPushMatrix(); glTranslatef(0, 12, 0); glRotatef(-90, 1, 0, 0);
-    glColor3f(0.8f, 0.2f, 0.2f); glutSolidCone(8, 4, 8, 1); // الجزء الأحمر
-    glPopMatrix();
-
-    glColor3f(0.2f, 0.2f, 0.2f);
-    glPushMatrix(); glTranslatef(0, 6, 0); glScalef(0.3, 12, 0.3); glutSolidCube(1); glPopMatrix();
-
-    for (int i = 0; i < 4; i++) {
-        glPushMatrix();
-        glRotatef(i * 90 + 45, 0, 1, 0);
-        glTranslatef(0, 0, 5);
-
-        glColor3f(0.4f, 0.2f, 0.1f);
-        glPushMatrix(); glTranslatef(0, 2, 0); glScalef(3, 0.5, 3); glutSolidCube(1); glPopMatrix();
-        glPushMatrix(); glTranslatef(0, 4, -1.5); glScalef(3, 4, 0.5); glutSolidCube(1); glPopMatrix();
-        glPopMatrix();
-    }
-    glPopMatrix();
-}
-
-void CityMasterPlan::drawModernKiosk(float x, float y, float z) {
-    glPushMatrix(); glTranslatef(x, y, z); glDisable(GL_TEXTURE_2D);
-    glColor3f(0.2f, 0.2f, 0.2f); glPushMatrix(); glTranslatef(0, 6, 0); glScalef(15, 12, 10); glutSolidCube(1); glPopMatrix();
-    glColor3f(0.9f, 0.9f, 0.9f); glPushMatrix(); glTranslatef(0, 6, 5.1f); glScalef(12, 6, 0.1f); glutSolidCube(1); glPopMatrix();
-    glColor3f(0.6f, 0.4f, 0.2f); glPushMatrix(); glTranslatef(0, 3, 6.0f); glScalef(16, 1, 2); glutSolidCube(1); glPopMatrix();
-    glColor3f(0.8f, 0.5f, 0.0f); glPushMatrix(); glTranslatef(0, 12.5f, 0); glScalef(16, 1, 12); glutSolidCube(1); glPopMatrix();
-    glPopMatrix();
 }
 
 void CityMasterPlan::drawStreetLightRow(float x, float startZ, float spacing, int count, bool isRightSide, bool isNight) {
     for (int i = 0; i < count; i++) {
         glPushMatrix();
         glTranslatef(x, 0, startZ + i * spacing);
-
-        if (isRightSide) glRotatef(-90, 0, 1, 0);
-        else glRotatef(90, 0, 1, 0);
-
+        if (isRightSide) 
+            glRotatef(-90, 0, 1, 0);
+        else 
+            glRotatef(90, 0, 1, 0);
         streetLightObj.draw(isNight);
         glPopMatrix();
     }
 }
 
-void CityMasterPlan::drawStreetLampBase(float x, float y, float z) {
-    glPushMatrix(); glTranslatef(x, y, z); glDisable(GL_TEXTURE_2D);
-    glColor3f(0.1f, 0.1f, 0.1f); glScalef(2, 1, 2); glutSolidCube(1);
-    glPopMatrix();
-}
-
-void CityMasterPlan::drawJuiceStall(float x, float y, float z) {
-    glPushMatrix(); glTranslatef(x, y, z); glDisable(GL_TEXTURE_2D);
-    glColor3f(1.0f, 0.5f, 0.0f); glPushMatrix(); glTranslatef(0, 5, 0); glScalef(12, 10, 12); glutSolidCube(1); glPopMatrix();
-    glColor3f(0.0f, 0.8f, 0.0f); glPushMatrix(); glTranslatef(0, 11, 6); glScalef(10, 2, 1); glutSolidCube(1); glPopMatrix();
-    glColor3f(1, 1, 0); glPushMatrix(); glTranslatef(-3, 6, 6.5); glutSolidTeapot(1); glPopMatrix();
-    glColor3f(1, 0, 1); glPushMatrix(); glTranslatef(3, 6, 6.5); glutSolidTeapot(1); glPopMatrix();
-    glPopMatrix();
-}
-
-void CityMasterPlan::drawFence(float w, float l) {
-    glDisable(GL_TEXTURE_2D); glColor3f(0.2f, 0.2f, 0.2f); float poleH = 8.0f; float gap = 15.0f;
-    for (float i = -w / 2; i <= w / 2; i += gap) {
-        glPushMatrix(); glTranslatef(i, poleH / 2, -l / 2); glScalef(1, poleH, 1); glutSolidCube(1); glPopMatrix();
-        if (abs(i) > 40) { glPushMatrix(); glTranslatef(i, poleH / 2, l / 2); glScalef(1, poleH, 1); glutSolidCube(1); glPopMatrix(); }
-    }
-    for (float i = -l / 2; i <= l / 2; i += gap) {
-        glPushMatrix(); glTranslatef(w / 2, poleH / 2, i); glScalef(1, poleH, 1); glutSolidCube(1); glPopMatrix();
-        glPushMatrix(); glTranslatef(-w / 2, poleH / 2, i); glScalef(1, poleH, 1); glutSolidCube(1); glPopMatrix();
-    }
-}
-
-void CityMasterPlan::drawMainGate() {
-    glDisable(GL_TEXTURE_2D); glColor3f(0.8f, 0.7f, 0.6f);
-    glPushMatrix(); glTranslatef(40, 12, 0); glScalef(15, 24, 15); glutSolidCube(1); glPopMatrix();
-    glPushMatrix(); glTranslatef(-40, 12, 0); glScalef(15, 24, 15); glutSolidCube(1); glPopMatrix();
-    glPushMatrix(); glTranslatef(0, 22, 0); glScalef(100, 6, 10); glutSolidCube(1); glPopMatrix();
-    glColor3f(0.1f, 0.4f, 0.1f); glPushMatrix(); glTranslatef(0, 26, 0); glScalef(50, 4, 2); glutSolidCube(1); glPopMatrix();
-}
-
-void CityMasterPlan::drawBalloon(float x, float y, float z, float r, float g, float b) {
-    glPushMatrix(); glTranslatef(x, y, z); glDisable(GL_TEXTURE_2D);
-    glColor3f(1, 1, 1); glBegin(GL_LINES); glVertex3f(0, 0, 0); glVertex3f(0, -10, 0); glEnd();
-    glColor3f(r, g, b); glScalef(1, 1.2, 1); glutSolidSphere(2, 10, 10);
-    glPopMatrix();
-}
-
-void CityMasterPlan::drawGrandOpeningDecor() {
-    float startZ = 200.0f; float endZ = 280.0f;
-    glDisable(GL_TEXTURE_2D);
-    glColor3f(0.8f, 0.0f, 0.0f);
-
-    float carpetY = 0.15f;
-
-    glBegin(GL_QUADS); glNormal3f(0, 1, 0);
-    glVertex3f(-15, carpetY, startZ); glVertex3f(15, carpetY, startZ);
-    glVertex3f(15, carpetY, endZ); glVertex3f(-15, carpetY, endZ);
-    glEnd();
-
-    for (int i = 0; i < 6; i++) {
-        float z = startZ + 10 + i * 12;
-        drawBalloon(20, 15 + (i % 2) * 2, z, 1, 0, 0); drawBalloon(22, 12 + (i % 2) * 2, z, 1, 1, 0);
-        drawBalloon(-20, 15 + (i % 2) * 2, z, 1, 0, 0); drawBalloon(-22, 12 + (i % 2) * 2, z, 1, 1, 0);
-    }
-}
-
-// ==========================================
-// البنية التحتية الأساسية
-// ==========================================
-
-void CityMasterPlan::drawInfiniteGround() {
-    glEnable(GL_STENCIL_TEST);
-    glClear(GL_STENCIL_BUFFER_BIT);
-    glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE);
-    glStencilFunc(GL_ALWAYS, 1, 0xFF);
-    glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE); glDepthMask(GL_FALSE);
-
-    float lakeX = -280.0f; float lakeZ = 600.0f; float lakeW = 200.0f; float lakeL = 300.0f;
-    glBegin(GL_QUADS); glVertex3f(lakeX - lakeW / 2, -0.5f, lakeZ - lakeL / 2); glVertex3f(lakeX + lakeW / 2, -0.5f, lakeZ - lakeL / 2);
-    glVertex3f(lakeX + lakeW / 2, -0.5f, lakeZ + lakeL / 2); glVertex3f(lakeX - lakeW / 2, -0.5f, lakeZ + lakeL / 2); glEnd();
-
-    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE); glDepthMask(GL_TRUE);
-    glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
-    glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-
-    GLfloat mat_specular[] = { 0.0f, 0.0f, 0.0f, 1.0f };
-    GLfloat mat_shininess[] = { 0.0f };
-    glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
-    glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
-
-    glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, grassTex);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-
-    glColor3f(1.0f, 1.0f, 1.0f);
-
-    float size = 2000.0f;
-    float y = -0.5f;
-
-    float scaleFactor = 0.1f;
-
-    glBegin(GL_QUADS); glNormal3f(0, 1, 0);
-    glTexCoord2f(0.0f, 0.0f);                   glVertex3f(-size, y, -size);
-    glTexCoord2f(size * scaleFactor, 0.0f);     glVertex3f(size, y, -size);
-    glTexCoord2f(size * scaleFactor, size * scaleFactor); glVertex3f(size, y, size);
-    glTexCoord2f(0.0f, size * scaleFactor);     glVertex3f(-size, y, size);
-    glEnd();
-
-    glDisable(GL_TEXTURE_2D);
-
-    GLfloat default_specular[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-    GLfloat default_shininess[] = { 50.0f };
-    glMaterialfv(GL_FRONT, GL_SPECULAR, default_specular);
-    glMaterialfv(GL_FRONT, GL_SHININESS, default_shininess);
-
-    glDisable(GL_STENCIL_TEST);
-}
-
-void CityMasterPlan::drawRoadMarkings(float x, float y, float z, float width, float length, bool isHorizontal) {
-    glDisable(GL_TEXTURE_2D); float yL = y + 0.03f; glColor3f(1, 1, 1);
-    glBegin(GL_QUADS); if (!isHorizontal) { glVertex3f(x - width / 2 + 1, yL, z); glVertex3f(x - width / 2 + 2, yL, z); glVertex3f(x - width / 2 + 2, yL, z + length); glVertex3f(x - width / 2 + 1, yL, z + length); glVertex3f(x + width / 2 - 2, yL, z); glVertex3f(x + width / 2 - 1, yL, z); glVertex3f(x + width / 2 - 1, yL, z + length); glVertex3f(x + width / 2 - 2, yL, z + length); }
-    else { glVertex3f(x, yL, z - width / 2 + 1); glVertex3f(x + length, yL, z - width / 2 + 1); glVertex3f(x + length, yL, z - width / 2 + 2); glVertex3f(x, yL, z - width / 2 + 2); glVertex3f(x, yL, z + width / 2 - 2); glVertex3f(x + length, yL, z + width / 2 - 2); glVertex3f(x + length, yL, z + width / 2 - 1); glVertex3f(x, yL, z + width / 2 - 1); } glEnd();
-    glColor3f(1, 0.8, 0); float d = 8, g = 12; glBegin(GL_QUADS); if (!isHorizontal) { for (float c = z;c < z + length;c += d + g) { glVertex3f(x - 0.3, yL, c); glVertex3f(x + 0.3, yL, c); glVertex3f(x + 0.3, yL, c + d); glVertex3f(x - 0.3, yL, c + d); } }
-    else { for (float c = x;c < x + length;c += d + g) { glVertex3f(c, yL, z - 0.3); glVertex3f(c + d, yL, z - 0.3); glVertex3f(c + d, yL, z + 0.3); glVertex3f(c, yL, z + 0.3); } } glEnd();
-}
-
-void CityMasterPlan::drawRoadSegment(float x, float y, float z, float width, float length, bool isHorizontal) {
-    glEnable(GL_TEXTURE_2D); glBindTexture(GL_TEXTURE_2D, roadTex); setupRepeatedTexture();
-    glColor3f(1, 1, 1); float t = 1.0f / 60.0f; glBegin(GL_QUADS); glNormal3f(0, 1, 0);
-    if (!isHorizontal) { float u = width * t, v = length * t; glTexCoord2f(0, 0); glVertex3f(x - width / 2, y, z); glTexCoord2f(u, 0); glVertex3f(x + width / 2, y, z); glTexCoord2f(u, v); glVertex3f(x + width / 2, y, z + length); glTexCoord2f(0, v); glVertex3f(x - width / 2, y, z + length); }
-    else { float u = length * t, v = width * t; glTexCoord2f(0, 0); glVertex3f(x, y, z - width / 2); glTexCoord2f(u, 0); glVertex3f(x + length, y, z - width / 2); glTexCoord2f(u, v); glVertex3f(x + length, y, z + width / 2); glTexCoord2f(0, v); glVertex3f(x, y, z + width / 2); }
-    glEnd(); glDisable(GL_TEXTURE_2D); drawRoadMarkings(x, y, z, width, length, isHorizontal);
-}
-
-void CityMasterPlan::drawSidewalk(float x, float z, float width, float length, float height) {
-    glEnable(GL_TEXTURE_2D); glBindTexture(GL_TEXTURE_2D, pavementTex); setupRepeatedTexture();
-    glColor3f(0.9f, 0.9f, 0.9f); float t = 1.0f / 20.0f; float u = width * t, v = length * t;
-    glBegin(GL_QUADS); glNormal3f(0, 1, 0); glTexCoord2f(0, 0); glVertex3f(x - width / 2, height, z - length / 2); glTexCoord2f(u, 0); glVertex3f(x + width / 2, height, z - length / 2); glTexCoord2f(u, v); glVertex3f(x + width / 2, height, z + length / 2); glTexCoord2f(0, v); glVertex3f(x - width / 2, height, z + length / 2); glEnd(); glDisable(GL_TEXTURE_2D);
-    glColor3f(0.5f, 0.5f, 0.5f); glBegin(GL_QUAD_STRIP); glVertex3f(x - width / 2, 0, z - length / 2); glVertex3f(x - width / 2, height, z - length / 2); glVertex3f(x + width / 2, 0, z - length / 2); glVertex3f(x + width / 2, height, z - length / 2); glVertex3f(x + width / 2, 0, z + length / 2); glVertex3f(x + width / 2, height, z + length / 2); glVertex3f(x - width / 2, 0, z + length / 2); glVertex3f(x - width / 2, height, z + length / 2); glVertex3f(x - width / 2, 0, z - length / 2); glVertex3f(x - width / 2, height, z - length / 2); glEnd();
-}
-
-void CityMasterPlan::drawCurvedSidewalk(float x, float y, float z, float radius, float startAngle, float endAngle, float width) {
-    glEnable(GL_TEXTURE_2D); glBindTexture(GL_TEXTURE_2D, pavementTex); setupRepeatedTexture(); glColor3f(0.9f, 0.9f, 0.9f);
-    glBegin(GL_QUAD_STRIP); for (int i = 0;i <= 20;i++) {
-        float a = startAngle + (endAngle - startAngle) * ((float)i / 20);
-        glNormal3f(0, 1, 0); glTexCoord2f((float)i / 20, 0); glVertex3f(x + radius * cos(a), y, z + radius * sin(a));
-        glTexCoord2f((float)i / 20, 1); glVertex3f(x + (radius + width) * cos(a), y, z + (radius + width) * sin(a));
-    } glEnd(); glDisable(GL_TEXTURE_2D);
-}
-
-void CityMasterPlan::drawCrosswalk(float x, float y, float z, float width, float length, bool isHorizontal) {
-    glDisable(GL_TEXTURE_2D); glColor3f(1, 1, 1); float s = 3, g = 3; glBegin(GL_QUADS);
-    if (!isHorizontal) for (float c = z;c < z + length;c += s + g) { glVertex3f(x - width / 2, y + 0.04, c); glVertex3f(x + width / 2, y + 0.04, c); glVertex3f(x + width / 2, y + 0.04, c + s); glVertex3f(x - width / 2, y + 0.04, c + s); }
-    else for (float c = x;c < x + length;c += s + g) { glVertex3f(c, y + 0.04, z - width / 2); glVertex3f(c + s, y + 0.04, z - width / 2); glVertex3f(c + s, y + 0.04, z + width / 2); glVertex3f(c, y + 0.04, z + width / 2); } glEnd();
-}
-
-void CityMasterPlan::drawParkingLines(float x, float z, float width, float length, int rows, int cols) {
-    glColor3f(1, 1, 1); glLineWidth(2); glBegin(GL_LINES);
-    float lineY = 0.18f;
-    float s = width / cols;
-    for (int i = 0; i <= cols; i++) {
-        float c = x - width / 2 + i * s;
-        glVertex3f(c, lineY, z - length / 2);
-        glVertex3f(c, lineY, z + length / 2);
-    }
-    glEnd();
-}
-
-
-// ==========================================
-// المناطق (Zones)
-// ==========================================
-
-void CityMasterPlan::drawLakePark(bool isNight) {
-    float parkX = -280.0f; float parkZ = 600.0f;
-    float parkW = 350.0f; float parkL = 500.0f;
-    float lakeW = 200.0f; float lakeL = 300.0f;
-
-    glEnable(GL_TEXTURE_2D); glBindTexture(GL_TEXTURE_2D, pavementTex); setupRepeatedTexture();
-    glColor3f(0.9f, 0.9f, 0.9f); float tS = 0.02f;
-    glBegin(GL_QUADS); glNormal3f(0, 1, 0);
-
-    float topH = (parkL - lakeL) / 2.0f; float topZ = parkZ - lakeL / 2 - topH / 2;
-    glTexCoord2f(0, 0); glVertex3f(parkX - parkW / 2, 0.05f, topZ - topH / 2); glTexCoord2f(parkW * tS, 0); glVertex3f(parkX + parkW / 2, 0.05f, topZ - topH / 2);
-    glTexCoord2f(parkW * tS, topH * tS); glVertex3f(parkX + parkW / 2, 0.05f, topZ + topH / 2); glTexCoord2f(0, topH * tS); glVertex3f(parkX - parkW / 2, 0.05f, topZ + topH / 2);
-
-    float botZ = parkZ + lakeL / 2 + topH / 2;
-    glTexCoord2f(0, 0); glVertex3f(parkX - parkW / 2, 0.05f, botZ - topH / 2); glTexCoord2f(parkW * tS, 0); glVertex3f(parkX + parkW / 2, 0.05f, botZ - topH / 2);
-    glTexCoord2f(parkW * tS, topH * tS); glVertex3f(parkX + parkW / 2, 0.05f, botZ + topH / 2); glTexCoord2f(0, topH * tS); glVertex3f(parkX - parkW / 2, 0.05f, botZ + topH / 2);
-
-    float sideW = (parkW - lakeW) / 2.0f; float leftX = parkX - lakeW / 2 - sideW / 2;
-    glTexCoord2f(0, 0); glVertex3f(leftX - sideW / 2, 0.05f, parkZ - lakeL / 2); glTexCoord2f(sideW * tS, 0); glVertex3f(leftX + sideW / 2, 0.05f, parkZ - lakeL / 2);
-    glTexCoord2f(sideW * tS, lakeL * tS); glVertex3f(leftX + sideW / 2, 0.05f, parkZ + lakeL / 2); glTexCoord2f(0, lakeL * tS); glVertex3f(leftX - sideW / 2, 0.05f, parkZ + lakeL / 2);
-
-    float rightX = parkX + lakeW / 2 + sideW / 2;
-    glTexCoord2f(0, 0); glVertex3f(rightX - sideW / 2, 0.05f, parkZ - lakeL / 2); glTexCoord2f(sideW * tS, 0); glVertex3f(rightX + sideW / 2, 0.05f, parkZ - lakeL / 2);
-    glTexCoord2f(sideW * tS, lakeL * tS); glVertex3f(rightX + sideW / 2, 0.05f, parkZ + lakeL / 2); glTexCoord2f(0, lakeL * tS); glVertex3f(rightX - sideW / 2, 0.05f, parkZ + lakeL / 2);
-    glEnd(); glDisable(GL_TEXTURE_2D);
-
-    glPushMatrix(); glTranslatef(parkX, 0, parkZ); drawFence(parkW, parkL);
-    glPushMatrix(); glTranslatef(parkW / 2, 0, 0); glRotatef(-90, 0, 1, 0); drawMainGate(); glPopMatrix();
-    glPopMatrix();
-
-    drawGazebo(parkX + lakeW / 2 + 40, 0.1f, parkZ - lakeL / 2 + 40);
-
-    float benchStart = parkZ - 120;
-    for (int i = 0; i < 5; i++) {
-        float posZ = benchStart + i * 60;
-        drawModernBench(parkX + lakeW / 2 + 20, 0.1f, posZ, -90);
-        drawGardenLamp(parkX + lakeW / 2 + 35, 0.1f, posZ, isNight);
-        drawModernBench(parkX - lakeW / 2 - 20, 0.1f, posZ, 90);
-        drawGardenLamp(parkX - lakeW / 2 - 35, 0.1f, posZ, isNight);
-    }
-
-    drawSimpleTree(parkX - parkW / 2 + 30, 0.1f, parkZ - 150);
-    drawSimpleTree(parkX - parkW / 2 + 30, 0.1f, parkZ + 150);
-    drawSimpleTree(parkX + parkW / 2 - 30, 0.1f, parkZ - 150);
-    drawSimpleTree(parkX + parkW / 2 - 30, 0.1f, parkZ + 150);
-    drawSimpleTree(parkX, 0.1f, parkZ - parkL / 2 + 30);
-
-    drawJuiceStall(parkX - parkW / 2 + 40, 0.1f, parkZ - parkL / 2 + 40);
-}
-
-void CityMasterPlan::buildShowroomPlaza() {
-    float srMinX = -150.0f; float srMaxX = 150.0f; float srMinZ = -200.0f; float srMaxZ = 200.0f;
-    float borderWidth = 30.0f; float frontPlazaDepth = 80.0f;
-
-    glEnable(GL_TEXTURE_2D); glBindTexture(GL_TEXTURE_2D, pavementTex); setupRepeatedTexture();
-    glColor3f(0.9f, 0.9f, 0.9f); float tS = 0.02f;
-    glBegin(GL_QUADS); glNormal3f(0, 1, 0);
-
-    glTexCoord2f(0, 0); glVertex3f(srMinX - borderWidth, 0.02f, srMaxZ);
-    glTexCoord2f(10, 0); glVertex3f(srMaxX + borderWidth, 0.02f, srMaxZ);
-    glTexCoord2f(10, 2); glVertex3f(srMaxX + borderWidth, 0.02f, srMaxZ + frontPlazaDepth);
-    glTexCoord2f(0, 2); glVertex3f(srMinX - borderWidth, 0.02f, srMaxZ + frontPlazaDepth);
-
-    glTexCoord2f(0, 0); glVertex3f(srMaxX, 0.02f, srMinZ - borderWidth);
-    glTexCoord2f(1, 0); glVertex3f(srMaxX + borderWidth, 0.02f, srMinZ - borderWidth);
-    glTexCoord2f(1, 10); glVertex3f(srMaxX + borderWidth, 0.02f, srMaxZ);
-    glTexCoord2f(0, 10); glVertex3f(srMaxX, 0.02f, srMaxZ);
-
-    glTexCoord2f(0, 0); glVertex3f(srMinX - borderWidth, 0.02f, srMinZ - borderWidth);
-    glTexCoord2f(1, 0); glVertex3f(srMinX, 0.02f, srMinZ - borderWidth);
-    glTexCoord2f(1, 10); glVertex3f(srMinX, 0.02f, srMaxZ);
-    glTexCoord2f(0, 10); glVertex3f(srMinX - borderWidth, 0.02f, srMaxZ);
-
-    glTexCoord2f(0, 0); glVertex3f(srMinX - borderWidth, 0.02f, srMinZ - borderWidth);
-    glTexCoord2f(10, 0); glVertex3f(srMaxX + borderWidth, 0.02f, srMinZ - borderWidth);
-    glTexCoord2f(10, 1); glVertex3f(srMaxX + borderWidth, 0.02f, srMinZ);
-    glTexCoord2f(0, 1); glVertex3f(srMinX - borderWidth, 0.02f, srMinZ);
-    glEnd(); glDisable(GL_TEXTURE_2D);
-
-    drawGrandOpeningDecor(); 
-
-    drawFlowerBed(60.0f, 0.02f, srMaxZ + 40.0f); drawFlowerBed(-60.0f, 0.02f, srMaxZ + 40.0f);
-    drawSimpleTree(srMaxX + 15, 0.02f, srMaxZ + 15);
-    drawSimpleTree(srMinX - 15, 0.02f, srMaxZ + 15);
-}
-
-void CityMasterPlan::buildMainBoulevard(bool isNight) {
-    float startZ = 280.0f;
-    float entryWidth = 100.0f; float entryLength = 100.0f; float splitZ = startZ + entryLength;
-
-    drawRoadSegment(0, 0.05f, startZ, entryWidth, entryLength, false);
-    drawSidewalk(entryWidth / 2 + 15, startZ + entryLength / 2, 30, entryLength, 0.5f);
-    drawSidewalk(-(entryWidth / 2 + 15), startZ + entryLength / 2, 30, entryLength, 0.5f);
-
-    float roundaboutCenterZ = 600.0f; float roadLen = roundaboutCenterZ - splitZ;
-    float laneWidth = 40.0f; float medianWidth = 20.0f;
-
-    drawRoadSegment(medianWidth / 2 + laneWidth / 2, 0.05f, splitZ, laneWidth, roadLen - 80, false);
-    drawRoadSegment(-(medianWidth / 2 + laneWidth / 2), 0.05f, splitZ, laneWidth, roadLen - 80, false);
-
-    drawSidewalk(0, splitZ + (roadLen - 80) / 2, medianWidth, roadLen - 80, 0.5f);
-    drawSidewalk(medianWidth / 2 + laneWidth + 10, splitZ + (roadLen - 80) / 2, 20, roadLen - 80, 0.5f);
-    drawSidewalk(-(medianWidth / 2 + laneWidth + 10), splitZ + (roadLen - 80) / 2, 20, roadLen - 80, 0.5f);
-
-    float lampX = medianWidth / 2 + laneWidth + 10;
-
-    drawStreetLightRow(lampX, splitZ + 20, 60.0f, 3, true, isNight);
-
-    drawStreetLightRow(-lampX, splitZ + 20, 60.0f, 3, false, isNight);
-
-
-    float northStart = roundaboutCenterZ + (80 + 40);
-    float northLength = 1500.0f;
-    
-    for (int i = 0; i < 7; i++) {
-        drawSimpleTree(0, 0.5f, northStart + 50 + i * 200); 
-    }
-    drawRoadSegment(medianWidth / 2 + laneWidth / 2, 0.05f, northStart, laneWidth, northLength, false);
-    drawRoadSegment(-(medianWidth / 2 + laneWidth / 2), 0.05f, northStart, laneWidth, northLength, false);
-
-    drawSidewalk(0, northStart + northLength / 2, medianWidth, northLength, 0.5f);
-
-    drawSidewalk(medianWidth / 2 + laneWidth + 10, northStart + northLength / 2, 20, northLength, 0.5f);
-    drawSidewalk(-(medianWidth / 2 + laneWidth + 10), northStart + northLength / 2, 20, northLength, 0.5f);
-
-    drawStreetLightRow(lampX, northStart + 40, 80.0f, 18, true, isNight);
-    drawStreetLightRow(-lampX, northStart + 40, 80.0f, 18, false, isNight);
-
-    drawCrosswalk(medianWidth / 2 + laneWidth / 2, 0.05f, startZ + 10, laneWidth, 15.0f, false);
-    drawCrosswalk(-(medianWidth / 2 + laneWidth / 2), 0.05f, startZ + 10, laneWidth, 15.0f, false);
-    drawCrosswalk(medianWidth / 2 + laneWidth / 2, 0.05f, 550.0f, laneWidth, 15.0f, false);
-    drawCrosswalk(-(medianWidth / 2 + laneWidth / 2), 0.05f, 550.0f, laneWidth, 15.0f, false);
-    
-}
-
-void CityMasterPlan::drawRoundabout(float x, float y, float z, float radius, float roadWidth) {
-    glPushMatrix(); glTranslatef(x, y, z);
-    glEnable(GL_TEXTURE_2D); glBindTexture(GL_TEXTURE_2D, roadTex); setupRepeatedTexture();
-    glColor3f(1, 1, 1);
-    int segments = 64; glBegin(GL_QUAD_STRIP); for (int i = 0; i <= segments; i++) { float a = (float)i / segments * 2 * M_PI; float rO = radius + roadWidth; glNormal3f(0, 1, 0); glTexCoord2f(0, (float)i / 5); glVertex3f(radius * cos(a), 0.05, radius * sin(a)); glTexCoord2f(1, (float)i / 5); glVertex3f(rO * cos(a), 0.05, rO * sin(a)); } glEnd(); glDisable(GL_TEXTURE_2D);
-    float islandR = radius - 2.0f; glEnable(GL_TEXTURE_2D); glBindTexture(GL_TEXTURE_2D, pavementTex); setupRepeatedTexture(); glBegin(GL_TRIANGLE_FAN); glNormal3f(0, 1, 0); glTexCoord2f(0.5, 0.5); glVertex3f(0, 0.5, 0); for (int i = 0; i <= segments; i++) { float a = (float)i / segments * 2 * M_PI; glTexCoord2f(0.5 + 0.5 * cos(a), 0.5 + 0.5 * sin(a)); glVertex3f(islandR * cos(a), 0.5, islandR * sin(a)); } glEnd(); glDisable(GL_TEXTURE_2D);
-    glColor3f(0.8f, 0.8f, 0.8f); glPushMatrix(); glScalef(10, 20, 10); glutSolidCube(1); glPopMatrix();
-    glPushMatrix(); glTranslatef(0, 15, 0); glutSolidSphere(8, 20, 20); glPopMatrix();
-    drawFlowerBed(15, 0.5f, 0); drawFlowerBed(-15, 0.5f, 0); drawFlowerBed(0, 0.5f, 15); drawFlowerBed(0, 0.5f, -15);
-    float outerR = radius + roadWidth;
-    drawCurvedSidewalk(outerR + 10, 0.5f, outerR + 10, outerR, M_PI, 1.5 * M_PI, 20);
-    drawCurvedSidewalk(-(outerR + 10), 0.5f, outerR + 10, outerR, 1.5 * M_PI, 2 * M_PI, 20);
-    drawCurvedSidewalk(outerR + 10, 0.5f, -(outerR + 10), outerR, 0.5 * M_PI, M_PI, 20);
-    drawCurvedSidewalk(-(outerR + 10), 0.5f, -(outerR + 10), outerR, 0, 0.5 * M_PI, 20);
-    glPopMatrix();
-}
-
-void CityMasterPlan::buildParkingZone() {
-    float pX = 350.0f; float pZ = 600.0f; float pW = 300.0f; float pL = 400.0f; float border = 40.0f;
-
-    glEnable(GL_TEXTURE_2D); glBindTexture(GL_TEXTURE_2D, pavementTex); setupRepeatedTexture();
-    glColor3f(0.9f, 0.9f, 0.9f); float tS = 0.02f; float totalW = pW + border * 2; float totalL = pL + border * 2;
-    glBegin(GL_QUADS); glNormal3f(0, 1, 0); glTexCoord2f(0, 0); glVertex3f(pX - totalW / 2, 0.02f, pZ - totalL / 2); glTexCoord2f(totalW * tS, 0); glVertex3f(pX + totalW / 2, 0.02f, pZ - totalL / 2); glTexCoord2f(totalW * tS, totalL * tS); glVertex3f(pX + totalW / 2, 0.02f, pZ + totalL / 2); glTexCoord2f(0, totalL * tS); glVertex3f(pX - totalW / 2, 0.02f, pZ + totalL / 2); glEnd(); glDisable(GL_TEXTURE_2D);
-
-    float entryW = 80.0f; drawSidewalk((150.0f + (pX - pW / 2)) / 2, pZ, (pX - pW / 2) - 150.0f, entryW, 0.025f);
-
-    glEnable(GL_TEXTURE_2D); glBindTexture(GL_TEXTURE_2D, parkingTex); setupRepeatedTexture();
-    glColor3f(0.85f, 0.85f, 0.85f); tS = 1.0f / 40.0f;
-    glBegin(GL_QUADS); glNormal3f(0, 1, 0); glTexCoord2f(0, 0); glVertex3f(pX - pW / 2, 0.15f, pZ - pL / 2); glTexCoord2f(pW * tS, 0); glVertex3f(pX + pW / 2, 0.15f, pZ - pL / 2); glTexCoord2f(pW * tS, pL * tS); glVertex3f(pX + pW / 2, 0.15f, pZ + pL / 2); glTexCoord2f(0, pL * tS); glVertex3f(pX - pW / 2, 0.15f, pZ + pL / 2); glEnd(); glDisable(GL_TEXTURE_2D);
-
-    int numRows = 3; float rowHeight = pL / numRows;
-    for (int i = 0; i < numRows; i++) {
-        float cZ = (pZ - pL / 2) + rowHeight * i + rowHeight / 2;
-        if (i < numRows - 1) {
-            drawSidewalk(pX, cZ + rowHeight / 2, pW - 20, 8.0f, 0.20f);
-            drawGardenLamp(pX, 0.20f, cZ + rowHeight / 2, false);
-        }
-
-        int spots = 7;
-        float sW = (pW - 40) / spots;
-        glColor3f(1, 1, 1); glLineWidth(2); glBegin(GL_LINES);
-        for (int k = 0; k <= spots; k++) { float cx = (pX - (pW - 40) / 2) + k * sW; glVertex3f(cx, 0.18f, cZ - (rowHeight - 20) / 2); glVertex3f(cx, 0.18f, cZ + (rowHeight - 20) / 2); } glEnd();
-
-        drawParkingCanopy(pX, 0.10f, cZ - (rowHeight - 20) / 2 + 2, pW - 40, 5.0f);
-
-        for (int k = 0; k < spots; k++) {
-            int randSeed = (int)(i * 99 + k * 17);
-            if (randSeed % 3 == 0) continue;
-
-            float carX = (pX - (pW - 40) / 2) + k * sW + sW / 2;
-
-            createAndDrawRandomCar(carX, 0.15f, cZ - (rowHeight - 20) / 2 + 15.0f, 90.0f, randSeed);
-
-            if ((randSeed + 1) % 3 != 0) {
-                createAndDrawRandomCar(carX, 0.15f, cZ + (rowHeight - 20) / 2 - 15.0f, -90.0f, randSeed + 7);
-            }
-        }
-    }
-    // 7 أشجار فقط حول الكراج
-    float perimX = pW / 2 + border / 2;
-    float perimZ = pL / 2 + border / 2;
-
-    // 3 يمين
-    for (int i = 0; i < 3; i++) drawSimpleTree(pX + perimX, 0.02f, pZ - 100 + i * 100);
-    // 3 يسار
-    for (int i = 0; i < 3; i++) drawSimpleTree(pX - perimX, 0.02f, pZ - 100 + i * 100);
-    // 1 خلف
-    drawSimpleTree(pX, 0.02f, pZ + perimZ);
-
-}
-
 void CityMasterPlan::createAndDrawRandomCar(float x, float y, float z, float rotation, int seed) {
     int type = seed % 10;
-
-    float r = (seed % 10) / 10.0f;
-    float g = ((seed * 3) % 10) / 10.0f;
+    float r = (seed % 10) / 10.0f; 
+    float g = ((seed * 3) % 10) / 10.0f; 
     float b = ((seed * 7) % 10) / 10.0f;
-    if (r < 0.2 && g < 0.2 && b < 0.2) r = 0.8f; 
+
+    if (r < 0.2 && g < 0.2 && b < 0.2)
+        r = 0.8f;
 
     Car* car = nullptr;
-
-    if (type < 4) {
+    if (type < 4) 
         car = new Sedan(x, y, z, rotation, r, g, b);
-    }
-    else if (type < 6) {
+    else if (type < 6) 
         car = new SUV(x, y, z, rotation, r, g, b);
-    }
-    else if (type < 8) {
+    else if (type < 8) 
         car = new SportsCar(x, y, z, rotation, 1.0f, 0.1f, 0.1f);
-    }
-    else if (type == 8) {
+    else if (type == 8) 
         car = new Taxi(x, y, z, rotation);
-    }
-    else {
+    else 
         car = new Ambulance(x, y, z, rotation);
-    }
 
     if (car) {
         car->draw();
-        delete car; 
+        delete car;
     }
-}
-
-void CityMasterPlan::buildCommercialZone() {
-    float cX = -350.0f; float cZ = 200.0f; float cW = 300.0f; float cL = 400.0f;
-
-    drawSidewalk(cX, cZ, cW, cL, 0.2f);
-
-    for (int row = 0; row < 2; row++) {
-        for (int col = 0; col < 2; col++) {
-            float tx = cX - cW / 4 + col * (cW / 2);
-            float tz = cZ - cL / 4 + row * (cL / 2);
-            drawCafeSet(tx, 0.2f, tz);
-        }
-    }
-
-    drawModernKiosk(cX - cW / 2 + 30, 0.2f, cZ + cL / 2 - 30);
-    drawModernKiosk(cX + cW / 2 - 30, 0.2f, cZ + cL / 2 - 30);
-    drawFlowerBed(cX, 0.2f, cZ);
-}
-
-void CityMasterPlan::drawText3D(const char* text, float x, float y, float z, float scale, float r, float g, float b) {
-    glPushMatrix();
-    glTranslatef(x, y, z);
-
-    float width = 0;
-    for (const char* c = text; *c; c++) {
-        width += glutStrokeWidth(GLUT_STROKE_ROMAN, *c);
-    }
-
-    glScalef(scale, scale, scale);
-    glTranslatef(-width / 2.0f, 0, 0);
-
-    glLineWidth(3.0f);
-
-    for (int i = 0; i < 8; i++) {
-        glPushMatrix();
-        glTranslatef(0, 0, i * 1.5f);
-
-        if (i == 7) {
-            glColor3f(r, g, b);
-        }
-        else {
-            glColor3f(r * 0.6f, g * 0.6f, b * 0.6f);
-        }
-
-        for (const char* c = text; *c; c++) {
-            glutStrokeCharacter(GLUT_STROKE_ROMAN, *c);
-        }
-        glPopMatrix();
-    }
-
-    glLineWidth(1.0f);
-    glPopMatrix();
-}
-
-void CityMasterPlan::drawShowroomSign(bool isNight) {
-    float gateZ = 200.0f;
-    float signY = 100.0f;
-
-    glPushMatrix();
-    glTranslatef(0, signY, gateZ + 3.0f);
-    glDisable(GL_TEXTURE_2D);
-
-    glColor3f(0.8f, 0.8f, 0.85f);
-    glPushMatrix(); glScalef(140, 20, 2); glutSolidCube(1); glPopMatrix();
-
-    glColor3f(0.05f, 0.05f, 0.1f);
-    glPushMatrix(); glTranslatef(0, 0, 0.5f); glScalef(135, 17, 1.5f); glutSolidCube(1); glPopMatrix();
-
-    if (isNight) {
-        glDisable(GL_LIGHTING);
-        drawText3D("CARS SHOWROOM", 0, -3.0f, 4.0f, 0.12f, 0.2f, 0.8f, 1.0f);
-        glEnable(GL_LIGHTING);
-    }
-    else {
-        drawText3D("CARS SHOWROOM", 0, -3.0f, 4.0f, 0.12f, 0.0f, 0.0f, 0.8f);
-    }
-
-    if (isNight) glDisable(GL_LIGHTING);
-    glColor3f(0.0f, 0.4f, 1.0f);
-    glPushMatrix(); glTranslatef(0, -7.0f, 3.0f); glScalef(130, 0.5f, 0.5f); glutSolidCube(1); glPopMatrix();
-    if (isNight) glEnable(GL_LIGHTING);
-
-    glPopMatrix();
 }
 
 void CityMasterPlan::drawCityLayout(bool isNight) {
     glPushAttrib(GL_CURRENT_BIT | GL_ENABLE_BIT | GL_TEXTURE_BIT);
 
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK);
+    glEnable(GL_CULL_FACE); glCullFace(GL_BACK);
 
-    drawInfiniteGround();
+    roadSys.drawInfiniteGround();
 
     buildShowroomPlaza();
 
     glDisable(GL_CULL_FACE);
-    drawShowroomSign(isNight);
+    structures.drawShowroomSign(isNight);
     glEnable(GL_CULL_FACE);
 
     buildMainBoulevard(isNight);
 
-    float roundR = 80.0f; float roadW = 40.0f;
-    drawRoundabout(0, 0.055f, 600.0f, roundR, roadW);
+    glPushMatrix(); 
+    glTranslatef(0, 0, 600.0f);
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, roadTex); 
+    setupRepeatedTexture(); 
+    glColor3f(1, 1, 1);
+    int segs = 64; 
+    glBegin(GL_QUAD_STRIP); 
+    for (int i = 0; i <= segs; i++) {
+        float a = (float)i / segs * 2 * M_PI; 
+        float r = 80, rO = 120; 
+        glNormal3f(0, 1, 0);
+        glTexCoord2f(0, (float)i / 5);
+        glVertex3f(r * cos(a), 0.05, r * sin(a)); 
+        glTexCoord2f(1, (float)i / 5);
+        glVertex3f(rO * cos(a), 0.05, rO * sin(a));
+    } 
+    glEnd();
+    glDisable(GL_TEXTURE_2D);
 
-    float outerEdge = roundR + roadW;
-    drawRoadSegment(outerEdge + 1000.0f / 2, 0.051f, 600.0f, 1000.0f, 60.0f, true);
-    drawRoadSegment(-(outerEdge + 1000.0f / 2), 0.051f, 600.0f, 1000.0f, 60.0f, true);
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, pavementTex);
+    setupRepeatedTexture(); 
+    glBegin(GL_TRIANGLE_FAN); 
+    glNormal3f(0, 1, 0); 
+    glTexCoord2f(0.5, 0.5); 
+    glVertex3f(0, 0.5, 0);
+    for (int i = 0; i <= segs; i++) {
+        float a = (float)i / segs * 2 * M_PI; 
+        glTexCoord2f(0.5 + 0.5 * cos(a), 0.5 + 0.5 * sin(a)); 
+        glVertex3f(78 * cos(a), 0.5, 78 * sin(a)); 
+    } 
+    glEnd(); 
+    glDisable(GL_TEXTURE_2D);
 
-    buildParkingZone();
+    glColor3f(0.8f, 0.8f, 0.8f);
+    glPushMatrix();
+    glScalef(10, 20, 10);
+    glutSolidCube(1);
+    glPopMatrix();
+
+    glPushMatrix();
+    glTranslatef(0, 15, 0);
+    glutSolidSphere(8, 20, 20);
+    glPopMatrix();
+
+    vegetation.drawFlowerBed(15, 0.5f, 0);
+    vegetation.drawFlowerBed(-15, 0.5f, 0);
+
+    float oR = 120.0f;
+    roadSys.drawCurvedSidewalk(oR + 10, 0.5f, oR + 10, oR, M_PI, 1.5 * M_PI, 20);
+    roadSys.drawCurvedSidewalk(-(oR + 10), 0.5f, oR + 10, oR, 1.5 * M_PI, 2 * M_PI, 20);
+    roadSys.drawCurvedSidewalk(oR + 10, 0.5f, -(oR + 10), oR, 0.5 * M_PI, M_PI, 20);
+    roadSys.drawCurvedSidewalk(-(oR + 10), 0.5f, -(oR + 10), oR, 0, 0.5 * M_PI, 20);
+    glPopMatrix();
+
+    float outerEdge = 120.0f;
+    roadSys.drawRoadSegment(outerEdge + 500.0f, 0.051f, 600.0f, 1000.0f, 60.0f, true);
+    roadSys.drawRoadSegment(-(outerEdge + 500.0f), 0.051f, 600.0f, 1000.0f, 60.0f, true);
+
+    buildParkingZone(isNight);
     buildCommercialZone();
-
-    drawLakePark(isNight);
+    drawLakeParkArea(isNight);
 
     glPopAttrib();
+    glDisable(GL_TEXTURE_2D); glColor3f(1, 1, 1);
+}
 
+void CityMasterPlan::drawLakeParkArea(bool isNight) {
+    float parkX = -280.0f; 
+    float parkZ = 600.0f;
+
+    myGarden.draw(parkX, 0.0f, parkZ, isNight);
+
+    structures.drawGazebo(parkX + 100, 0.1f, parkZ - 150);
+    structures.drawJuiceStall(parkX - 100, 0.1f, parkZ - 150);
+
+    vegetation.drawTree(parkX - 150, 0.1f, parkZ - 200);
+    vegetation.drawTree(parkX + 150, 0.1f, parkZ + 200);
+    vegetation.drawTree(parkX - 150, 0.1f, parkZ + 200);
+    vegetation.drawTree(parkX + 150, 0.1f, parkZ - 200);
+    vegetation.drawTree(parkX, 0.1f, parkZ - 220);
+}
+
+void CityMasterPlan::buildShowroomPlaza() {
+    float srMinX = -150, srMaxX = 150, srMaxZ = 200;
+
+    glEnable(GL_TEXTURE_2D); 
+    glBindTexture(GL_TEXTURE_2D, pavementTex); 
+    setupRepeatedTexture();
+
+    glColor3f(0.9f, 0.9f, 0.9f); 
+    float tS = 0.02f;
+    float bW = 30.0f, fD = 80.0f;
+    glBegin(GL_QUADS); 
+    glNormal3f(0, 1, 0);
+    glTexCoord2f(0, 0); 
+    glVertex3f(srMinX - bW, 0.02f, srMaxZ); 
+    glTexCoord2f(10, 0); 
+    glVertex3f(srMaxX + bW, 0.02f, srMaxZ);
+    glTexCoord2f(10, 2); 
+    glVertex3f(srMaxX + bW, 0.02f, srMaxZ + fD); 
+    glTexCoord2f(0, 2); 
+    glVertex3f(srMinX - bW, 0.02f, srMaxZ + fD);
+
+    glTexCoord2f(0, 0); 
+    glVertex3f(srMaxX, 0.02f, -200 - bW); 
+    glTexCoord2f(1, 0); 
+    glVertex3f(srMaxX + bW, 0.02f, -200 - bW);
+    glTexCoord2f(1, 10);
+    glVertex3f(srMaxX + bW, 0.02f, srMaxZ); 
+    glTexCoord2f(0, 10); 
+    glVertex3f(srMaxX, 0.02f, srMaxZ);
+    glTexCoord2f(0, 0); 
+    glVertex3f(srMinX - bW, 0.02f, -200 - bW); 
+    glTexCoord2f(1, 0);
+    glVertex3f(srMinX, 0.02f, -200 - bW);
+    glTexCoord2f(1, 10);
+    glVertex3f(srMinX, 0.02f, srMaxZ);
+    glTexCoord2f(0, 10); 
+    glVertex3f(srMinX - bW, 0.02f, srMaxZ);
+    glTexCoord2f(0, 0);
+    glVertex3f(srMinX - bW, 0.02f, -200 - bW);
+    glTexCoord2f(10, 0); 
+    glVertex3f(srMaxX + bW, 0.02f, -200 - bW);
+    glTexCoord2f(10, 1); 
+    glVertex3f(srMaxX + bW, 0.02f, -200); 
+    glTexCoord2f(0, 1); 
+    glVertex3f(srMinX - bW, 0.02f, -200);
+    glEnd();
     glDisable(GL_TEXTURE_2D);
-    glColor3f(1, 1, 1);
+
+    structures.drawGrandOpeningDecor(200, 280);
+    vegetation.drawFlowerBed(60, 0.02f, 240); 
+    vegetation.drawFlowerBed(-60, 0.02f, 240);
+
+    vegetation.drawTree(srMaxX + 15, 0.02f, srMaxZ + 15);
+    vegetation.drawTree(srMinX - 15, 0.02f, srMaxZ + 15);
+}
+
+void CityMasterPlan::buildMainBoulevard(bool isNight) {
+    float startZ = 280.0f;
+    float entryWidth = 100.0f; 
+    float entryLength = 100.0f;
+    float splitZ = startZ + entryLength;
+
+    roadSys.drawRoadSegment(0, 0.05f, startZ, entryWidth, entryLength, false);
+    roadSys.drawSidewalk(entryWidth / 2 + 15, 0.0f, startZ + entryLength / 2, 30, entryLength, 0.5f);
+    roadSys.drawSidewalk(-(entryWidth / 2 + 15), 0.0f, startZ + entryLength / 2, 30, entryLength, 0.5f);
+
+    vegetation.drawTree(entryWidth / 2 + 10, 0.5f, startZ + 50);
+    vegetation.drawTree(-(entryWidth / 2 + 10), 0.5f, startZ + 50);
+
+    for (int i = 0; i < 3; i++) {
+        furniture.drawGardenLamp(entryWidth / 2 + 5, 0.5f, startZ + 20 + i * 40, isNight);
+        furniture.drawGardenLamp(-(entryWidth / 2 + 5), 0.5f, startZ + 20 + i * 40, isNight);
+    }
+
+    float roundaboutCenterZ = 600.0f;
+    float roadLen = roundaboutCenterZ - splitZ;
+    float laneWidth = 40.0f;
+    float medianWidth = 20.0f;
+
+    roadSys.drawRoadSegment(medianWidth / 2 + laneWidth / 2, 0.05f, splitZ, laneWidth, roadLen - 80, false);
+    roadSys.drawRoadSegment(-(medianWidth / 2 + laneWidth / 2), 0.05f, splitZ, laneWidth, roadLen - 80, false);
+    roadSys.drawSidewalk(0, 0.0f, splitZ + (roadLen - 80) / 2, medianWidth, roadLen - 80, 0.5f);
+
+    for (int i = 0; i < 5; i++) 
+        furniture.drawGardenLamp(0, 0.5f, splitZ + 20 + i * 40, isNight);
+
+    roadSys.drawSidewalk(medianWidth / 2 + laneWidth + 10, 0.0f, splitZ + (roadLen - 80) / 2, 20, roadLen - 80, 0.5f);
+    roadSys.drawSidewalk(-(medianWidth / 2 + laneWidth + 10), 0.0f, splitZ + (roadLen - 80) / 2, 20, roadLen - 80, 0.5f);
+
+    float northStart = roundaboutCenterZ + (80 + 40);
+    float northLength = 1500.0f;
+    roadSys.drawRoadSegment(medianWidth / 2 + laneWidth / 2, 0.05f, northStart, laneWidth, 1000.0f, false);
+    roadSys.drawRoadSegment(-(medianWidth / 2 + laneWidth / 2), 0.05f, northStart, laneWidth, 1000.0f, false);
+    roadSys.drawSidewalk(0, 0.0f, northStart + 500, medianWidth, 1000.0f, 0.5f);
+
+    for (int i = 0; i < 7; i++)
+        vegetation.drawTree(0, 0.5f, northStart + 50 + i * 150);
+
+    float lampX = medianWidth / 2 + laneWidth + 10;
+    drawStreetLightRow(lampX, northStart + 40, 80.0f, 18, true, isNight);
+    drawStreetLightRow(-lampX, northStart + 40, 80.0f, 18, false, isNight);
+
+    roadSys.drawCrosswalk(medianWidth / 2 + laneWidth / 2, 0.05f, startZ + 10, laneWidth, 15.0f, false);
+    roadSys.drawCrosswalk(-(medianWidth / 2 + laneWidth / 2), 0.05f, startZ + 10, laneWidth, 15.0f, false);
+    roadSys.drawCrosswalk(medianWidth / 2 + laneWidth / 2, 0.05f, 550.0f, laneWidth, 15.0f, false);
+    roadSys.drawCrosswalk(-(medianWidth / 2 + laneWidth / 2), 0.05f, 550.0f, laneWidth, 15.0f, false);
+}
+
+void CityMasterPlan::buildParkingZone(bool isNight) {
+    float pX = 350.0f;
+    float pZ = 600.0f;
+    float pW = 300.0f; 
+    float pL = 400.0f; 
+    float border = 40.0f;
+
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, pavementTex); 
+    setupRepeatedTexture();
+
+    glColor3f(0.9f, 0.9f, 0.9f);
+    float tS = 0.02f; 
+    float totalW = pW + border * 2;
+    float totalL = pL + border * 2;
+
+    glBegin(GL_QUADS); 
+    glNormal3f(0, 1, 0);
+    glTexCoord2f(0, 0); 
+    glVertex3f(pX - totalW / 2, 0.02f, pZ - totalL / 2);
+    glTexCoord2f(totalW * tS, 0);
+    glVertex3f(pX + totalW / 2, 0.02f, pZ - totalL / 2);
+    glTexCoord2f(totalW * tS, totalL * tS);
+    glVertex3f(pX + totalW / 2, 0.02f, pZ + totalL / 2);
+    glTexCoord2f(0, totalL * tS);
+    glVertex3f(pX - totalW / 2, 0.02f, pZ + totalL / 2);
+    glEnd(); 
+    glDisable(GL_TEXTURE_2D);
+
+    float entryW = 80.0f;
+    roadSys.drawSidewalk((150.0f + (pX - pW / 2)) / 2, 0.0f, pZ, (pX - pW / 2) - 150.0f, entryW, 0.025f);
+
+    glEnable(GL_TEXTURE_2D); 
+    glBindTexture(GL_TEXTURE_2D, parkingTex);
+    setupRepeatedTexture();
+    glColor3f(0.85f, 0.85f, 0.85f);
+    tS = 1.0f / 40.0f;
+
+    glBegin(GL_QUADS); 
+    glNormal3f(0, 1, 0);
+    glTexCoord2f(0, 0);
+    glVertex3f(pX - pW / 2, 0.15f, pZ - pL / 2);
+    glTexCoord2f(pW * tS, 0); 
+    glVertex3f(pX + pW / 2, 0.15f, pZ - pL / 2);
+    glTexCoord2f(pW * tS, pL * tS);
+    glVertex3f(pX + pW / 2, 0.15f, pZ + pL / 2);
+    glTexCoord2f(0, pL * tS); 
+    glVertex3f(pX - pW / 2, 0.15f, pZ + pL / 2);
+    glEnd(); 
+    glDisable(GL_TEXTURE_2D);
+
+    int numRows = 3; 
+    float rowHeight = pL / numRows;
+    for (int i = 0; i < numRows; i++) {
+        float cZ = (pZ - pL / 2) + rowHeight * i + rowHeight / 2;
+        if (i < numRows - 1) {
+            roadSys.drawSidewalk(pX, 0.0f, cZ + rowHeight / 2, pW - 20, 8.0f, 0.20f);
+            vegetation.drawTree(pX, 0.20f, cZ + rowHeight / 2);
+            furniture.drawGardenLamp(pX - 50, 0.20f, cZ + rowHeight / 2, isNight);
+            furniture.drawGardenLamp(pX + 50, 0.20f, cZ + rowHeight / 2, isNight);
+        }
+        roadSys.drawParkingLines(pX, cZ, pW - 40, rowHeight - 20, 1, 12);
+        furniture.drawParkingCanopy(pX, 0.10f, cZ - (rowHeight - 20) / 2 + 2, pW - 40, 5.0f);
+
+        int carsPerRow = 7;
+        float spotWidth = (pW - 40) / carsPerRow;
+        for (int k = 0; k < carsPerRow; k++) {
+            int randSeed = (int)(i * 99 + k * 17);
+            if (randSeed % 5 == 0) 
+                continue;
+            float carX = (pX - (pW - 40) / 2) + k * spotWidth + spotWidth / 2;
+            createAndDrawRandomCar(carX, 0.15f, cZ - (rowHeight - 20) / 2 + 15.0f, 90.0f, randSeed);
+            if ((randSeed + 1) % 3 != 0) {
+                createAndDrawRandomCar(carX, 0.15f, cZ + (rowHeight - 20) / 2 - 15.0f, -90.0f, randSeed + 7);
+            }
+        }
+    }
+
+    float perimX = pW / 2 + border / 2; float perimZ = pL / 2 + border / 2;
+    for (int i = 0; i < 3; i++) {
+        vegetation.drawTree(pX + perimX, 0.02f, pZ - 100 + i * 100);
+        furniture.drawGardenLamp(pX + perimX, 0.02f, pZ - 100 + i * 100 + 30, isNight);
+        vegetation.drawTree(pX - perimX, 0.02f, pZ - 100 + i * 100);
+    }
+    vegetation.drawTree(pX, 0.02f, pZ + perimZ);
+}
+
+void CityMasterPlan::buildCommercialZone() {
+    float cX = -350.0f; float cZ = 200.0f; float cW = 300.0f; float cL = 400.0f;
+    roadSys.drawSidewalk(cX, 0.0f, cZ, cW, cL, 0.2f);
+    for (int row = 0; row < 2; row++) for (int col = 0; col < 2; col++) {
+        float tx = cX - cW / 4 + col * (cW / 2);
+        float tz = cZ - cL / 4 + row * (cL / 2);
+        furniture.drawCafeSet(tx, 0.2f, tz);
+    }
+    structures.drawKiosk(cX - cW / 2 + 30, 0.2f, cZ + cL / 2 - 30);
+    structures.drawKiosk(cX + cW / 2 - 30, 0.2f, cZ + cL / 2 - 30);
+    vegetation.drawFlowerBed(cX, 0.2f, cZ);
 }

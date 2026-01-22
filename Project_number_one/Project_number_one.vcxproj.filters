@@ -19,6 +19,12 @@
     <Filter Include="Source Files\Cars">
       <UniqueIdentifier>{ea30bc3b-dd4b-4c5b-8f6c-ee33e7d1155f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\CityComponents">
+      <UniqueIdentifier>{33b9bb1b-26de-4576-a178-678058ced455}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\CityComponents">
+      <UniqueIdentifier>{c4536247-b212-42ba-b252-7849237374a5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Project_number_one.cpp">
@@ -123,6 +129,36 @@
     <ClCompile Include="Model.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Roadway.cpp">
+      <Filter>Source Files\CityComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="Vegetation.cpp">
+      <Filter>Source Files\CityComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="StreetFurniture.cpp">
+      <Filter>Source Files\CityComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="Structures.cpp">
+      <Filter>Source Files\CityComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="City.cpp">
+      <Filter>Source Files\CityComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="Ambulance.cpp">
+      <Filter>Source Files\Cars</Filter>
+    </ClCompile>
+    <ClCompile Include="Taxi.cpp">
+      <Filter>Source Files\Cars</Filter>
+    </ClCompile>
+    <ClCompile Include="SportsCar.cpp">
+      <Filter>Source Files\Cars</Filter>
+    </ClCompile>
+    <ClCompile Include="SUV.cpp">
+      <Filter>Source Files\Cars</Filter>
+    </ClCompile>
+    <ClCompile Include="Sedan.cpp">
+      <Filter>Source Files\Cars</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Pillar.h">
@@ -226,6 +262,36 @@
     </ClInclude>
     <ClInclude Include="Model.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Roadway.h">
+      <Filter>Header Files\CityComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="Vegetation.h">
+      <Filter>Header Files\CityComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="StreetFurniture.h">
+      <Filter>Header Files\CityComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="Structures.h">
+      <Filter>Header Files\CityComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="City.h">
+      <Filter>Header Files\CityComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="Sedan.h">
+      <Filter>Header Files\Cars</Filter>
+    </ClInclude>
+    <ClInclude Include="SUV.h">
+      <Filter>Header Files\Cars</Filter>
+    </ClInclude>
+    <ClInclude Include="SportsCar.h">
+      <Filter>Header Files\Cars</Filter>
+    </ClInclude>
+    <ClInclude Include="Taxi.h">
+      <Filter>Header Files\Cars</Filter>
+    </ClInclude>
+    <ClInclude Include="Ambulance.h">
+      <Filter>Header Files\Cars</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -596,32 +596,32 @@ void Maherheader::draw(float camX, float camY, float camZ, bool isday, GLuint cc
 
 
     glDisable(GL_TEXTURE_2D);
-    cityPlan.drawRoadSegment(0.0f, 0.05f, -2000.0f, 160.0f, 1600.0f, false);
-    cityPlan.drawSidewalk(90.0f, -1200.0f, 20.0f, 1600.0f, 0.5f);
-    cityPlan.drawSidewalk(-90.0f, -1200.0f, 20.0f, 1600.0f, 0.5f);
+    roadway.setTextures(roadTexID, pavementTexID, parkingTexID, grassTexID);
+    roadway.drawRoadSegment(0.0f, 0.05f, -2000.0f, 160.0f, 1600.0f, false);
+    roadway.drawSidewalk(90.0f, -1200.0f, 20.0f, 1600.0f, 0.5f, 0.5f);
+    roadway.drawSidewalk(-90.0f, -1200.0f, 20.0f, 1600.0f, 0.5f, 0.5f);
 
     float roadX_01 = blockXPos[0] + fullBlockWidth + 50.0f;
-    cityPlan.drawRoadSegment(roadX_01, 0.05f, -2000.0f, 70.0f, 1600.0f, false);
-    cityPlan.drawSidewalk(roadX_01 + 42.5f, -1200.0f, 15.0f, 1600.0f, 0.5f);
-    cityPlan.drawSidewalk(roadX_01 - 42.5f, -1200.0f, 15.0f, 1600.0f, 0.5f);
+    roadway.drawRoadSegment(roadX_01, 0.05f, -2000.0f, 70.0f, 1600.0f, false);
+    roadway.drawSidewalk(roadX_01 + 42.5f, -1200.0f, 15.0f, 1600.0f, 0.5f, 0.5f);
+    roadway.drawSidewalk(roadX_01 - 42.5f, -1200.0f, 15.0f, 1600.0f, 0.5f, 0.5f);
 
     float roadX_12 = blockXPos[1] + fullBlockWidth + 50.0f;
-    cityPlan.drawRoadSegment(roadX_12, 0.05f, -2000.0f, 70.0f, 1600.0f, false);
-    cityPlan.drawSidewalk(roadX_12 + 42.5f, -1200.0f, 15.0f, 1600.0f, 0.5f);
-    cityPlan.drawSidewalk(roadX_12 - 42.5f, -1200.0f, 15.0f, 1600.0f, 0.5f);
+    roadway.drawRoadSegment(roadX_12, 0.05f, -2000.0f, 70.0f, 1600.0f, false);
+    roadway.drawSidewalk(roadX_12 + 42.5f, -1200.0f, 15.0f, 1600.0f, 0.5f, 0.5f);
+    roadway.drawSidewalk(roadX_12 - 42.5f, -1200.0f, 15.0f, 1600.0f, 0.5f, 0.5f);
 
     float roadX_34 = blockXPos[3] + fullBlockWidth + 50.0f;
-    cityPlan.drawRoadSegment(roadX_34, 0.05f, -2000.0f, 70.0f, 1600.0f, false);
-    cityPlan.drawSidewalk(roadX_34 + 42.5f, -1200.0f, 15.0f, 1600.0f, 0.5f);
-    cityPlan.drawSidewalk(roadX_34 - 42.5f, -1200.0f, 15.0f, 1600.0f, 0.5f);
+    roadway.drawRoadSegment(roadX_34, 0.05f, -2000.0f, 70.0f, 1600.0f, false);
+    roadway.drawSidewalk(roadX_34 + 42.5f, -1200.0f, 15.0f, 1600.0f, 0.5f, 0.5f);
+    roadway.drawSidewalk(roadX_34 - 42.5f, -1200.0f, 15.0f, 1600.0f, 0.5f, 0.5f);
 
     float roadX_45 = blockXPos[4] + fullBlockWidth + 50.0f;
-    cityPlan.drawRoadSegment(roadX_45, 0.05f, -2000.0f, 70.0f, 1600.0f, false);
-    cityPlan.drawSidewalk(roadX_45 + 42.5f, -1200.0f, 15.0f, 1600.0f, 0.5f);
-    cityPlan.drawSidewalk(roadX_45 - 42.5f, -1200.0f, 15.0f, 1600.0f, 0.5f);
+    roadway.drawRoadSegment(roadX_45, 0.05f, -2000.0f, 70.0f, 1600.0f, false);
+    roadway.drawSidewalk(roadX_45 + 42.5f, -1200.0f, 15.0f, 1600.0f, 0.5f, 0.5f);
+    roadway.drawSidewalk(roadX_45 - 42.5f, -1200.0f, 15.0f, 1600.0f, 0.5f, 0.5f);
 
-    cityPlan.drawRoadSegment(-2000,0.1,-320,160,4000,true);
-    //cityPlan.drawSidewalk()
-    cityPlan.drawSidewalk(0 , -240.0f, 4000.0f, 20.0f, 2);
+    roadway.drawRoadSegment(-2000,0.1,-320,160,4000,true);
+    roadway.drawSidewalk(0 , -240.0f, 4000.0f, 20.0f, 2, 0.5f);
 
 }

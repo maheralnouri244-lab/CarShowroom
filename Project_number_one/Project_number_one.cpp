@@ -89,13 +89,13 @@ bool isLightOn = true;
 
 struct ParkingCar {
     float x, y, z, rotation;
-    int seed; 
+    int seed;
 };
 
 std::vector<ParkingCar> parkingLotCars;
 
 void updateAmbientSound();
-void addCityCollisions(std::vector<BoundingBox>& collidables); 
+void addCityCollisions(std::vector<BoundingBox>& collidables);
 
 
 unsigned int loadTextureFromFile(const char* path) {
@@ -217,7 +217,7 @@ void switchCamera(int newCam) {
 }
 
 void initParkingLotCars() {
-    parkingLotCars.clear(); 
+    parkingLotCars.clear();
 
     float pX = 350.0f;
     float pZ = 600.0f;
@@ -269,9 +269,9 @@ void addCityCollisions(std::vector<BoundingBox>& collidables) {
     float northStart = roundaboutCenterZ + 120.0f;
     float medianWidth = 20.0f;
     float laneWidth = 40.0f;
-    float lampX_boulevard = medianWidth / 2 + laneWidth + 10; 
+    float lampX_boulevard = medianWidth / 2 + laneWidth + 10;
 
-   
+
     for (int i = 0; i < 3; i++) {
         float lampZ = splitZ_boulevard + 20 + i * 60.0f;
         collidables.push_back({ lampX_boulevard - 1.0f, 0.0f, lampZ - 1.0f, lampX_boulevard + 1.0f, 22.0f, lampZ + 1.0f });
@@ -285,11 +285,11 @@ void addCityCollisions(std::vector<BoundingBox>& collidables) {
 #pragma endregion
 
 #pragma region Roundabout (الدوار)
-    collidables.push_back({ -10.0f, 0.0f, 590.0f, 10.0f, 20.0f, 610.0f }); 
+    collidables.push_back({ -10.0f, 0.0f, 590.0f, 10.0f, 20.0f, 610.0f });
     collidables.push_back({ 10.0f, 0.0f, 595.0f, 20.0f, 2.0f, 605.0f });
-    collidables.push_back({ -20.0f, 0.0f, 595.0f, -10.0f, 2.0f, 605.0f }); 
-    collidables.push_back({ -5.0f, 0.0f, 610.0f, 5.0f, 2.0f, 620.0f }); 
-    collidables.push_back({ -5.0f, 0.0f, 580.0f, 5.0f, 2.0f, 590.0f }); 
+    collidables.push_back({ -20.0f, 0.0f, 595.0f, -10.0f, 2.0f, 605.0f });
+    collidables.push_back({ -5.0f, 0.0f, 610.0f, 5.0f, 2.0f, 620.0f });
+    collidables.push_back({ -5.0f, 0.0f, 580.0f, 5.0f, 2.0f, 590.0f });
 #pragma endregion
 
 #pragma region Lake Park (حديقة البحيرة)
@@ -297,15 +297,15 @@ void addCityCollisions(std::vector<BoundingBox>& collidables) {
     float parkW = 350.0f, parkL = 500.0f;
     float lakeW = 200.0f, lakeL = 300.0f;
 
-    collidables.push_back({ (parkX + lakeW / 2 + 40) - 15, 0.0f, (parkZ - lakeL / 2 + 40) - 15, (parkX + lakeW / 2 + 40) + 15, 20.0f, (parkZ - lakeL / 2 + 40) + 15 }); 
-    collidables.push_back({ (parkX - parkW / 2 + 40) - 6, 0.0f, (parkZ - parkL / 2 + 40) - 6, (parkX - parkW / 2 + 40) + 6, 10.0f, (parkZ - parkL / 2 + 40) + 6 }); 
+    collidables.push_back({ (parkX + lakeW / 2 + 40) - 15, 0.0f, (parkZ - lakeL / 2 + 40) - 15, (parkX + lakeW / 2 + 40) + 15, 20.0f, (parkZ - lakeL / 2 + 40) + 15 });
+    collidables.push_back({ (parkX - parkW / 2 + 40) - 6, 0.0f, (parkZ - parkL / 2 + 40) - 6, (parkX - parkW / 2 + 40) + 6, 10.0f, (parkZ - parkL / 2 + 40) + 6 });
     float benchStart = parkZ - 120;
     for (int i = 0; i < 5; i++) {
         float posZ = benchStart + i * 60;
-        collidables.push_back({ (parkX + lakeW / 2 + 20) - 3, 0.0f, posZ - 7, (parkX + lakeW / 2 + 20) + 3, 8.0f, posZ + 7 }); 
-        collidables.push_back({ (parkX + lakeW / 2 + 35) - 1, 0.0f, posZ - 1, (parkX + lakeW / 2 + 35) + 1, 22.0f, posZ + 1 }); 
-        collidables.push_back({ (parkX - lakeW / 2 - 35) - 1, 0.0f, posZ - 1, (parkX - lakeW / 2 - 35) + 1, 22.0f, posZ + 1 }); 
-        collidables.push_back({ (parkX - lakeW / 2 - 20) - 3, 0.0f, posZ - 7, (parkX - lakeW / 2 - 20) + 3, 8.0f, posZ + 7 }); 
+        collidables.push_back({ (parkX + lakeW / 2 + 20) - 3, 0.0f, posZ - 7, (parkX + lakeW / 2 + 20) + 3, 8.0f, posZ + 7 });
+        collidables.push_back({ (parkX + lakeW / 2 + 35) - 1, 0.0f, posZ - 1, (parkX + lakeW / 2 + 35) + 1, 22.0f, posZ + 1 });
+        collidables.push_back({ (parkX - lakeW / 2 - 35) - 1, 0.0f, posZ - 1, (parkX - lakeW / 2 - 35) + 1, 22.0f, posZ + 1 });
+        collidables.push_back({ (parkX - lakeW / 2 - 20) - 3, 0.0f, posZ - 7, (parkX - lakeW / 2 - 20) + 3, 8.0f, posZ + 7 });
     }
 
     collidables.push_back({ (parkX + parkW / 2) - 50, 0.0f, parkZ - 5, (parkX + parkW / 2) + 50, 25.0f, parkZ + 5 }); // البوابة
@@ -322,7 +322,7 @@ void addCityCollisions(std::vector<BoundingBox>& collidables) {
     }
 #pragma endregion
 
-    float carBoxWidth = 10.0f;  
+    float carBoxWidth = 10.0f;
     float carBoxLength = 22.0f;
     float carBoxHeight = 12.0f;
 
@@ -337,10 +337,10 @@ void addCityCollisions(std::vector<BoundingBox>& collidables) {
     float perimX = pW / 2 + 20.0f, perimZ = pL / 2 + 20.0f;
 
     for (float z_coord = -perimZ; z_coord <= perimZ; z_coord += 60) {
-    
-       
+
+
         collidables.push_back({ pX + perimX - 1, 0.0f, pZ + z_coord + 30 - 1, pX + perimX + 1, 22.0f, pZ + z_coord + 30 + 1 });
-      
+
 
     }
     for (float x_coord = -perimX; x_coord <= perimX; x_coord += 60) {
@@ -351,7 +351,7 @@ void addCityCollisions(std::vector<BoundingBox>& collidables) {
     int numRows_park = 3; float rowHeight_park = pL / numRows_park;
     for (int i = 0; i < numRows_park; i++) {
         float cZ = (pZ - pL / 2) + rowHeight_park * i + rowHeight_park / 2;
-        if (i < numRows_park - 1) { 
+        if (i < numRows_park - 1) {
             collidables.push_back({ pX - (pW - 20) / 2, 0.0f, cZ + rowHeight_park / 2 - 4, pX + (pW - 20) / 2, 1.0f, cZ + rowHeight_park / 2 + 4 });
             collidables.push_back({ pX - 1, 0.0f, cZ + rowHeight_park / 2 - 1, pX + 1, 22.0f, cZ + rowHeight_park / 2 + 1 });
         }
@@ -368,56 +368,46 @@ void addCityCollisions(std::vector<BoundingBox>& collidables) {
             collidables.push_back({ tx - 15, 0.0f, tz - 15, tx + 15, 15.0f, tz + 15 });
         }
     }
-    collidables.push_back({ (cX - 75) - 8, 0.0f, (cZ + 100) - 6, (cX - 75) + 8, 13.0f, (cZ + 100) + 6 }); 
-    collidables.push_back({ (cX + 75) - 8, 0.0f, (cZ + 100) - 6, (cX + 75) + 8, 13.0f, (cZ + 100) + 6 }); 
-    collidables.push_back({ cX - 5, 0.0f, cZ - 5, cX + 5, 2.0f, cZ + 5 }); 
+    collidables.push_back({ (cX - 75) - 8, 0.0f, (cZ + 100) - 6, (cX - 75) + 8, 13.0f, (cZ + 100) + 6 });
+    collidables.push_back({ (cX + 75) - 8, 0.0f, (cZ + 100) - 6, (cX + 75) + 8, 13.0f, (cZ + 100) + 6 });
+    collidables.push_back({ cX - 5, 0.0f, cZ - 5, cX + 5, 2.0f, cZ + 5 });
 #pragma endregion
     float trees[21][3] = {
-        // 1. أمام المعرض (Showroom) - دالة buildShowroomPlaza
         { 165.0f, 0.0f, 215.0f },
         { -165.0f, 0.0f, 215.0f },
-
-        // 2. الشارع الرئيسي (Boulevard) - دالة buildMainBoulevard
-        // northStart = 720.0f، الأشجار تبدأ بعده بـ 50 وحدة وبتباعد 200
-        { 0.0f, 0.0f, 770.0f },  // 720 + 50
-        { 0.0f, 0.0f, 970.0f },  // 720 + 50 + 200
+        { 0.0f, 0.0f, 770.0f },
+        { 0.0f, 0.0f, 970.0f },
         { 0.0f, 0.0f, 1170.0f },
         { 0.0f, 0.0f, 1370.0f },
         { 0.0f, 0.0f, 1570.0f },
         { 0.0f, 0.0f, 1770.0f },
         { 0.0f, 0.0f, 1970.0f },
-
-        // 3. منطقة المواقف (Parking) - دالة buildParkingZone
-        // pX=350, pZ=600, perimX=170
-        { 520.0f, 0.0f, 500.0f }, // pX + 170
+        { 520.0f, 0.0f, 500.0f },
         { 520.0f, 0.0f, 600.0f },
         { 520.0f, 0.0f, 700.0f },
-        { 180.0f, 0.0f, 500.0f }, // pX - 170
+        { 180.0f, 0.0f, 500.0f },
         { 180.0f, 0.0f, 600.0f },
         { 180.0f, 0.0f, 700.0f },
-        { 350.0f, 0.0f, 820.0f }, // خلف الكراج (pZ + 220)
-
-        // 4. الحديقة (Lake Park) - دالة drawLakePark
-        // parkX=-280, parkZ=600
-        { -425.0f, 0.0f, 450.0f }, // يسار خلف
-        { -425.0f, 0.0f, 750.0f }, // يسار أمام
-        { -135.0f, 0.0f, 450.0f }, // يمين خلف
-        { -135.0f, 0.0f, 750.0f }, // يمين أمام
-        { -280.0f, 0.0f, 380.0f }  // المنتصف خلف (parkZ - 220)
-    };    // تصادم الأشجار باستخدام المصفوفة
+        { 350.0f, 0.0f, 820.0f },
+        { -425.0f, 0.0f, 450.0f },
+        { -425.0f, 0.0f, 750.0f },
+        { -135.0f, 0.0f, 450.0f },
+        { -135.0f, 0.0f, 750.0f },
+        { -280.0f, 0.0f, 380.0f }
+    };
     for (int i = 0; i < 21; i++) {
         float tx = trees[i][0];
         float tz = trees[i][2];
 
         collidables.push_back({
-            tx - 6.0f, -10.0f, tz - 6.0f,  // minY جعلناه -10 لضمان الاصطدام تحت الأرض
-            tx + 6.0f,  40.0f, tz + 6.0f   // الارتفاع 40 لضمان اصطدام الكاميرا بالشجرة كاملة
+            tx - 6.0f, -10.0f, tz - 6.0f,
+            tx + 6.0f,  40.0f, tz + 6.0f 
             });
     }
 }
 
 void addAbrarCodeCollisions(std::vector<BoundingBox>& collidables) {
-    const float FLOOR_H = 60.0f; 
+    const float FLOOR_H = 60.0f;
 
     float steveWidth = 2.0f;
     float steveDepth = 2.0f;
@@ -517,9 +507,9 @@ void createCollidables() {
     collidableObjects.push_back({ minX, SECOND_FLOOR_Y_START - floorThickness, minz, maxX, SECOND_FLOOR_Y_START, ELEV_MIN_Z });
     collidableObjects.push_back({ minX, SECOND_FLOOR_Y_START - floorThickness, ELEV_MIN_Z, ELEV_MIN_X, SECOND_FLOOR_Y_START, ELEV_MAX_Z });
     collidableObjects.push_back({ ELEV_MAX_X, SECOND_FLOOR_Y_START - floorThickness, ELEV_MIN_Z, maxX, SECOND_FLOOR_Y_START, ELEV_MAX_Z });
-    const float FLOOR_H = 60.0f; 
+    const float FLOOR_H = 60.0f;
 
-    collidableObjects.push_back({ 30.0f, FLOOR_H, -184.0f, 70.0f, FLOOR_H + 10.0f, -176.0f });  
+    collidableObjects.push_back({ 30.0f, FLOOR_H, -184.0f, 70.0f, FLOOR_H + 10.0f, -176.0f });
 
     collidableObjects.push_back({ 90.0f, FLOOR_H, 0.0f, 150.0f, FLOOR_H + 40.0f, 100.0f });
 
@@ -528,13 +518,13 @@ void createCollidables() {
     collidableObjects.push_back({ 112.0f, FLOOR_H, 142.0f, 128.0f, FLOOR_H + 5.0f, 158.0f });
 
     collidableObjects.push_back({ 92.5f, FLOOR_H, 142.5f, 107.5f, FLOOR_H + 2.0f, 157.5f });
-    
-    float shelfCenterX = -120.0f; 
-    float shelfWidth = 36.0f;     
-    float shelfDepth = 4.0f;     
-    float shelfHeight = 30.0f;  
-    float shelfSpacing = 50.0f;   
-    float startZ = -100.0f;      
+
+    float shelfCenterX = -120.0f;
+    float shelfWidth = 36.0f;
+    float shelfDepth = 4.0f;
+    float shelfHeight = 30.0f;
+    float shelfSpacing = 50.0f;
+    float startZ = -100.0f;
 
     for (int i = 0; i < 5; i++) {
         float currentCenterZ = startZ + (i * shelfSpacing);
@@ -667,8 +657,8 @@ void createCollidables() {
             float tz1 = -600.0f - (row * 220.0f);
 
             collidableObjects.push_back({
-                tx1 - lx, 0.0f, tz1 - dz,  
-                tx1 + lx, height, tz1 + dz 
+                tx1 - lx, 0.0f, tz1 - dz,
+                tx1 + lx, height, tz1 + dz
                 });
 
             float tx2 = startX + lx + 220.0f;
@@ -694,9 +684,9 @@ void createCollidables() {
             }
         }
     }
-  
+
     addAbrarCodeCollisions(collidableObjects);
-        addCityCollisions(collidableObjects);
+    addCityCollisions(collidableObjects);
 
 }
 
@@ -704,7 +694,7 @@ void handleKeypress(unsigned char key, int x, int y) {
     if (key == 'l' || key == 'L') {
         isLightOn = !isLightOn;
         glutPostRedisplay();
-        updateAmbientSound(); 
+        updateAmbientSound();
         return;
     }
 
@@ -742,26 +732,21 @@ void handleKeypress(unsigned char key, int x, int y) {
         bool isCurrentlyInside = isStrictlyInside(camX, camY, camZ);
         bool willBeInside = isStrictlyInside(nextX, nextY, nextZ);
 
-        // --- منطق البوابة الأصلي والذكي ---
-        // يعمل فقط عند محاولة عبور حدود المعرض
         if ((!isCurrentlyInside && willBeInside) || (isCurrentlyInside && !willBeInside)) {
             //  PlaySound(TEXT("sounds/gallery.wav"), NULL, SND_ASYNC | SND_LOOP);
 
-              // التحقق فقط إذا كان العبور يحدث على مستوى الطابق الأرضي
             if (camY < SHOWROOM_HEIGHT) {
                 bool inGateWidth = (nextX > GATE_MIN_X && nextX < GATE_MAX_X);
-                bool isLowEnough = (camY < 30.0f); // القوس الثابت للبوابة يبدأ عند ارتفاع 30
+                bool isLowEnough = (camY < 30.0f);
                 if (!inGateWidth || !isLowEnough) {
-                    glutPostRedisplay(); // اصطدام بجدار البوابة
+                    glutPostRedisplay();
                     return;
                 }
             }
         }
 
 
-        // --- نظام الاصطدام الشامل (لكل شيء آخر) ---
         if (willBeInside) {
-            // 1. الحارس الذكي للأسقف والطوابق
             const float SECOND_FLOOR_Y_START = SHOWROOM_HEIGHT;
             const float SECOND_FLOOR_Y_END = SHOWROOM_HEIGHT + 60.0f;
             const float ELEV_X = -120.0f, ELEV_Z = -170.0f, ELEV_WIDTH = 30.0f;
@@ -788,16 +773,14 @@ void handleKeypress(unsigned char key, int x, int y) {
                 playerBox.maxY > objBox.minY && playerBox.minY < objBox.maxY &&
                 playerBox.maxZ > objBox.minZ && playerBox.minZ < objBox.maxZ) {
                 glutPostRedisplay();
-                return; 
+                return;
             }
         }
 
-        // إذا نجحت كل الفحوصات، قم بتحديث الإحداثيات
         camX = nextX;
         camY = nextY;
         camZ = nextZ;
 
-        // تحديث الصوت عند عبور الحدود
         if (isCurrentlyInside != isStrictlyInside(camX, camY, camZ)) {
             updateAmbientSound();
         }
@@ -835,12 +818,12 @@ void updateAmbientSound() {
     if (isInside) {
 
         SoundManager::stopAll();
-        SoundManager::playLoop("sounds/gallery.wav"); 
+        SoundManager::playLoop("sounds/gallery.wav");
     }
     else {
-        SoundManager::stopAll(); 
+        SoundManager::stopAll();
         if (weatherstatus == 2) {
-         
+
             SoundManager::playLoop("sounds/rain.wav");
         }
         else if (isLightOn) {
@@ -857,18 +840,18 @@ void updateAmbientSound1() {
 
     if (isInside) {
 
-        SoundManager::playLoopWithDelay("sounds/gallery.wav",500);
+        SoundManager::playLoopWithDelay("sounds/gallery.wav", 500);
     }
     else {
         if (weatherstatus == 2) {
 
-            SoundManager::playLoopWithDelay("sounds/rain.wav",2000);
+            SoundManager::playLoopWithDelay("sounds/rain.wav", 500);
         }
         else if (isLightOn) {
-            SoundManager::playLoopWithDelay("sounds/morning.wav",2000);
+            SoundManager::playLoopWithDelay("sounds/morning.wav", 500);
         }
         else {
-            SoundManager::playLoopWithDelay("sounds/night2.wav",2000);
+            SoundManager::playLoopWithDelay("sounds/night2.wav", 500);
         }
     }
 }
@@ -1122,7 +1105,7 @@ int main(int argc, char** argv) {
     glutCreateWindow("Showroom Simulator");
 
     initRendering();
-    initParkingLotCars(); 
+    initParkingLotCars();
     createCollidables();
     initEnvironment();
     updateLookVector();

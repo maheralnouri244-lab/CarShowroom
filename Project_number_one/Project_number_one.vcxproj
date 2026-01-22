@@ -143,9 +143,11 @@
   <ItemGroup>
     <ClCompile Include="AbrarCode.cpp" />
     <ClCompile Include="AccessoriesSection.cpp" />
+    <ClCompile Include="Ambulance.cpp" />
     <ClCompile Include="BeetleCar.cpp" />
     <ClCompile Include="CameraSphere.cpp" />
     <ClCompile Include="Car.cpp" />
+    <ClCompile Include="City.cpp" />
     <ClCompile Include="CityMasterPlan.cpp" />
     <ClCompile Include="F1Car.cpp" />
     <ClCompile Include="Furniture.cpp" />
@@ -165,23 +167,33 @@
     <ClCompile Include="Pillar.cpp" />
     <ClCompile Include="PlusRing3D.cpp" />
     <ClCompile Include="Project_number_one.cpp" />
+    <ClCompile Include="Roadway.cpp" />
+    <ClCompile Include="Sedan.cpp" />
     <ClCompile Include="Showroomdoor.cpp" />
     <ClCompile Include="ShowroomGate.cpp" />
     <ClCompile Include="Showroomside.cpp" />
     <ClCompile Include="SaraCode.cpp" />
     <ClCompile Include="sound.cpp" />
+    <ClCompile Include="SportsCar.cpp" />
     <ClCompile Include="StageLight.cpp" />
     <ClCompile Include="SteveModel.cpp" />
+    <ClCompile Include="StreetFurniture.cpp" />
     <ClCompile Include="StreetLamp.cpp" />
+    <ClCompile Include="Structures.cpp" />
+    <ClCompile Include="SUV.cpp" />
+    <ClCompile Include="Taxi.cpp" />
     <ClCompile Include="Tree.cpp" />
+    <ClCompile Include="Vegetation.cpp" />
     <ClCompile Include="WoodBuilding.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AbrarCode.h" />
     <ClInclude Include="AccessoriesSection.h" />
+    <ClInclude Include="Ambulance.h" />
     <ClInclude Include="BeetleCar.h" />
     <ClInclude Include="CameraSphere.h" />
     <ClInclude Include="Car.h" />
+    <ClInclude Include="City.h" />
     <ClInclude Include="CityMasterPlan.h" />
     <ClInclude Include="F1Car.h" />
     <ClInclude Include="Furniture.h" />
@@ -201,15 +213,23 @@
     <ClInclude Include="Pillar.h" />
     <ClInclude Include="PlusRing3D.h" />
     <ClInclude Include="RainSystem.h" />
+    <ClInclude Include="Roadway.h" />
     <ClInclude Include="SaraCode.h" />
+    <ClInclude Include="Sedan.h" />
     <ClInclude Include="Showroomdoor.h" />
     <ClInclude Include="ShowroomGate.h" />
     <ClInclude Include="Showroomside.h" />
     <ClInclude Include="sound.h" />
+    <ClInclude Include="SportsCar.h" />
     <ClInclude Include="StageLight.h" />
     <ClInclude Include="SteveModel.h" />
+    <ClInclude Include="StreetFurniture.h" />
     <ClInclude Include="StreetLamp.h" />
+    <ClInclude Include="Structures.h" />
+    <ClInclude Include="SUV.h" />
+    <ClInclude Include="Taxi.h" />
     <ClInclude Include="Tree.h" />
+    <ClInclude Include="Vegetation.h" />
     <ClInclude Include="WoodBuilding.h" />
   </ItemGroup>
   <ItemGroup>

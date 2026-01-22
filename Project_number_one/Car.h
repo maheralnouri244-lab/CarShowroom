@@ -21,35 +21,4 @@ public:
     virtual ~Car() {}
     virtual void draw() = 0;
 };
-
-class Sedan : public Car {
-public:
-    Sedan(float x, float y, float z, float rot, float r, float g, float b) : Car(x, y, z, rot, r, g, b, 2.0f) {}
-    void draw() override;
-};
-
-class SUV : public Car {
-public:
-    SUV(float x, float y, float z, float rot, float r, float g, float b) : Car(x, y, z, rot, r, g, b, 2.2f) {}
-    void draw() override;
-};
-
-class SportsCar : public Car {
-public:
-    SportsCar(float x, float y, float z, float rot, float r, float g, float b) : Car(x, y, z, rot, r, g, b, 2.1f) {}
-    void draw() override;
-};
-
-class Taxi : public Car {
-public:
-    Taxi(float x, float y, float z, float rot) : Car(x, y, z, rot, 1.0f, 0.8f, 0.0f, 2.0f) {}
-    void draw() override;
-};
-
-class Ambulance : public Car {
-public:
-    Ambulance(float x, float y, float z, float rot) : Car(x, y, z, rot, 0.95f, 0.95f, 0.95f, 2.4f) {}
-    void draw() override;
-};
-
 #endif
