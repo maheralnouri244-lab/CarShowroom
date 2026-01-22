@@ -919,12 +919,25 @@ void initRendering() {
 void initEnvironment() {}
 
 void renderWorldContent() {
+
+
     abrarCode.drawCars();
     abrarCode.drawGroundFloorElevator();
-    abrarCode.drawSecondFloor();
     saraCode.drawAll();
-
     maher.draw(camX, camY, camZ, isLightOn, cctvTexIDs);
+    abrarCode.drawSecondFloor();
+
+    
+    glPushMatrix();
+    glTranslatef(0, -5, 0);
+    glScalef(1, -1, 1);
+    //abrarCode.drawCars();
+    //abrarCode.drawGroundFloorElevator();
+    //saraCode.drawAll();
+    maher.draw(camX, camY, camZ, isLightOn, cctvTexIDs,0);
+    abrarCode.drawSecondFloor(0);
+    glPopMatrix();
+
 
     glPushAttrib(GL_LIGHTING_BIT | GL_CURRENT_BIT | GL_ENABLE_BIT | GL_TRANSFORM_BIT);
     glEnable(GL_LIGHTING);
@@ -944,17 +957,6 @@ void renderWorldContent() {
         myJeep.drawJeep(120.0f, 0.0f, 50.0f * i, 6.0f, 90.0f);
     }
     glPopAttrib();
-}
-
-void drawSceneForReflection() {
-    GLuint skyTex = isLightOn ? dayskyTex : nightskyTex;
-    drawSkyBody(isLightOn);
-    drawSkyDome(2000, 64, 64, skyTex);
-
-    if (weatherstatus != 0)
-        for (int i = 0; i < CloudCount; i++) myClouds[i].draw(weatherstatus);
-
-    renderWorldContent();
 }
 
 void drawscene(bool drawcam = 1)
@@ -1002,6 +1004,116 @@ void drawscene(bool drawcam = 1)
     drawSkyDome(2000, 64, 64, skyTex);
 }
 
+/*
+* glPushAttrib(GL_LIGHTING_BIT | GL_CURRENT_BIT | GL_ENABLE_BIT | GL_TRANSFORM_BIT);
+    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT0);
+    glEnable(GL_COLOR_MATERIAL);
+    glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
+
+    GLfloat ambientDay[] = { 0.2f, 0.2f, 0.2f, 1.0f };
+    GLfloat ambientNight[] = { 0.01f, 0.01f, 0.01f, 0.5f };
+    GLfloat* currentAmbient = isLightOn ? ambientDay : ambientNight;
+    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, currentAmbient);
+
+    GLfloat noSpecular[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+    glMaterialfv(GL_FRONT, GL_SPECULAR, noSpecular);
+
+    for (int i = 1; i <= 3; i++) {
+        myJeep.drawJeep(120.0f, 0.0f, 50.0f * i, 6.0f, 90.0f);
+    }
+    glPopAttrib();
+
+    //drawSkyDome(2000, 64, 64, skyTex);
+
+    drawSkyBody(isLightOn);
+    GLuint skyTex;
+    if (isLightOn) {
+        glEnable(GL_LIGHT0);
+        GLfloat ambientDay[] = { 0.4f, 0.4f, 0.4f, 1.0f };
+        glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambientDay);
+        skyTex = dayskyTex;
+    }
+    else {
+        glDisable(GL_LIGHT0);
+        GLfloat ambientNight[] = { 0.3f, 0.3f, 0.5f, 1.0f };
+        glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambientNight);
+        skyTex = nightskyTex;
+    }
+
+    if (weatherstatus == 2) myRain.draw();
+
+    renderWorldContent();
+
+    for (int i = 0; weatherstatus > 0 && i < CloudCount; i++) {
+        myClouds[i].draw(weatherstatus);
+    }
+    glPushMatrix(); glTranslatef(minX, 60, maxz); glRotatef(270, 0, 1, 0);
+    cam.setLookDirection(cameras[0].lookZ, cameras[0].lookY, -cameras[0].lookX); cam.draw(); glPopMatrix();
+    glPushMatrix(); glTranslatef(maxX, 60, maxz);
+    cam.setLookDirection(cameras[1].lookX, cameras[1].lookY, cameras[1].lookZ); cam.draw(); glPopMatrix();
+    glPushMatrix(); glTranslatef(minX + 1, 60 - 1, maxz - 1); glRotatef(90, 0, 1, 0); glRotatef(90, 1, 0, 0);
+    cam.setLookDirection(-cameras[2].lookZ, cameras[2].lookX, -cameras[2].lookY); cam.draw(); glPopMatrix();
+    glPushMatrix(); glTranslatef(maxX - 1, 60 - 1, minz + 1); glRotatef(270, 0, 1, 0); glRotatef(90, 1, 0, 0);
+    cam.setLookDirection(cameras[3].lookZ, -cameras[3].lookX, -cameras[3].lookY); cam.draw(); glPopMatrix();
+
+    glPushMatrix();
+    glTranslatef(-120.0f, 0.0f, -50.0f);
+    glRotatef(90.0f, 0, 1, 0);
+    glScalef(8.5f, 8.5f, 8.5f);
+    carRed.draw();
+    glPopMatrix();
+
+    // Blue Car
+    glPushMatrix();
+    glTranslatef(-120.0f, 0.0f, -90.0f);
+    glRotatef(90.0f, 0, 1, 0);
+    glScalef(8.5f, 8.5f, 8.5f);
+    carBlue.draw();
+    glPopMatrix();
+
+    // Yellow Car
+    glPushMatrix();
+    glTranslatef(-120.0f, 0.0f, -130.0f);
+    glRotatef(90.0f, 0, 1, 0);
+    glScalef(8.5f, 8.5f, 8.5f);
+    carYellow.draw();
+    glPopMatrix();
+
+    drawscene();
+*/
+void ddref()
+{
+    return;
+    glPushMatrix();
+    glTranslatef(0, -5, 0);
+    glScalef(1, -1, 1);
+
+    abrarCode.drawCars();
+    abrarCode.drawGroundFloorElevator();
+    saraCode.drawAll();
+    maher.draw(camX, camY, camZ, isLightOn, cctvTexIDs);
+    abrarCode.drawSecondFloor();
+
+    
+    glPopMatrix();
+}
+
+void drawSceneForReflection() {
+    
+    GLuint skyTex = isLightOn ? dayskyTex : nightskyTex;
+    drawSkyBody(isLightOn);
+    glPushMatrix();
+    glTranslatef(0, 5, 0);
+    drawSkyDome(2000, 64, 64, skyTex);
+
+    if (weatherstatus != 0)
+        for (int i = 0; i < CloudCount; i++) myClouds[i].draw(weatherstatus);
+
+    drawscene();
+    glPopMatrix();
+}
+
 void display() {
     if (isLightOn) glClearColor(0.52f, 0.80f, 0.92f, 1.0f);
     else glClearColor(0.05f, 0.05f, 0.1f, 1.0f);
@@ -1010,6 +1122,7 @@ void display() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     glLoadIdentity();
 
+    
     if (captureThisFrame) {
         int idx = lastCam - 1;
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
@@ -1039,7 +1152,8 @@ void display() {
     glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
     glDepthMask(GL_FALSE);
 
-    maher.drawGardenWater();
+    //maher.drawGardenWater();
+    maher.drawGardenReflection(drawSceneForReflection);
 
     glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
     glDepthMask(GL_TRUE);
@@ -1047,7 +1161,6 @@ void display() {
     glStencilFunc(GL_EQUAL, 1, 0xFF);
     glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 
-    maher.drawGardenReflection(drawSceneForReflection);
 
     glDisable(GL_STENCIL_TEST);
 
@@ -1082,6 +1195,8 @@ void display() {
     maher.drawGardenWater();
 
     glDisable(GL_BLEND);
+
+    ddref();
 
     glassMgr.drawAll();
 

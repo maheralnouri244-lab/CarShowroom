@@ -32,7 +32,7 @@ public:
     AbrarCode();
 
     void drawCars();
-    void drawSecondFloor();
+    void drawSecondFloor(bool drawsteve=1);
     void drawGroundFloorElevator();
 
     void update(float& camX, float& camY, float& camZ, float& yaw, float& pitch);
@@ -80,7 +80,7 @@ private:
     void drawLuxurySofa(float x, float y, float z, float rotY);
     void drawChandelier(float x, float y, float z);
     void drawFountain(float x, float y, float z);
-    void drawPeopleOnFloor(float floorY);
+    void drawPeopleOnFloor(float floorY, bool drawsteve);
     void drawMassiveShelf(float x, float y, float z, int rows, int cols, int type);
     void drawHologram(float x, float y, float z);
     void drawTV(float x, float y, float z, float r);

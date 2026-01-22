@@ -11,7 +11,7 @@ class Maherheader {
 public:
     Maherheader();
 
-    void draw(float camX, float camY, float camZ, bool isday, GLuint cctvTexIDs[]);
+    void draw(float camX, float camY, float camZ, bool isday, GLuint cctvTexIDs[], bool drawsteve=1);
 
     unsigned int loadTextureFromFile(const char* path);
 

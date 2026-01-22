@@ -85,7 +85,7 @@ unsigned int Maherheader::loadTextureFromFile(const char* path) {
     return newTexID;
 }
 
-void Maherheader::draw(float camX, float camY, float camZ, bool isday, GLuint cctvTexIDs[4]) {
+void Maherheader::draw(float camX, float camY, float camZ, bool isday, GLuint cctvTexIDs[4],bool drawsteve) {
 
     /*for (int i = 1; i < 5; i++) {
         string path = "images\\\\house" + to_string(i) + ".png";
@@ -113,9 +113,6 @@ void Maherheader::draw(float camX, float camY, float camZ, bool isday, GLuint cc
     if (treeLeafTexID == 0) treeLeafTexID = loadTextureFromFile("images\\Leaves.png");
     if (treeBarkTexID == 0) treeBarkTexID = loadTextureFromFile("images\\wood.png");
 
-    // =========================================================
-    // رسم تخطيط المدينة (الشوارع، الحديقة، المواقف)
-    // =========================================================
     cityPlan.setTextures(roadTexID, pavementTexID, grassTexID, parkingTexID, waterTexID, pavementTexID, treeLeafTexID, treeBarkTexID);
     cityPlan.drawCityLayout(!isday);
 
@@ -166,6 +163,7 @@ void Maherheader::draw(float camX, float camY, float camZ, bool isday, GLuint cc
     neonyubes.push_back(NeonTube(-minX - (maxX - minX - diff) / 4, 0, (maxz + minz) / 2 + 2 * diff, (maxz - minz) / 2 - 2 * diff, 0.1, 'z'));
     neonyubes.push_back(NeonTube(-minX - (maxX - minX - diff) / 4, 0, -(maxz + minz) / 2 - 2 * diff, (maxz - minz) / 2 - 2 * diff, 0.1, 'z'));
 
+
     for (const auto& p : pillars) p.draw();
     for (const auto& p : hpillars) p.draw();
     for (const auto& p : showroomsides) p.draw();
@@ -214,7 +212,6 @@ void Maherheader::draw(float camX, float camY, float camZ, bool isday, GLuint cc
         if (i == 0) C2.drawColumns(40, 12, 30, 0.2, 3, 1);
     }
 
-    // رسم شخصيات ستيف (Steves)
     float groupBaseX = minX + (maxX - minX - diff) / 4.0f;
     float steveData[41][15] = {
         { -40.0f, 230.0f, 180.0f, 0.70f, 0.47f, 0.35f, 0.25f, 0.15f, 0.10f, 0.00f, 0.65f, 0.65f, 0.25f, 0.25f, 0.60f },
@@ -259,13 +256,14 @@ void Maherheader::draw(float camX, float camY, float camZ, bool isday, GLuint cc
     };
 
     SteveModel steve(0.3f);
+    if (drawsteve)
     for (int i = 0; i < 39; i++) {
         SteveModel::setSkinColor(steveData[i][3], steveData[i][4], steveData[i][5]);
         SteveModel::setHairColor(steveData[i][6], steveData[i][7], steveData[i][8]);
         SteveModel::setShirtColor(steveData[i][9], steveData[i][10], steveData[i][11]);
         SteveModel::setPantsColor(steveData[i][12], steveData[i][13], steveData[i][14]);
         glPushMatrix();
-        glTranslatef(steveData[i][0], 0.0f, steveData[i][1]);
+        glTranslatef(steveData[i][0], 2, steveData[i][1]);
         glRotatef(steveData[i][2], 0.0f, 1.0f, 0.0f);
         steve.draw();
         glPopMatrix();
@@ -290,19 +288,21 @@ void Maherheader::draw(float camX, float camY, float camZ, bool isday, GLuint cc
     symbol.draw();
     glPopMatrix();
 
-    MonitorScreen myMonitor;
-    OfficeDesk mydisk;
-    glPushMatrix();
-    glTranslatef(minX + 30, h + 16, maxz - 23);
-    glRotatef(90, 0, 1, 0);
-    myMonitor.draw(cctvTexIDs);
-    glPopMatrix();
-    glPushMatrix();
-    glTranslatef(minX + 30, h - 6 + 6.5, maxz - 25);
-    glScalef(0.5, 0.5, 0.5);
-    glRotatef(90, 0, 1, 0);
-    mydisk.draw();
-    glPopMatrix();
+    if (drawsteve) {
+        MonitorScreen myMonitor;
+        OfficeDesk mydisk;
+        glPushMatrix();
+        glTranslatef(minX + 30, h + 16, maxz - 23);
+        glRotatef(90, 0, 1, 0);
+        myMonitor.draw(cctvTexIDs);
+        glPopMatrix();
+        glPushMatrix();
+        glTranslatef(minX + 30, h - 6 + 6.5, maxz - 25);
+        glScalef(0.5, 0.5, 0.5);
+        glRotatef(90, 0, 1, 0);
+        mydisk.draw();
+        glPopMatrix();
+    }
 
 
     float housepos[30][3] = {
@@ -547,7 +547,8 @@ void Maherheader::draw(float camX, float camY, float camZ, bool isday, GLuint cc
             }
         }
     } 
-    
+    if (!drawsteve)
+        return;
     glPushMatrix();
     glTranslatef(-1560-220, 0.2, -1200 + 1230);
     glBindTexture(GL_TEXTURE_2D, pavementTexID);

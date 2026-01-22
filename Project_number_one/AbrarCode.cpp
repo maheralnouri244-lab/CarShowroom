@@ -597,7 +597,7 @@ void AbrarCode::drawTechStation(float x, float y, float z) { glPushMatrix(); glT
 
 void AbrarCode::drawInfoKiosk(float x, float y, float z) { glPushMatrix(); glTranslatef(x, y, z); glColor3f(0.1, 0.1, 0.1); glPushMatrix(); glTranslatef(0, 8, 0); glScalef(4, 16, 2); glutSolidCube(1.0); glPopMatrix(); glColor3f(0.0, 0.5, 1.0); glPushMatrix(); glTranslatef(0, 12, 1.1); glScalef(3, 4, 0.1); glutSolidCube(1.0); glPopMatrix(); glPopMatrix(); }
 
-void AbrarCode::drawPeopleOnFloor(float fy) {
+void AbrarCode::drawPeopleOnFloor(float fy,bool drawsteve) {
     SteveModel s(0.3f);
     float p[10][3] = {
         {80,fy,-50},
@@ -611,10 +611,12 @@ void AbrarCode::drawPeopleOnFloor(float fy) {
         {-20,fy,-20},
         {0,fy,-150}
     };
+
+    if (drawsteve)
     for (int i = 0;i < 10;i++) {
         SteveModel::setShirtColor(0.1 * (i + 1), 0.5, 0.8);
         glPushMatrix();
-        glTranslatef(p[i][0], fy + 1.5f, p[i][2]);
+        glTranslatef(p[i][0], fy + 1.7, p[i][2]);
         glRotatef(i * 45, 0, 1, 0); s.draw(); glPopMatrix();
     }
 }
@@ -632,7 +634,7 @@ void AbrarCode::drawGroundFloorElevator() {
     drawElevatorDoor(ELEV_X, 0, ELEV_Z + 15, doorGapGround);
 }
 
-void AbrarCode::drawSecondFloor() {
+void AbrarCode::drawSecondFloor(bool drawsteve) {
     float floorY = FLOOR_H;
     float h = 60.0f;
     float maxX = 150.0f, maxZ = 200.0f, diff = 45.0f;
@@ -687,7 +689,7 @@ void AbrarCode::drawSecondFloor() {
     drawChandelier(100, 30, 120);
     drawFountain(120, 0, 150);
     drawHologram(100, 2, 150);
-    drawPeopleOnFloor(0.2f);
+    drawPeopleOnFloor(0.2f, drawsteve);
 
     glPopMatrix();
 
@@ -695,7 +697,7 @@ void AbrarCode::drawSecondFloor() {
 
     drawElevatorDoor(ELEV_X, 0, ELEV_Z + 15, doorGapSecond);
 
-    glPopMatrix();
+    //glPopMatrix();
 }
 
 void AbrarCode::drawRoom(float x, float y, float z, float w, float h, float d) {
